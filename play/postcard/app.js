@@ -1410,7 +1410,9 @@ function openSend() {
   setStatus('');
   // 보내기를 여는 동안 엽서 고르기 칸과 쓰기 칸은 숨기고 저장 · 공유 · 게시판 버튼만
   writePanel.classList.add('is-sending');
-  if (KAKAO_JS_KEY) uploadCardImage().catch(() => {});   // 카카오톡 공유에 쓸 엽서 이미지를 미리 올려 둠
+  // v7.20: 카카오 도구만 미리 불러 둠. 엽서 그림은 '카카오톡' 단추를 누를 때만 올림(사용자 — 예전에는 여기서 미리 올렸음)
+  if (KAKAO_JS_KEY) kakao().catch(() => {});
+  setKakaoAgain(false);
   sendPanel.show();   // 창이 아니라 엽서 아래에 펼쳐지는 버튼 목록
   hy('pc_send_open', { jeju: jejuApplied ? 'yes' : 'no' });   // 제주어로 바꾼 뒤 보내기 화면이 열림
 }
@@ -1630,11 +1632,12 @@ function kakao() {
   return kakaoLoading;
 }
 
-// 엽서 이미지를 카카오 서버에 올려 둠. 같은 엽서면 한 번만 올림.
-// 보내기를 열 때 미리 올려 두어, 버튼을 누르면 바로 공유 창이 뜨게 함 (늦으면 PC에서 팝업이 막힐 수 있음)
+// 엽서 이미지를 카카오 서버에 올림(카카오가 최대 100일 보관). 같은 엽서면 한 번만 올림.
+// v7.20: '카카오톡' 단추를 누를 때만 올림(아래 shareToKakao — 늦으면 한 번 더 누르게 함)
 let kakaoImage = { key: '', promise: null };
+const cardKey = () => `${encodePost(currentPost())}|${photoActive}|${stamped}|${JSON.stringify(photoView)}`;   // 사진을 옮기면 다시 올림
 function uploadCardImage() {
-  const key = `${encodePost(currentPost())}|${photoActive}|${stamped}|${JSON.stringify(photoView)}`;   // 사진을 옮기면 다시 올림
+  const key = cardKey();
   if (kakaoImage.key !== key || !kakaoImage.promise) {
     const promise = (async () => {
       const K = await kakao();
@@ -1675,15 +1678,26 @@ function arrivalTitle(to) {
 }
 const mailToName = (to) => (/에게$/.test(to) ? to.replace(/에게$/, '') : TEMPLATE_TOS.has(to) ? '' : to);
 
-// 돌려주는 값: 편지가 길어 받은 엽서 대신 편지 사이트 첫 화면 주소로 보냈는지(v7.13)
-async function shareToKakao() {
+// v7.20: 엽서 그림은 단추를 누른 뒤에 올리므로, 올리는 데 KAKAO_TAP_MS 넘게 걸리면 브라우저가 카카오 공유 창을 막을 수 있음
+// (누른 직후에만 새 창을 열어 줌 — 특히 PC 사파리). 그때는 바로 열지 않고 { again: true } → 단추가 '카카오톡 열기'로 바뀌어
+// 한 번 더 누르면 올려 둔 그림(kakaoReady)으로 바로 열림. 그림을 올리지 못했으면 고른 엽서 그림만(예전과 같음)
+const KAKAO_TAP_MS = 1000;
+let kakaoReady = { key: '', imageUrl: '' };
+// 돌려주는 값: { toHome } — 편지가 길어 받은 엽서 대신 편지 사이트 첫 화면 주소로 보냈는지(v7.13) · 또는 { again: true }
+async function shareToKakao(startedAt) {
   const K = await kakao();
   const url = kakaoUrl();
-  let imageUrl;
-  try {
-    imageUrl = await uploadCardImage();
-  } catch (e) {
-    imageUrl = new URL(CARDS[currentCard].src, location.href).href;   // 올리기에 실패하면 엽서 그림만
+  const key = cardKey();
+  let imageUrl = kakaoReady.key === key ? kakaoReady.imageUrl : '';
+  if (!imageUrl) {
+    try {
+      imageUrl = await uploadCardImage();
+    } catch (e) {
+      imageUrl = new URL(CARDS[currentCard].src, location.href).href;   // 올리기에 실패하면 엽서 그림만
+    }
+    kakaoReady = { key, imageUrl };
+    const ua = navigator.userActivation;
+    if (performance.now() - startedAt > KAKAO_TAP_MS || (ua && !ua.isActive)) return { again: true };
   }
   const post = currentPost();
   // 카카오톡 그림 카드에는 주소가 따로 보이지 않아서, 설명 줄에 편지 사이트 주소를 글자로 적어 둠
@@ -1707,7 +1721,19 @@ async function shareToKakao() {
     },
     buttons,
   });
-  return toHome;
+  return { toHome };
+}
+
+// v7.20: 그림을 올리느라 늦었을 때 카카오 단추 글자를 '카카오톡 열기'로(보내기를 다시 열면 원래대로)
+function setKakaoAgain(on) {
+  const btn = document.getElementById('kakaoBtn');
+  const title = btn && btn.querySelector('b');
+  const sub = btn && btn.querySelector('small');
+  if (!title || !sub) return;
+  if (!btn.dataset.title) { btn.dataset.title = title.textContent; btn.dataset.sub = sub.textContent; }
+  title.textContent = on ? '카카오톡 열기' : btn.dataset.title;
+  sub.textContent = on ? '한 번 더 누르면 카카오톡이 열려요' : btn.dataset.sub;
+  btn.classList.toggle('is-ready', on);
 }
 
 document.getElementById('kakaoBtn').addEventListener('click', async () => {
@@ -1715,10 +1741,17 @@ document.getElementById('kakaoBtn').addEventListener('click', async () => {
   const url = postUrl();
   if (KAKAO_JS_KEY) {
     const btn = document.getElementById('kakaoBtn');
+    const startedAt = performance.now();
     btn.disabled = true;
     setSheetStatus('카카오톡을 여는 중이에요...');
     try {
-      const toHome = await shareToKakao();
+      const { toHome, again } = await shareToKakao(startedAt);
+      if (again) {
+        setKakaoAgain(true);
+        setSheetStatus('엽서 그림을 준비했어요. ‘카카오톡 열기’를 한 번 더 눌러 주세요.');
+        return;
+      }
+      setKakaoAgain(false);
       finishSend('카카오톡 공유 창을 열었어요. 받을 친구를 골라 보내 주세요.' + (toHome ? KAKAO_LONG_NOTE : '') + PHOTO_NOTE() + LOCAL_NOTE, 'kakao');
     } catch (e) {
       setSheetStatus(`카카오톡을 열지 못했어요. 카카오 개발자 사이트에 이 사이트 주소(${location.origin})가 등록돼 있는지 확인해 주세요. (${e.message || e})`, true);

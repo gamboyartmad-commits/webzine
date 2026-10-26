@@ -56,7 +56,7 @@ const SITE_ROOT = new URL('../', import.meta.url);
 const STAMP_SRC = new URL('assets/intro/stamp-citrus.webp', SITE_ROOT).href;
 // 21차: '제주어 엽서 써보기'(섹션 단추 · 플로팅 버튼)가 가는 엽서 쓰러가기 쪽('/'로 끝나는 주소)
 // (36차) ?start=write — 엽서 사이트가 첫 장면(책상 · 저절로 내려가기)을 건너뛰고 바로 편지 쓰기 화면으로(웹진에서 온 사람은 봉투 인트로를 이미 봤다 — 사용자)
-const PLAY_URL = new URL('play/postcard/?start=write', SITE_ROOT).href;
+export const PLAY_URL = new URL('play/postcard/?start=write', SITE_ROOT).href;   // 42차: js/story.js 도 씀('왜 제주어로 써야 할까요?' 단추)
 
 const TEXT = {
   get title() { return t('maker.title', '제주어 엽서 쓰기'); },
