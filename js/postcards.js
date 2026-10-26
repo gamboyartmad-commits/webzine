@@ -19,6 +19,7 @@ const TEXT = {
   get unflip() { return tHTML('pcards.unflip', '앞면 보기'); },
   get interviewee() { return tHTML('pcards.interviewee-sr', '인터뷰이:'); }, // 화면 낭독기에만 읽히는 머리말(뒤의 빈칸은 아래 cardHTML 에 있다)
   get affiliation() { return tHTML('pcards.affiliation-sr', '소속:'); },
+  get who() { return tHTML('pcards.who', '만난 사람'); }, // 43차: 엽서 아래 인터뷰한 분들(이름 · 소속)
 };
 
 // 엽서 디자인 2종(css/interviews.css 의 .pcard--a · .pcard--b). variant 가 비었거나 모르는 값이면 순서대로 돌려 쓴다
@@ -168,6 +169,7 @@ function cardHTML(it, index) {
     <div class="pcard__inner">${front}${DIRECT ? '' : back}
     </div>
   </article>
+  <p class="pcards__who"><span class="pcards__who-label">${TEXT.who}</span><b class="pcards__who-name">${it.interviewee}</b><span class="pcards__who-aff">${it.affiliation}</span></p>
 </div>`;
 }
 

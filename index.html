@@ -193,10 +193,13 @@
 
         <!-- ① 엽서 써보기 — 왼쪽 제목 · 세 걸음 · 단추, 오른쪽 견본 엽서 -->
         <div class="write__make">
-          <div class="write__copy" data-reveal>
+          <!-- 43차(피드백): 제목을 두 칸(세 걸음 · 예시 엽서) 위에 크게 — 첫 장의 인상이 또렷하게 -->
+          <header class="write__head" data-reveal>
             <p class="eyebrow" lang="en">No.01 · Write</p>
-            <!-- ✏️ 교체: 제목 두 줄(위 = 크고 굵게, 아래 = 작게). 크기는 css/maker.css '7.' 의 .write__title-main · .write__title-sub -->
+            <!-- ✏️ 교체: 제목 두 줄(43차: 두 줄 모두 크고 굵게 — 같은 크기). 크기는 css/theme.css '0.' 의 --write-title-size, 모양은 css/maker.css '7-10.' -->
             <h2 id="write-title" class="write__title"><span class="write__title-main" data-i18n="write.title-main" data-edit="write-title-main">당신의 엽서 한 장이</span> <span class="write__title-sub" data-i18n="write.title-sub" data-edit="write-title-sub">제주어를 지킬 수 있어요</span></h2>
+          </header>
+          <div class="write__copy" data-reveal>
             <!-- 세 걸음(14차): 평소 말투로 쓰면 → 제주어로 바꿔 준다는 것이 한눈에 보이게, 1 · 2 걸음 아래에 실제 예시 한 쌍.
                  ✏️ 교체: 걸음 글 · 예시(지금 예시 = 견본 엽서 '나에게'의 마지막 줄 그대로 — 표준어 '오늘도 고생했어, 사랑해!' → 제주어 '오늘도 욕봐신게, 사랑햄쪄!').
                  예시를 바꿀 때는 뜻을 확인한 제주어로(지어내지 않기). 생김새는 css/maker.css 의 .write__flow -->

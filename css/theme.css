@@ -47,7 +47,7 @@
      --voice-size / --voice-lines-size         큰 말 크기 / 그 아래 말 크기
    [섹션 큰 제목] '왜 제주어로 써야 할까요?' · '알고 가면 더 재밌는 제주어 상호 지도' · 인터뷰 제목
      --title-size / --title-tracking / --title-lh   크기 / 자간 / 줄 간격(아래 네 제목은 따로)
-     --write-title-size                        '당신의 엽서 한 장이'(엽서 쓰기) 크기
+     --write-title-size                        '당신의 엽서 한 장이 / 제주어를 지킬 수 있어요'(엽서 쓰기) 크기 — 43차부터 두 줄 모두
      --voices-title-size / -lh / -tracking     '제주어가 사라진다는 것은 / 어떤 의미인가요?'(Voices) 크기 / 줄 간격 / 자간
      --interviews-title-size                   '사라져가는 제주어를 지키는 사람들'(인터뷰) 크기('인터뷰 —'는 이 크기의 0.55배)
      --map-title-size                          '제주어 상호 지도' 크기
@@ -84,7 +84,7 @@
   --title-size: 34px;
   --title-tracking: -0.025em;
   --title-lh: 1.16;
-  --write-title-size: 30px;
+  --write-title-size: 32px;   /* 43차: 두 줄 모두 이 크기(예전 30px — 아래 줄은 작았음). 좁은 휴대폰은 css/maker.css 7-10. 이 화면 폭에 맞춰 줄임 */
   --voices-title-size: 31px;
   --voices-title-lh: 1.3;
   --voices-title-tracking: -0.029em;
@@ -123,7 +123,7 @@
     --title-size: 44px;
     --title-tracking: -0.025em;
     --title-lh: 1.16;
-    --write-title-size: 36px;
+    --write-title-size: 46px;   /* 43차: 예전 36px */
     --voices-title-size: 38px;
     --voices-title-lh: 1.25;
     --voices-title-tracking: -0.029em;
@@ -163,7 +163,7 @@
     --title-size: 34px;
     --title-tracking: -0.025em;
     --title-lh: 1.16;
-    --write-title-size: 42px;
+    --write-title-size: 58px;   /* 43차: 예전 42px — 첫 장의 인상(피드백) */
     --voices-title-size: 44px;
     --voices-title-lh: 1.22;
     --voices-title-tracking: -0.029em;
@@ -390,7 +390,7 @@
      (바다색 엽서는 위아래, 휴대폰의 세로 엽서는 양옆). data/interviews.json 에 "coverPos" 가 있는 엽서는 그 값을 따릅니다 */
   /* --pcard-photo-pos: 50% 50%; */
   /* 엽서 기울기 배율: 0 = 반듯하게, 1 = 지금, 1.5 = 1.5배 더 기울게(모든 화면 · 기사 아래의 엽서까지) */
-  /* --pcard-tilt-scale: 1; */
+  --pcard-tilt-scale: 0;   /* 43차: 반듯하게(피드백 — PC 에서 기울어 보였음). 예전 = 1 */
 }
 
 .interviews {
@@ -401,7 +401,7 @@
   /* 넓은 화면에서 가로 엽서 한 장의 가장 큰 폭(540px). 화면이 낮으면 머리말 + 두 장이 한 화면에 들어오게 저절로 줄어듭니다 */
   /* --pcard-max: clamp(16.25rem, calc(var(--iv-card-h) * 1.5), 540px); */
   /* 둘째 장을 내려 놓는 만큼 */
-  /* --pcard-drop: clamp(0.75rem, 3vw, 4rem); */
+  --pcard-drop: 0px;   /* 43차: 두 장의 윗변을 나란히(예전 clamp(0.75rem, 3vw, 4rem)) */
 }
 
 /* 엽서 한 장이 차지하는 폭(두 장이 놓이는 자리 폭의 몇 %) — 폭 1023px 이하 48%, 1024px 이상 46% */

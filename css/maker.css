@@ -1612,7 +1612,7 @@ html.maker-open {
   border-radius: 6px;
   background-color: var(--paper-50);
   box-shadow: 0 1px 2px rgb(var(--ink-rgb) / 0.08), 0 22px 44px -26px rgb(var(--ink-rgb) / 0.5);
-  rotate: -0.6deg;
+  rotate: 0deg; /* 43차: 반듯하게(피드백 — 예전 -0.6deg) */
 }
 
 .write-again__copy {
@@ -2116,8 +2116,66 @@ html.zoom-open {
   }
 }
 
-/* 애니메이션의 '제주어 엽서 쓰러가기'로 내려오면 이 제목으로 포커스가 옮겨 온다(js/story.js — 화면 낭독기 · 키보드가 여기서 이어 읽게).
-   제목은 누르는 것이 아니므로 포커스 테두리는 그리지 않는다 */
+/* 제목은 누르는 것이 아니므로 포커스 테두리는 그리지 않는다(42차까지는 애니메이션 단추가 이 제목으로 포커스를 옮겼다) */
 .write__title:focus {
   outline: none;
+}
+
+/* 7-10. (43차) 엽서 쓰기 첫 장 — 피드백: 제목을 더 크게, 사진과 글 사이를 띄우고, 깔끔하게 정렬 ----------------------
+   · 제목(.write__head = 라벨 + 두 줄)을 아래 두 칸 위에 가로로 놓는다. 두 줄 모두 굵고 같은 크기(--write-title-size, css/theme.css '0.')
+   · 아래 왼쪽 = 세 걸음 · 단추, 오른쪽 = 예시 엽서. 두 칸 폭을 정해 가운데로 모으고 사이를 넓힌다 → 제목의 왼쪽 끝 = 세 걸음의 왼쪽 끝
+   · 예시 엽서는 기울이지 않는다(PC 에서 기울어 보이던 것 — 인터뷰 엽서 · 맨 아래 카드와 함께 반듯하게)
+   ✏️ 교체: 두 칸 폭 = grid-template-columns, 사이 = column-gap, 제목과 아래 두 칸 사이 = row-gap */
+.write__make {
+  grid-template-columns: minmax(0, 25rem) minmax(0, 34rem);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.75rem, 4vh, 3rem) clamp(3rem, 6.5vw, 7rem);
+}
+
+.write__head {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.write__title {
+  gap: 0.06em;
+  line-height: 1.16;
+}
+
+.write__title-main,
+.write__title-sub {
+  color: var(--color-title);
+  font-size: min(var(--write-title-size), 8.4vw); /* 좁은 휴대폰에서는 한 줄씩 들어가게 화면 폭에 맞춰 줄인다 */
+  font-weight: var(--font-display-weight);
+  letter-spacing: var(--title-tracking, -0.025em);
+}
+
+.write__copy {
+  gap: var(--space-5);
+}
+
+.write__example img,
+.write__example:nth-of-type(2) img {
+  rotate: 0deg;
+}
+
+/* 태블릿: 두 칸은 그대로(왼쪽은 세 걸음 · 단추가 들어갈 만큼), 사이를 조금 줄인다 */
+@media (max-width: 1023px) {
+  .write__make {
+    grid-template-columns: minmax(20rem, 1fr) minmax(0, 1.15fr);
+    justify-content: stretch;
+    column-gap: 2.5rem;
+  }
+}
+
+/* 휴대폰: 한 칸으로 — 제목 → 세 걸음 · 단추 → 예시 엽서 */
+@media (max-width: 767px) {
+  .write__make {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
 }

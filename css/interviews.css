@@ -1301,3 +1301,64 @@
     clip-path: none;
   }
 }
+
+/* 10. (43차) 피드백 반영 -------------------------------------------------------------------
+   · 엽서 아래 '만난 사람' — 이름 · 소속(data/interviews.json 의 interviewee · affiliation). 그림이 AI 일러스트라 누구를 만났는지 바로 보이게
+   · 기울기 · 둘째 장 내려 놓기는 css/theme.css '5.' 에서 0(반듯하게 · 나란히)
+   · 휴대폰(599px 이하): 두 장을 좁은 세로 엽서(3:4)로 나란히 두면 가로 그림(4:3)의 양옆이 40% 넘게 잘려서,
+     가로 엽서를 한 장씩 위아래로 놓는다('6. 세로 엽서'는 쓰지 않는다 — 자리의 container 이름을 거둔다) */
+.pcards__item {
+  aspect-ratio: auto; /* 엽서(.pcard)가 3:2 를 지키고, 아래 글만큼 길어진다 */
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+
+.pcards__who {
+  display: grid;
+  gap: 0.1em;
+  margin: 0;
+  padding-inline: 0.15em;
+  color: var(--surface-ink, var(--color-ink));
+  font-size: var(--fs-s);
+  line-height: 1.45;
+  text-align: left;
+}
+
+.pcards__who-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+}
+
+.pcards__who-name {
+  font-size: var(--fs-m);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pcards__who-aff {
+  opacity: 0.88;
+}
+
+/* 한 화면에 머리말 + 엽서 두 장이 들어가게 셈할 때 아래 글(세 줄)의 높이도 뺀다('5.') */
+.interviews {
+  --iv-who-h: 4.75rem;
+  --iv-card-h: calc(100 * var(--iv-vh) - var(--iv-pad-top) - var(--iv-pad-bottom) - var(--iv-head-gap) - var(--iv-head-h) - var(--pcard-drop) - var(--iv-who-h));
+}
+
+@media (max-width: 599px) {
+  .pcards:not(.pcards--single) {
+    container: none;
+    --pcard-share: 0.01;
+    grid-template-columns: minmax(0, min(100%, 540px));
+    row-gap: var(--space-7);
+  }
+
+  .pcards:not(.pcards--single) > :nth-child(2),
+  .pcards:not(.pcards--single):not(.is-ready)::after {
+    margin-top: 0;
+  }
+}
+
