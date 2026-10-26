@@ -108,7 +108,7 @@
                 <th scope="row" data-label="언제">엽서를 메일로 보낼 때(선택)</th>
                 <td data-label="받는 항목">필수: 받는 분 메일 주소<br>선택: 받는 분 이름, 보내는 분 이름<br>엽서 글(쓴 글 · 제주어로 바꾼 글)과 엽서 그림</td>
                 <td data-label="쓰는 곳">엽서를 받는 분께 메일로 전하기</td>
-                <td data-label="보관 기간">웹진은 저장하지 않아요(보내고 나면 끝). 발송 대행 업체의 발송 기록은 <span data-edit="pv-mail-log">[EmailJS 발송 기록 보관 기간 확인 후 입력]</span></td>
+                <td data-label="보관 기간">웹진은 저장하지 않아요(보내고 나면 끝). 메일을 보내는 Google 계정(Gmail)의 발송 기록은 <span data-edit="pv-mail-log">[Gmail 보낸편지함 보관 기간 확인 후 입력]</span></td>
               </tr>
               <tr>
                 <th scope="row" data-label="언제">웹진을 볼 때(자동 수집)</th>
@@ -158,15 +158,15 @@
               <tr><th scope="col">맡은 업체</th><th scope="col">맡긴 일</th></tr>
             </thead>
             <tbody>
-              <tr><th scope="row" data-label="맡은 업체">EmailJS</th><td data-label="맡긴 일">엽서 메일 보내기</td></tr>
-              <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-send">[메일 · 문자 발송 업체 — 예: 스티비, 솔라피]</span></th><td data-label="맡긴 일">소식 · 이벤트 안내 보내기</td></tr>
-              <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-form">[신청서 도구 — 예: 구글 폼, 타입폼]</span></th><td data-label="맡긴 일">소식 · 이벤트 받기 신청 접수</td></tr>
+              <tr><th scope="row" data-label="맡은 업체">Google LLC(Google Apps Script · Gmail)</th><td data-label="맡긴 일">엽서 메일 보내기</td></tr>
+              <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-send">Google LLC(Gmail · Google Apps Script)</span></th><td data-label="맡긴 일">소식 · 이벤트 안내 보내기</td></tr>
+              <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-form">Google LLC(Google 폼)</span></th><td data-label="맡긴 일">소식 · 이벤트 받기 신청 접수</td></tr>
               <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-host">[웹진을 올린 호스팅 업체]</span></th><td data-label="맡긴 일">웹진 서버 운영과 접속 기록 보관</td></tr>
             </tbody>
           </table>
         </div>
 
-        <!-- 5. ✏️ 교체: 4절 · 6절에서 남긴 바깥 나라 업체만. EmailJS 의 운영사 · 나라는 EmailJS 개인정보처리방침에서 확인해 넣는다 -->
+        <!-- 5. ✏️ 교체: 4절 · 6절에서 남긴 바깥 나라 업체만. 41차: 엽서 메일 = Google Apps Script · Gmail(예전 EmailJS 아님), 신청서 = Google 폼 -->
         <h2 id="p5" class="policy__h"><span class="policy__no">5</span>국외 이전</h2>
         <p>아래 서비스는 서버가 외국에 있어, 이용자가 해당 기능을 쓰는 순간 개인정보가 인터넷으로 그 나라에 전송됩니다.</p>
         <div class="policy-table">
@@ -176,9 +176,14 @@
             </thead>
             <tbody>
               <tr>
-                <th scope="row" data-label="받는 곳(나라)">EmailJS <span data-edit="pv-emailjs-where">[운영사 · 나라 · 연락처 확인 후 입력]</span></th>
+                <th scope="row" data-label="받는 곳(나라)">Google LLC(미국)<br><a href="https://policies.google.com/privacy">개인정보처리방침</a></th>
                 <td data-label="옮기는 항목">받는 분 메일 주소 · 이름, 보내는 분 이름, 엽서 글 · 그림</td>
-                <td data-label="목적 · 보관 기간">엽서 메일 보내기 · 1절과 같음</td>
+                <td data-label="목적 · 보관 기간">엽서 메일 보내기(Google Apps Script · Gmail) · 1절과 같음</td>
+              </tr>
+              <tr>
+                <th scope="row" data-label="받는 곳(나라)">Google LLC(미국)<br><a href="https://policies.google.com/privacy">개인정보처리방침</a></th>
+                <td data-label="옮기는 항목">이름, 휴대전화 번호, 메일 주소, 만 14세 이상 확인, 수신 동의 여부와 일시</td>
+                <td data-label="목적 · 보관 기간">소식 · 이벤트 받기 신청 접수(Google 폼) · 1절과 같음</td>
               </tr>
               <tr>
                 <th scope="row" data-label="받는 곳(나라)">Google LLC(미국)<br><a href="https://policies.google.com/privacy">개인정보처리방침</a></th>
@@ -262,12 +267,12 @@
           <li><strong>최소 수집</strong> — 엽서 메일처럼 저장할 필요가 없는 정보는 웹진에 남기지 않습니다.</li>
         </ul>
 
-        <!-- 11. ✏️ 교체: 보호책임자 이름 · 역할 · 메일 -->
+        <!-- 11. ✏️ 교체: 보호책임자 이름 · 역할 · 메일. 41차: 사용자 — 팀원 모두, 역할은 '담당자' -->
         <h2 id="p11" class="policy__h"><span class="policy__no">11</span>개인정보 보호책임자</h2>
         <p>개인정보와 관련한 문의 · 불만 · 피해 구제, 열람 청구는 아래로 연락해 주세요. 빠르게 답해 드리겠습니다.</p>
         <dl class="policy-contact">
-          <div><dt>책임자</dt><dd><span data-edit="pv-officer">[이름]</span></dd></div>
-          <div><dt>소속 · 역할</dt><dd><span data-edit="pv-officer-role">하영 고라보게 팀 · [역할]</span></dd></div>
+          <div><dt>책임자</dt><dd><span data-edit="pv-officer">홍람빈, 유지연, 강다현, 석현진, 박태준</span></dd></div>
+          <div><dt>소속 · 역할</dt><dd><span data-edit="pv-officer-role">하영 고라보게 팀 · 담당자</span></dd></div>
           <div><dt>메일</dt><dd><span data-edit="pv-mail-2"><a href="mailto:rjyproject26@gmail.com">rjyproject26@gmail.com</a></span></dd></div>
         </dl>
 
