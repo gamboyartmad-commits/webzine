@@ -14,6 +14,8 @@
 > 7. **Voices(휴대폰 · 세로 화면)**: 사진 왼쪽 · 글 오른쪽, 손가락으로 좌우로 밀면 다음 사람(밀기 안내 한 줄은 손가락 기기에서만).
 > 8. **지도**: 핀 = **물방울 모양 위치 핀**(뾰족한 끝이 실제 자리), 채도를 낮춘 색(명소 #5a7385 · 카페·간식 #b08d47 · 맛집 #b5664c · 가게 #7b8760 · 섞인 묶음 #66574c — `css/map.css` 맨 위). 숫자 동그라미 안내 한 줄(분류 단추 위) + 숫자 동그라미에 마우스를 올리면 말풍선 ‘이 근처 제주어 상호 N곳 · 누르면 펼쳐져요’.
 
+> **46차(2026-10-26)** — 측정 · 검색 점검표 반영(새 맥북에서 GitHub 통합본을 받아 고침 — 이제부터는 이 저장소를 바로 고친다. `.work/` 도구 · 원본 폴더는 맥북 초기화로 없음). ① **대표 주소(canonical)** = 배포 주소(og:url 과 같게)를 여섯 쪽 모두에: index · articles/interview01 · interview02 · en/ · play/postcard/ · privacy. ② **공유 미리보기(og)**: privacy.html(그림 = assets/og-image.jpg), en/index.html(그림 = 글자 없는 assets/card/card-wide.jpg 1600x900, og:locale en_US). 기사 두 편은 40차에 이미 넣음 — 점검표에 '없음'으로 나온 것은 한경 서버가 아직 39차(2026-10-23 09:06 GMT)라서. ③ en/index.html **소개 문장(description)**. ④ index.html **구조화 데이터(JSON-LD)** = WebSite(이름 · 주소 · 소개 · ko). ⑤ 점검표의 'GTM 트리거 없음'(dwell_milestone · intro_open · pc_dwell_milestone · pc_view · scroll_depth · section_view)은 GTM 에서 고칠 일 — 페이지 코드는 그대로
+>
 > **45차(2026-10-26)** — 엽서 쓰기: PC 에서 제목만 너무 크고 다른 섹션 제목과 달라 보이던 것(43차 58px) → **Voices 제목과 같은 크기**(휴대폰 31 · 태블릿 38 · PC 44px, 두 줄 굵게는 그대로). 대신 **엽서 사이트 설명을 키움**: 세 걸음 글 17 · 18 · 20px(css/theme.css `--write-step-size`), 예시 쪽지 = 0.9배, 단추 아래 안내 = 0.78배(최소 14px), 번호 동그라미 2rem. PC 왼쪽 칸 25 → 28rem(css/maker.css 끝)
 >
 > **44차(2026-10-26)** — ① 섹션 라벨을 숫자만('No.01 · Write' → '01', 02 · 03 · 04 — 사용자). ② 김신자 = **'제주어 시인'**(『잘도 아꼽다이』 저자 — 사용자): 인터뷰 엽서 아래 · Voices(quotes.json) · 인터뷰 02 인물 카드 · 이름표 · 그림 설명, 본문 첫 문장 '김신자 제주어 시인은'(원본 `제주어_인터뷰기사/두사람기사.html`). ③ '왜 제주어로 써야 할까요?' 영상 아래 여백 96px → clamp(2.25rem, 1.5rem + 2vw, 3.5rem)(보이는 여백 휴대폰 85 → 25px, PC 73 → 30px — css/maker.css 끝)
