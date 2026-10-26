@@ -48,6 +48,7 @@
    [섹션 큰 제목] '왜 제주어로 써야 할까요?' · '알고 가면 더 재밌는 제주어 상호 지도' · 인터뷰 제목
      --title-size / --title-tracking / --title-lh   크기 / 자간 / 줄 간격(아래 네 제목은 따로)
      --write-title-size                        '당신의 엽서 한 장이 / 제주어를 지킬 수 있어요'(엽서 쓰기) 크기 — 43차부터 두 줄 모두
+     --write-step-size                         엽서 쓰기의 세 걸음 글 크기(예시 쪽지 = 0.9배, 단추 아래 안내 = 0.78배) — 45차
      --voices-title-size / -lh / -tracking     '제주어가 사라진다는 것은 / 어떤 의미인가요?'(Voices) 크기 / 줄 간격 / 자간
      --interviews-title-size                   '사라져가는 제주어를 지키는 사람들'(인터뷰) 크기('인터뷰 —'는 이 크기의 0.55배)
      --map-title-size                          '제주어 상호 지도' 크기
@@ -84,7 +85,8 @@
   --title-size: 34px;
   --title-tracking: -0.025em;
   --title-lh: 1.16;
-  --write-title-size: 32px;   /* 43차: 두 줄 모두 이 크기(예전 30px — 아래 줄은 작았음). 좁은 휴대폰은 css/maker.css 7-10. 이 화면 폭에 맞춰 줄임 */
+  --write-title-size: 31px;   /* 45차: 다른 섹션 제목(Voices)과 같은 크기 — 두 줄 모두. 좁은 휴대폰은 css/maker.css 7-10. 이 화면 폭에 맞춰 줄임 */
+  --write-step-size: 17px;    /* 45차: 엽서 쓰기의 세 걸음 글(예시 쪽지 · 단추 아래 안내는 이 값에 맞춰 — css/maker.css 끝) */
   --voices-title-size: 31px;
   --voices-title-lh: 1.3;
   --voices-title-tracking: -0.029em;
@@ -123,7 +125,8 @@
     --title-size: 44px;
     --title-tracking: -0.025em;
     --title-lh: 1.16;
-    --write-title-size: 46px;   /* 43차: 예전 36px */
+    --write-title-size: 38px;   /* 45차: Voices 제목과 같게(43차 46px) */
+    --write-step-size: 18px;
     --voices-title-size: 38px;
     --voices-title-lh: 1.25;
     --voices-title-tracking: -0.029em;
@@ -163,7 +166,8 @@
     --title-size: 34px;
     --title-tracking: -0.025em;
     --title-lh: 1.16;
-    --write-title-size: 58px;   /* 43차: 예전 42px — 첫 장의 인상(피드백) */
+    --write-title-size: 44px;   /* 45차: Voices 제목과 같게 — 43차 58px 는 제목만 너무 커 보였음(사용자) */
+    --write-step-size: 20px;
     --voices-title-size: 44px;
     --voices-title-lh: 1.22;
     --voices-title-tracking: -0.029em;

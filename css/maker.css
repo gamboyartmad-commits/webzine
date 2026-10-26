@@ -2186,3 +2186,51 @@ html.zoom-open {
   padding-bottom: clamp(2.25rem, 1.5rem + 2vw, 3.5rem);
 }
 
+/* (45차) PC 에서 제목만 너무 크고 다른 섹션 제목과 달라 보이던 것 → 제목은 Voices 제목과 같은 크기(css/theme.css '0.'),
+   대신 엽서 사이트 설명(세 걸음 · 예시 쪽지 · 단추 아래 안내)을 키워 처음 들어온 사람이 무엇을 하는 곳인지 읽기 쉽게(사용자).
+   ✏️ 교체: 세 걸음 글 크기 = css/theme.css 의 --write-step-size(화면 폭마다) */
+.write__flow {
+  gap: var(--space-4);
+  max-width: 32rem;
+}
+
+.write__flow-step {
+  grid-template-columns: 2rem minmax(0, 1fr);
+}
+
+.write__flow-step:not(:last-child)::before {
+  top: 2.2rem;
+  bottom: calc(var(--space-4) * -1 + 0.15rem);
+  left: calc(1rem - 0.75px);
+}
+
+.write__flow-no {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.9375rem;
+}
+
+.write__flow-body {
+  gap: 0.5rem;
+  padding-top: 0.2rem;
+}
+
+.write__flow-label {
+  font-size: var(--write-step-size, var(--text-size));
+}
+
+.write__flow-sample {
+  font-size: calc(var(--write-step-size, var(--text-size)) * 0.9);
+}
+
+.write__cta-note {
+  font-size: max(14px, calc(var(--write-step-size, 17px) * 0.78));
+}
+
+/* PC: 글이 커진 만큼 왼쪽 칸을 넓힌다(25rem → 28rem) */
+@media (min-width: 1024px) {
+  .write__make {
+    grid-template-columns: minmax(0, 28rem) minmax(0, 34rem);
+  }
+}
+
