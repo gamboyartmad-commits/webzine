@@ -2179,3 +2179,10 @@ html.zoom-open {
     gap: var(--space-6);
   }
 }
+
+/* (44차) '왜 제주어로 써야 할까요?' 영상 아래 남는 주황 여백을 줄인다(사용자 — 예전 96px → 보이는 여백 73~85px).
+   ✏️ 교체: 섹션 아래 여백 */
+.write {
+  padding-bottom: clamp(2.25rem, 1.5rem + 2vw, 3.5rem);
+}
+
