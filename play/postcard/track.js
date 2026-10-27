@@ -4,7 +4,8 @@
 // ② 따로 열리면(카카오톡 · 메일 · 링크로 바로): config.js 의 GA4_ID 로 직접 보낸다. 웹진 주소(WEBZINE_DOMAINS)와는 GA4 교차 도메인으로 이어 본다.
 //    v7.15: config.js 의 GTM_ID(웹진과 같은 Google 태그 관리자)도 이때만 불러 이벤트를 dataLayer 로 보낸다(웹진 안에서는 웹진 페이지의 GTM 이 받는다)
 // 보내는 이벤트(모두 pc_ 로 시작 — 웹진 이벤트와 한 속성 안에서 구분):
-//   pc_click(누른 단추) · pc_view(화면) · pc_view_time(화면마다 머문 초) · pc_card_pick · pc_send_open · pc_send_done(method)
+//   pc_click(누른 단추) · pc_view(화면) · pc_view_time(화면마다 머문 초) · pc_card_pick(card · card_id) · pc_send_open(card_id) · pc_send_done(method · card_id)
+//   — v7.21: card_id = 엽서 그림의 ID('pc-card-01' ~ 'pc-card-16', 내 사진 'pc-card-photo' — app.js 의 cardId)
 //   · pc_received_view · 따로 열렸을 때만 pc_dwell_milestone · pc_page_time · page_view(GA4 기본)
 // 단추 이름에는 사람이 쓴 글(편지 · 이름 · 게시판 글)을 담지 않는다 — id · data-track · 정해 둔 이름만.
 // 확인: 주소 끝에 ?track-debug → 화면 왼쪽 아래 · 콘솔에 보낸 이벤트가 뜬다(GA4 ID 가 없어도).

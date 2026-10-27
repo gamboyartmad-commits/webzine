@@ -1509,26 +1509,15 @@ button.map__item {
     --map-h: clamp(min(26rem, var(--map-h-room)), calc(78 * var(--map-vh)), 47.5rem);
   }
 
-  /* 왼쪽에 제목, 오른쪽 아래에 안내 · 범례 */
-  .map__head {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: var(--space-6);
-  }
-
+  /* 제목('제주어 상호 지도') 바로 아래에 안내 · 범례를 한 줄씩, 왼쪽 맞춤(51차 — 예전에는 제목 오른쪽 아래에 오른쪽 맞춤) */
   .map__guide {
     flex-direction: column;
     flex-wrap: nowrap;
-    align-items: flex-end;
-    padding-bottom: var(--space-1);
+    align-items: flex-start;
   }
 
   .map__cluster-hint {
     flex-basis: auto;
-  }
-
-  .map__guide .map__filter-row {
-    justify-content: flex-end;
   }
 
   .map__sheet {

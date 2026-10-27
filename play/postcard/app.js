@@ -27,6 +27,12 @@ const CARDS = [
   { src: `images/card-16.webp${IMG_V}`, alt: '돌집 앞 분홍 벤치에 앉은 노부부' },
 ];
 
+// 엽서 그림마다 정해 둔 ID(v7.21 성과 측정): 그림 파일 번호를 따른다 — card-03.webp = 'pc-card-03', 내 사진 = 'pc-card-photo'.
+// 고르기 띠의 단추(id · data-card-id)와 측정 이벤트(pc_card_pick · pc_send_open · pc_send_done 의 card_id)에 같은 값이 들어간다.
+// 띠에서 빼거나(hidden) 순서를 바꿔도 그림의 ID 는 그대로 — 그림 하나에 ID 하나
+const cardId = (index) => `pc-card-${String(index + 1).padStart(2, '0')}`;
+const PHOTO_CARD_ID = 'pc-card-photo';
+
 const cardImage = document.getElementById('cardImage');
 const cardPhoto = document.getElementById('cardPhoto');
 const cardMessage = document.getElementById('cardMessage');
@@ -66,8 +72,10 @@ for (let copy = 0; copy < COPIES; copy++) {
     btn.type = 'button';
     btn.className = 'strip-item';
     btn.dataset.index = index;
+    btn.dataset.cardId = cardId(index);  // 어느 벌이든 같은 그림이면 같은 값(GTM 의 '클릭 요소'로 고를 때)
     btn.innerHTML = `<img src="${card.src}" alt="${card.alt} 엽서" draggable="false">`;
-    if (copy !== MIDDLE) {               // 화면 읽기 프로그램에는 한 벌만 알려 줌
+    if (copy === MIDDLE) btn.id = cardId(index);   // id 는 한 페이지에 하나뿐이어야 해서 가운데 벌에만
+    else {                               // 화면 읽기 프로그램에는 한 벌만 알려 줌
       btn.tabIndex = -1;
       btn.setAttribute('aria-hidden', 'true');
     }
@@ -94,8 +102,11 @@ function selectCard(index) {
   cardImage.alt = CARDS[index].alt + ' 엽서';
   showPhoto(false);
   if (changed && onCardChange) onCardChange(index);
-  if (changed) hy('pc_card_pick', { card: index + 1 });
+  if (changed) hy('pc_card_pick', { card: index + 1, card_id: cardId(index) });
 }
+
+// 지금 엽서에 들어간 것의 ID(내 사진이 보이면 내 사진) — 보내기 이벤트에 함께 실어, 실제로 보낸 엽서 그림을 센다
+const pickedCardId = () => (photoActive ? PHOTO_CARD_ID : cardId(currentCard));
 
 // 고른 그림을 동화 속 봉투 안 엽서에도 똑같이
 function syncPreview() {
@@ -357,12 +368,14 @@ document.getElementById('photoReset').addEventListener('click', () => {
 });
 
 function showPhoto(on) {
+  const was = photoActive;
   photoActive = on && !!photoUrl;
   cardPhotoView.hidden = !photoActive;
   photoTools.hidden = !photoActive;
   if (photoActive) drawPhotoView();
   syncPreview();
   markPicked();   // v7.16: 사진 칸 아래 설명 줄('직접 찍은 사진으로 엽서 만들기' 등)은 뺐다(사용자)
+  if (photoActive && !was) hy('pc_card_pick', { card: 0, card_id: PHOTO_CARD_ID });   // v7.21: 내 사진을 고름(card 0)
 }
 
 photoTile.addEventListener('click', () => {
@@ -1414,7 +1427,7 @@ function openSend() {
   if (KAKAO_JS_KEY) kakao().catch(() => {});
   setKakaoAgain(false);
   sendPanel.show();   // 창이 아니라 엽서 아래에 펼쳐지는 버튼 목록
-  hy('pc_send_open', { jeju: jejuApplied ? 'yes' : 'no' });   // 제주어로 바꾼 뒤 보내기 화면이 열림
+  hy('pc_send_open', { jeju: jejuApplied ? 'yes' : 'no', card_id: pickedCardId() });   // 제주어로 바꾼 뒤 보내기 화면이 열림(v7.21: 어떤 엽서 그림으로)
 }
 
 function closeSend() {
@@ -1434,7 +1447,7 @@ const viewBoardBtn = document.getElementById('viewBoardBtn');
 // 다시 쓰려면 '← 편지 다시 쓰기'로 돌아감
 function finishSend(text, method = '') {
   setSheetStatus(text || '보냈어요!');
-  hy('pc_send_done', { method });   // v7.11 성과 측정: 어떤 방법으로 보냈는지(track.js)
+  hy('pc_send_done', { method, card_id: pickedCardId() });   // v7.11 성과 측정: 어떤 방법으로 보냈는지(track.js), v7.21: 어떤 엽서 그림을 보냈는지
 }
 
 // 엔딩: 편지가 제주 바람을 타고 하늘로 날아가고, 마지막 문장과 로고. 보낸 뒤 한 번만 저절로 내려감
