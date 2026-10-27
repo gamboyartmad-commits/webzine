@@ -426,10 +426,6 @@
             <p class="eyebrow">04</p>
             <!-- ✏️ 교체: 섹션 제목 -->
             <h2 id="map-title" class="section-title map__title" data-i18n-html="map.title" data-edit="map-title"><span class="map__title-top">이름에 담긴 뜻을 알려 주는</span><br>제주어 상호 지도</h2>
-            <!-- ✏️ 교체: 지도를 소개하는 글(곳 수 100 은 데이터를 바꾸면 함께 고친다. '2026년 10월 기준' = 장소를 확인한 때 — 영어 웹진의 'checked in October 2026' 과 같게) -->
-            <div class="map__desc-box" data-edit="map-desc" data-edit-block="map__desc">
-              <p class="map__desc" data-i18n-html="map.desc"><span class="keep">2026년 10월 기준,</span> <span class="keep">제주어 이름을 가진</span> <span class="keep">맛집 · 카페 · 명소 100곳과</span> <span class="keep">이름에 담긴 뜻을 모았어요.</span></p>
-            </div>
           </div>
 
           <div class="map__guide" data-reveal style="--reveal-delay: 0.1s">
@@ -492,6 +488,12 @@
               </svg>
             </div>
           </div>
+        </div>
+
+        <!-- 지도 바로 아래 소개 글(css/map.css 의 .map__desc-box · .map__desc).
+             ✏️ 교체: 곳 수 100 은 데이터를 바꾸면 함께 고친다. '2026년 10월 기준' = 장소를 확인한 때 — 영어 웹진의 'checked in October 2026' 과 같게 -->
+        <div class="map__desc-box" data-reveal data-edit="map-desc" data-edit-block="map__desc">
+          <p class="map__desc" data-i18n-html="map.desc"><span class="keep">2026년 10월 기준,</span> <span class="keep">제주어 이름을 가진</span> <span class="keep">맛집 · 카페 · 명소 100곳과</span> <span class="keep">이름에 담긴 뜻을 모았어요.</span></p>
         </div>
 
         <!-- 장소 목록 — js/map.js 가 장소 데이터를 읽어 채운다(지도를 볼 수 없을 때의 대안이기도 하다).

@@ -1651,7 +1651,7 @@ html.maker-open {
   border-top: 1.5px dashed var(--paper-400);
 }
 
-/* 'Q&A' 단추: 위 '마지막 한 장'과 같은 글자 + 엽서 쓰기 창의 '바꾼 글 크게 보기'(.maker__plain)와 같은 +/− 동그라미 */
+/* 'Q&A' 단추: 위 '마지막 한 장'과 같은 글자 + 앞에 삼각형(▶ 접힘 → ▼ 펼침, 돌아가며 바뀐다) — 누르면 펼쳐진다는 것이 한눈에 */
 .write-again__qa-toggle {
   display: inline-flex;
   align-items: center;
@@ -1670,23 +1670,32 @@ html.maker-open {
   display: none;
 }
 
+/* 삼각형(테두리로 그린다): 접혀 있으면 오른쪽(▶), 펼치면 아래(▼) */
 .write-again__qa-toggle::before {
-  content: "+";
-  display: grid;
+  content: "";
   flex: none;
-  place-items: center;
-  width: 1.6em;
-  height: 1.6em;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  font-size: 1.1em;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 1;
+  width: 0;
+  height: 0;
+  border-block: 0.42rem solid transparent;
+  border-inline-start: 0.66rem solid currentColor;
+  transition: rotate 0.2s var(--ease-out);
 }
 
 .write-again__qa[open] .write-again__qa-toggle::before {
-  content: "−";
+  rotate: 90deg;
+}
+
+/* 마우스를 올리면 글자에 밑줄 — 눌러지는 곳이라는 표시 */
+.write-again__qa-toggle:hover {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .write-again__qa-toggle::before {
+    transition: none;
+  }
 }
 
 /* 펼친 질문 · 답: 질문(h3) = 작은 굵은 글 · 답 = 작은 글. 넓은 화면은 두 칸, 휴대폰은 한 칸 */
