@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- ✏️ 교체: 웹진 이름·부제·소개 문장(아래 og:site_name · og:title · og:description 도 같게).
        탭 제목의 영어 · 제주어는 data/i18n/*.json 의 meta.title. 소개 문장 · 공유 미리보기(og)는 한국어 하나뿐입니다(검색 · SNS 는 스크립트를 실행하지 않아 바꿔 넣어도 소용이 없다) -->
-  <title data-i18n="meta.title">하영 고라보게</title>
+  <title data-i18n="meta.title">하영 고라보게 — 제주어 엽서 · 인터뷰 · 상호 지도 웹진</title>
   <meta name="description" content="사라져 가는 제주어를 지키는 사람들의 목소리와 인터뷰, 제주어로 쓰는 엽서, 제주어 상호 지도 100곳을 담은 웹진">
   <meta name="theme-color" content="#e1653a">
 
@@ -22,7 +22,7 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:site_name" content="하영 고라보게">
-  <meta property="og:title" content="하영 고라보게">
+  <meta property="og:title" content="하영 고라보게 — 제주어 엽서 · 인터뷰 · 상호 지도 웹진">
   <meta property="og:description" content="사라져 가는 제주어를 지키는 사람들의 목소리와 인터뷰, 제주어로 쓰는 엽서, 제주어 상호 지도 100곳을 담은 웹진">
   <meta property="og:url" content="https://lxwebzine.hankyung.com/2026-1/team1/">   <!-- 38차: 배포 주소(한경)로 -->
   <meta property="og:image" content="https://lxwebzine.hankyung.com/2026-1/team1/assets/og-image.jpg">
@@ -369,14 +369,49 @@
           </p>
         </header>
 
-        <!-- 엽서 두 장이 놓이는 자리 — js/postcards.js 가 data/interviews.json 을 읽어 그린다(이 div 안은 비워 둔다).
+        <!-- 엽서 두 장이 놓이는 자리 — js/postcards.js 가 data/interviews.json 을 읽어 그린다(안에 적어 둔 엽서는 스크립트가 같은 모양으로 다시 그린다).
+             안에 적어 둔 엽서 두 장 = js/postcards.js 가 그리는 것과 똑같은 마크업. 스크립트를 실행하지 않는 검색 · AI 로봇도 기사 링크(a href)를 찾게 하려고 둔다.
+             data/interviews.json 의 제목 · 이름 · 소속 · 사진 · 링크를 바꾸면 여기도 같게 바꾸세요(화면에는 스크립트가 그린 것이 보입니다).
              ✏️ 교체: 인터뷰 제목 · 인터뷰이 이름 · 소속 · 한 줄 요약 · 대표 사진 경로는 data/interviews.json 에서,
              사진 파일은 assets/interviews/ 에서 바꿉니다(가로 3:2 사진 권장).
              바다색 엽서와 기사 맨 위에서는 사진의 위아래가, 휴대폰의 세로 엽서에서는 양옆이 잘려 보입니다 — 얼굴이 잘리면 그 항목에
              "coverPos": "50% 20%" 처럼 보여 줄 중심(가로 세로)을 더하세요.
              제목은 20자 안팎, 한 줄 요약은 40자 안팎이 보기 좋습니다(더 길면 글자가 작아지고, 아주 길면 끝이 잘립니다).
              "variant" 는 엽서 디자인: "a" = 감귤(사진이 가득) · "b" = 바다(흰 테두리 사진) -->
-        <div class="pcards" data-pcards></div>
+        <div class="pcards is-ready" data-pcards data-count="2">
+          <div class="pcards__item" data-reveal style="--reveal-delay: 0.00s">
+            <article class="pcard pcard--a pcard--direct is-live" data-id="01" data-flipped="false" aria-labelledby="pcard-1-title">
+              <div class="pcard__inner">
+                <div class="pcard__face pcard__front">
+                  <img class="pcard__photo" src="assets/interviews/interview-01-thumb.jpg" alt="제주어 자료와 지도, 책을 펼쳐 놓은 책상에 둘러앉아 이야기를 나누는 네 사람을 그린 그림" loading="lazy" decoding="async" style="object-position: 50% 50%">
+                  <p class="pcard__tag" lang="en"><span><span class="pcard__tag-word">INTERVIEW</span> <b>01</b></span></p>
+                  <div class="pcard__label">
+                    <span class="tape pcard__tape" aria-hidden="true"></span>
+                    <h3 class="pcard__title" id="pcard-1-title" data-len="s">문화를 지키는 일입니다</h3>
+                  </div>
+                  <a class="pcard__flip pcard__go" href="articles/interview01.html"><span class="visually-hidden">문화를 지키는 일입니다 — 읽으러 가기</span><span class="pcard__turn" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13.500M13 6.500l5.500 5.500-5.500 5.500"/></svg></span></a>
+                </div>
+              </div>
+            </article>
+            <p class="pcards__who"><span class="pcards__who-label">만난 사람</span><b class="pcards__who-name">김미진 · 백종진 · 정예실</b><span class="pcards__who-aff">제주학연구센터 · 제주문화원 · 제주어보전회</span></p>
+          </div>
+          <div class="pcards__item" data-reveal style="--reveal-delay: 0.12s">
+            <article class="pcard pcard--a pcard--direct is-live" data-id="02" data-flipped="false" aria-labelledby="pcard-2-title">
+              <div class="pcard__inner">
+                <div class="pcard__face pcard__front">
+                  <img class="pcard__photo" src="assets/interviews/interview-02-thumb.jpg" alt="노을 지는 제주 바닷가 돌담 곁에서 할머니의 이야기를 녹음하며 귀 기울이는 두 사람을 그린 그림" loading="lazy" decoding="async" style="object-position: 50% 55%">
+                  <p class="pcard__tag" lang="en"><span><span class="pcard__tag-word">INTERVIEW</span> <b>02</b></span></p>
+                  <div class="pcard__label">
+                    <span class="tape pcard__tape" aria-hidden="true"></span>
+                    <h3 class="pcard__title" id="pcard-2-title" data-len="s">어멍을 기억하는 일입니다</h3>
+                  </div>
+                  <a class="pcard__flip pcard__go" href="articles/interview02.html"><span class="visually-hidden">어멍을 기억하는 일입니다 — 읽으러 가기</span><span class="pcard__turn" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13.500M13 6.500l5.500 5.500-5.500 5.500"/></svg></span></a>
+                </div>
+              </div>
+            </article>
+            <p class="pcards__who"><span class="pcards__who-label">만난 사람</span><b class="pcards__who-name">신의주 · 김신자</b><span class="pcards__who-aff">책방 ‘어나더 페이지’ · 제주어 시인</span></p>
+          </div>
+        </div>
 
       </div>
     </section>
