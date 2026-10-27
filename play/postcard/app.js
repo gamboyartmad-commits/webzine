@@ -7,30 +7,31 @@ const hy = (name, params) => { try { if (window.hyTrack) window.hyTrack(name, pa
 
 // 그림을 고치면 IMG_V를 올려서 브라우저에 남은 예전 그림 대신 새 그림을 받게 함
 const IMG_V = '?v=3';   // v2: 미리 찍혀 있던 소인을 지운 그림, v3: 우표를 75%로 줄인 그림 (_tools/shrink_card_stamp.py)
+// id = 성과 측정용 엽서 ID(v7.22): 고르기 띠에 보이는 차례대로 'pc-card-01' ~ 'pc-card-13'(띠에서 뺀 hidden 그림은 고를 수 없어 ID 가 없다).
+// 새 그림을 띠에 더하면 다음 번호(pc-card-14 …)를 주고, 이미 준 번호는 바꾸지 않는다(바꾸면 지난 측정과 어긋난다)
 const CARDS = [
-  { src: `images/card-01.webp${IMG_V}`, alt: '해녀가 헤엄치는 바다' },
-  { src: `images/card-02.webp${IMG_V}`, alt: '비 오는 창밖의 꽃밭' },
-  { src: `images/card-03.webp${IMG_V}`, alt: '노을 진 바닷가의 돌하르방' },
-  { src: `images/card-04.webp${IMG_V}`, alt: '오름 길에서 내려다본 바닷가 마을' },
+  { src: `images/card-01.webp${IMG_V}`, alt: '해녀가 헤엄치는 바다', id: 'pc-card-01' },
+  { src: `images/card-02.webp${IMG_V}`, alt: '비 오는 창밖의 꽃밭', id: 'pc-card-02' },
+  { src: `images/card-03.webp${IMG_V}`, alt: '노을 진 바닷가의 돌하르방', id: 'pc-card-03' },
+  { src: `images/card-04.webp${IMG_V}`, alt: '오름 길에서 내려다본 바닷가 마을', id: 'pc-card-04' },
   { src: `images/card-05.webp${IMG_V}`, alt: '협재 바닷가 모래언덕', hidden: true },
   { src: `images/card-06.webp${IMG_V}`, alt: '바위 위로 쏟아지는 폭포', hidden: true },
-  { src: `images/card-07.webp${IMG_V}`, alt: '물웅덩이가 고인 현무암 바닷가' },
-  { src: `images/card-08.webp${IMG_V}`, alt: '창문 너머 들판의 말' },
-  { src: `images/card-09.webp${IMG_V}`, alt: '고글을 쓰고 오토바이에 탄 강아지' },
-  { src: `images/card-10.webp${IMG_V}`, alt: '해녀의 숨비소리 벽화 앞을 걷는 해녀' },
+  { src: `images/card-07.webp${IMG_V}`, alt: '물웅덩이가 고인 현무암 바닷가', id: 'pc-card-05' },
+  { src: `images/card-08.webp${IMG_V}`, alt: '창문 너머 들판의 말', id: 'pc-card-06' },
+  { src: `images/card-09.webp${IMG_V}`, alt: '고글을 쓰고 오토바이에 탄 강아지', id: 'pc-card-07' },
+  { src: `images/card-10.webp${IMG_V}`, alt: '해녀의 숨비소리 벽화 앞을 걷는 해녀', id: 'pc-card-08' },
   { src: `images/card-11.webp${IMG_V}`, alt: '돌담 사이 바다로 난 길', hidden: true },
-  { src: `images/card-12.webp${IMG_V}`, alt: '돌집 옆 들판에 선 말' },
+  { src: `images/card-12.webp${IMG_V}`, alt: '돌집 옆 들판에 선 말', id: 'pc-card-09' },
   // 13~16: 2026-10-21 추가 (원본 _tools/assets/cards/, 미리 찍힌 소인은 _tools/clean_card_postmark.py로 지움)
-  { src: `images/card-13.webp${IMG_V}`, alt: '바닷가 모래밭을 뛰어가는 하얀 강아지' },
-  { src: `images/card-14.webp${IMG_V}`, alt: '현무암 바닷가에서 책을 보는 사람' },
-  { src: `images/card-15.webp${IMG_V}`, alt: '오름 위에 나란히 앉아 들판을 바라보는 두 사람' },
-  { src: `images/card-16.webp${IMG_V}`, alt: '돌집 앞 분홍 벤치에 앉은 노부부' },
+  { src: `images/card-13.webp${IMG_V}`, alt: '바닷가 모래밭을 뛰어가는 하얀 강아지', id: 'pc-card-10' },
+  { src: `images/card-14.webp${IMG_V}`, alt: '현무암 바닷가에서 책을 보는 사람', id: 'pc-card-11' },
+  { src: `images/card-15.webp${IMG_V}`, alt: '오름 위에 나란히 앉아 들판을 바라보는 두 사람', id: 'pc-card-12' },
+  { src: `images/card-16.webp${IMG_V}`, alt: '돌집 앞 분홍 벤치에 앉은 노부부', id: 'pc-card-13' },
 ];
 
-// 엽서 그림마다 정해 둔 ID(v7.21 성과 측정): 그림 파일 번호를 따른다 — card-03.webp = 'pc-card-03', 내 사진 = 'pc-card-photo'.
-// 고르기 띠의 단추(id · data-card-id)와 측정 이벤트(pc_card_pick · pc_send_open · pc_send_done 의 card_id)에 같은 값이 들어간다.
-// 띠에서 빼거나(hidden) 순서를 바꿔도 그림의 ID 는 그대로 — 그림 하나에 ID 하나
-const cardId = (index) => `pc-card-${String(index + 1).padStart(2, '0')}`;
+// 엽서 그림의 ID(위 CARDS 의 id), 내 사진 = 'pc-card-photo'.
+// 고르기 띠의 단추(id · data-card-id)와 측정 이벤트(pc_card_pick · pc_send_open · pc_send_done 의 card_id)에 같은 값이 들어간다
+const cardId = (index) => CARDS[index].id || '';
 const PHOTO_CARD_ID = 'pc-card-photo';
 
 const cardImage = document.getElementById('cardImage');
