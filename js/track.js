@@ -275,9 +275,9 @@ function watchDwell() {
   window.addEventListener('pagehide', () => flush('leave'));
 }
 
-// 얼마나 내려 읽었는지: 25 · 50 · 75 · 90%(한 번씩)
+// 얼마나 내려 읽었는지: 10 · 25 · 50 · 75 · 90%(한 번씩 — 54차: 10% 추가)
 function watchScrollDepth() {
-  const marks = [25, 50, 75, 90];
+  const marks = [10, 25, 50, 75, 90];
   const done = new Set();
   let ticking = false;
   const check = () => {
