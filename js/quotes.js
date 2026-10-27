@@ -24,7 +24,8 @@ const TEXT = {
     ? tHTML('quotes.thumb-name', '{n}번째 인용 보기 — {name}', { n, name })
     : tHTML('quotes.thumb', '{n}번째 인용 보기', { n })),
   get empty() { return t('quotes.empty', '인용 데이터가 비어 있어요(data/quotes.json 확인)'); },
-  // ✏️ 교체: 인터뷰 기사로 가는 링크 글자(data/quotes.json 에 "interview" 주소가 있는 사람만)
+  // ✏️ 교체: 인터뷰 기사로 가는 링크 글자(data/quotes.json 에 "interview" 주소가 있는 사람만).
+  // 53차(사용자): 링크를 모두 뺐다 — 다시 달려면 그 사람 항목에 "interview": "articles/interview01.html#02-1" 처럼 적는다
   get more() { return tHTML('quotes.more', '인터뷰 전문 읽기'); },
 };
 
