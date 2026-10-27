@@ -361,8 +361,7 @@
         <header class="interviews__head" data-reveal>
           <p class="eyebrow">03</p>
           <!-- ✏️ 교체: 섹션 제목(<span> 으로 감싼 부분은 좁은 화면에서 한 덩어리로 줄이 바뀝니다)과 소개 문단 -->
-          <h2 id="interviews-title" class="section-title interviews__title" data-i18n-html="interviews.title" data-edit="interviews-title"><small>인터뷰 —</small> <span>사라져가는 제주어를 지키는</span> <span>사람들</span></h2>
-          <!-- ✏️ 교체: 안내 문구(첫째 줄 = 마우스를 쓰는 기기, 둘째 줄 = 손가락으로 누르는 기기. 둘 중 하나만 보인다) -->
+          <h2 id="interviews-title" class="section-title interviews__title" data-i18n-html="interviews.title" data-edit="interviews-title"><small>인터뷰 —</small> <span>사라져가는 제주어를 지키는</span> <span>사람들</span></h2>          <!-- ✏️ 교체: 안내 문구(첫째 줄 = 마우스를 쓰는 기기, 둘째 줄 = 손가락으로 누르는 기기. 둘 중 하나만 보인다) -->
           <p class="pcards-hint">
             <span class="pcards-hint__mouse" data-i18n="pcards.hint-mouse">엽서를 누르면 인터뷰를 읽을 수 있어요</span>
             <span class="pcards-hint__touch" data-i18n="pcards.hint-touch">엽서를 누르면 인터뷰를 읽을 수 있어요</span>
@@ -426,10 +425,10 @@
           <div class="map__intro" data-reveal>
             <p class="eyebrow">04</p>
             <!-- ✏️ 교체: 섹션 제목 -->
-            <h2 id="map-title" class="section-title map__title" data-i18n-html="map.title" data-edit="map-title"><span class="map__title-top">알고 가면 더 재밌는</span><br>제주어 상호 지도</h2>
-            <!-- ✏️ 교체: 지도를 소개하는 글(곳 수 100 은 데이터를 바꾸면 함께 고친다) -->
+            <h2 id="map-title" class="section-title map__title" data-i18n-html="map.title" data-edit="map-title"><span class="map__title-top">이름에 담긴 뜻을 알려 주는</span><br>제주어 상호 지도</h2>
+            <!-- ✏️ 교체: 지도를 소개하는 글(곳 수 100 은 데이터를 바꾸면 함께 고친다. '2026년 10월 기준' = 장소를 확인한 때 — 영어 웹진의 'checked in October 2026' 과 같게) -->
             <div class="map__desc-box" data-edit="map-desc" data-edit-block="map__desc">
-              <p class="map__desc" data-i18n-html="map.desc">제주어가 담긴 맛집 · 카페 · 명소 100곳</p>
+              <p class="map__desc" data-i18n-html="map.desc"><span class="keep">2026년 10월 기준,</span> <span class="keep">제주어 이름을 가진</span> <span class="keep">맛집 · 카페 · 명소 100곳과</span> <span class="keep">이름에 담긴 뜻을 모았어요.</span></p>
             </div>
           </div>
 
@@ -533,6 +532,31 @@
             <h2 id="write-again-title" class="write-again__title" data-i18n="again.title" data-edit="again-title">이제, 당신의 제주어 엽서를 써 볼 차례예요</h2>
             <p class="write-again__lead" data-i18n="again.lead" data-edit="again-lead">평소 말투로 쓰면 제주어로 바꿔 드려요. 가족 · 친구 · 나에게 한 장 보내 보세요.</p>
             <button type="button" class="write__btn" data-open-maker data-track-location="bottom" data-fab-avoid><span class="write__btn-text" data-i18n="write.cta">제주어 엽서 써보기</span><svg class="write__btn-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8 4.5H4.5v11h11V12M11 4.5h4.5V9M15.2 4.8 9 11"/></svg></button>
+            <!-- 단추 아래 점선 + 'Q&A' 토글(css/maker.css '7-9.' 의 .write-again__qa) — 누르면 질문(h3)과 한 문장 답이 펼쳐진다. 처음에는 접혀 있다.
+                 <details> 라 글이 처음부터 HTML 에 있다 → 검색 · AI 가 펼치지 않고도 '마지막 날 · 제주어를 몰라도 · 보내는 법 · 소멸 위기'의 답을 읽는다(스크립트로 불러오지 않는다).
+                 ✏️ 교체: '여행은 지나가도, 글은 남으니까'는 공유 그림(assets/og-image.jpg)의 문구, 보내는 법은 엽서 사이트(play/postcard/)의 보내기 단추와 같게,
+                 유네스코 문장의 근거 = README-webzine '12-2. 유네스코 문장의 근거'(출처는 푸터 '출처'에도). 처음부터 펼쳐 두려면 <details> 에 open 을 더한다 -->
+            <details class="write-again__qa">
+              <summary class="write-again__qa-toggle" lang="en">Q&amp;A</summary>
+              <div class="write-again__notes">
+                <div>
+                  <h3 data-edit="again-q1">제주 여행 마지막 날, 무엇을 남길까요?</h3>
+                  <p data-edit="again-a1">여행은 지나가도, 글은 남으니까. 소중한 사람에게 제주어 엽서 한 장을 남겨 보세요.</p>
+                </div>
+                <div>
+                  <h3 data-edit="again-q2">제주어를 몰라도 쓸 수 있나요?</h3>
+                  <p data-edit="again-a2">네. 연인 · 친구 · 가족, 그리고 나에게 평소 말투로 편지를 쓰면 제주어로 바꿔 드려요.</p>
+                </div>
+                <div>
+                  <h3 data-edit="again-q3">다 쓴 엽서는 어떻게 보내나요?</h3>
+                  <p data-edit="again-a3">카카오톡 · 메일로 보내거나, 링크를 복사하거나, 이미지로 저장할 수 있어요.</p>
+                </div>
+                <div>
+                  <h3 data-edit="again-q4">제주어는 얼마나 위기인가요?</h3>
+                  <p data-edit="again-a4">2010년 12월 유네스코는 제주어를 소멸 위기 언어 5단계 가운데 4단계, ‘아주 심각하게 위기에 처한 언어’로 분류했어요.</p>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -568,6 +592,8 @@
           <h2 class="site-footer__heading" data-i18n="footer.sources">출처</h2>
           <ul class="site-footer__list site-footer__list--small" role="list">
             <li><span data-i18n="footer.credit-map">지도</span>: <a href="https://maps.eox.at">Terrain Light</a> © <a href="https://eox.at">EOX</a>, <span data-i18n="footer.credit-map-data">지도 데이터</span> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</li>
+            <!-- '마지막 한 장' Q&A 의 유네스코 문장 근거(README-webzine '12-2.') -->
+            <li data-edit="footer-credit-unesco">유네스코 소멸 위기 언어 단계: 서울신문 등 국내 보도, <a href="https://en.wikipedia.org/wiki/Jeju_language">위키백과 ‘Jeju language’</a></li>
             <li data-i18n="footer.credit-fonts">글꼴: Pretendard(OFL), 나눔손글씨 가람연꽃 © NAVER, 고운바탕(OFL), 나눔손글씨 펜(OFL), Noto Sans KR · Noto Serif KR 옛한글 조각(OFL)</li>
             <li data-i18n="footer.credit-other" data-edit="footer-credit-other">그 밖의 사진 · 그림: 팀이 직접 찍은 사진을 바탕으로 AI 도구로 만들었어요.</li>
           </ul>

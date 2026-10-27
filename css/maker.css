@@ -1644,6 +1644,80 @@ html.maker-open {
   text-wrap: pretty;
 }
 
+/* 단추 아래 'Q&A' 토글(<details>): 점선으로 위와 나눈다. 처음에는 접혀 있고, 누르면 질문 · 답이 펼쳐진다 */
+.write-again__qa {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1.5px dashed var(--paper-400);
+}
+
+/* 'Q&A' 단추: 위 '마지막 한 장'과 같은 글자 + 엽서 쓰기 창의 '바꾼 글 크게 보기'(.maker__plain)와 같은 +/− 동그라미 */
+.write-again__qa-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem; /* 손가락으로 누르기 좋은 높이 */
+  color: var(--tangerine-700);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.write-again__qa-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.write-again__qa-toggle::before {
+  content: "+";
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.6em;
+  height: 1.6em;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 1.1em;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.write-again__qa[open] .write-again__qa-toggle::before {
+  content: "−";
+}
+
+/* 펼친 질문 · 답: 질문(h3) = 작은 굵은 글 · 답 = 작은 글. 넓은 화면은 두 칸, 휴대폰은 한 칸 */
+.write-again__notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-5);
+  padding-top: var(--space-2);
+  color: var(--basalt-700);
+  font-size: var(--text-small);
+  line-height: 1.6;
+}
+
+.write-again__notes h3 {
+  margin: 0 0 0.15em;
+  color: var(--basalt-900);
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.write-again__notes p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+@media (max-width: 599px) {
+  .write-again__notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* 우표가 없는 단추: 오른쪽 우표 자리(--btn-h × 1.3)를 왼쪽과 같게 */
 .write-again .write__btn {
   padding-right: calc(var(--btn-h) * 0.5);
