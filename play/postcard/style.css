@@ -1562,6 +1562,24 @@ body::after { background: var(--grain); opacity: 0.5; }
 .bar-btn:focus-visible { outline: 2px solid var(--tale-ink); outline-offset: 2px; }
 .bar-round { width: 38px; padding: 0; font-family: var(--story-font); font-weight: 700; }
 
+/* v7.23: '게시판' → '게시판 보러가기'로 글이 길어져서 — 단추 글은 한 줄로, 왼쪽(로고 · 영상) 묶음과 오른쪽 묶음 사이도 띄운다.
+   휴대폰(440px 이하)에서는 단추 여백 · 글자를 조금 줄여 한 줄에 들어가게, 아주 좁은 화면(359px 이하)만 두 줄을 허락 */
+.tale-bar { gap: 8px; }
+.bar-btn { white-space: nowrap; }
+
+@media (max-width: 440px) {
+  .tale-bar-start { gap: 6px; }
+  .tale-bar-actions { gap: 6px; }
+  .bar-btn { padding: 0 10px; font-size: 13px; }
+  .bar-home { padding: 0 10px 0 8px; gap: 4px; }
+  .bar-home svg { width: 15px; height: 15px; }
+  .bar-round { padding: 0; }
+}
+
+@media (max-width: 359px) {
+  .bar-btn { white-space: normal; line-height: 1.25; }
+}
+
 /* ---------- SCENE 01 · 02 앞부분: 멈춘 화면 안의 제주 ---------- */
 
 .tale[hidden] { display: none; }
