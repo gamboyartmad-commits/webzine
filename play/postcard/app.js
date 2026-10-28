@@ -280,6 +280,7 @@ const photoView = { zoom: 1, cx: 0.5, cy: 0.5 };
 const PHOTO_ZOOM_MAX = 4;
 const cardPhotoView = document.getElementById('cardPhotoView');
 const photoTools = document.getElementById('photoTools');
+const photoRemoveBtn = document.getElementById('photoRemoveBtn');
 
 // 그림 자리(w×h)에 보일 사진의 부분: 꽉 채우는 크기 × zoom, 가운데 = (cx, cy), 사진 밖으로는 못 나가게
 function photoWindow(img, w, h) {
@@ -373,6 +374,7 @@ function showPhoto(on) {
   photoActive = on && !!photoUrl;
   cardPhotoView.hidden = !photoActive;
   photoTools.hidden = !photoActive;
+  photoRemoveBtn.hidden = !photoActive;
   if (photoActive) drawPhotoView();
   syncPreview();
   markPicked();   // v7.16: 사진 칸 아래 설명 줄('직접 찍은 사진으로 엽서 만들기' 등)은 뺐다(사용자)
@@ -420,6 +422,25 @@ photoInput.addEventListener('change', async () => {
   showPhoto(true);
 
   setStatus('사진을 넣었어요. 끌어서 옮기고, 두 손가락으로 벌리거나 + − 단추로 크기를 바꿀 수 있어요.');
+});
+
+// v7.24: 사진 오른쪽 위 'x' — 넣은 사진을 지우고 띠에서 고른 엽서 그림으로. '내 사진 추가하기' 칸도 처음처럼
+function removePhoto() {
+  const hadFocus = document.activeElement === photoRemoveBtn;
+  if (photoUrl) URL.revokeObjectURL(photoUrl);
+  photoUrl = null;
+  cardPhoto.removeAttribute('src');
+  photoThumb.removeAttribute('src');
+  photoThumb.hidden = true;
+  photoTile.classList.remove('has-photo');
+  photoLabel.innerHTML = '<b>+</b>내 사진 추가하기';
+  showPhoto(false);
+  if (hadFocus) photoTile.focus({ preventScroll: true });   // 키보드로 지웠으면 다음 자리로
+  setStatus('사진을 지웠어요. 다시 넣으려면 \'내 사진 추가하기\'를 눌러 주세요.');
+}
+photoRemoveBtn.addEventListener('click', (e) => {
+  e.stopPropagation();   // 엽서 누르기(가까운 칸으로)와 겹치지 않게
+  removePhoto();
 });
 
 markPicked();

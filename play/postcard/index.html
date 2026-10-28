@@ -22,7 +22,7 @@
 <link rel="preload" as="image" href="images/tale/desk-scene.webp">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=239">
+<link rel="stylesheet" href="style.css?v=241">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -116,6 +116,10 @@
                     <!-- 직접 넣은 사진은 엽서 왼쪽 그림 자리(960×1280)를 덮음 -->
                     <img id="cardPhoto" alt="엽서에 넣은 내 사진" hidden>   <!-- 넣은 사진 원본 (화면에는 아래 캔버스로 그림) -->
                     <canvas id="cardPhotoView" class="card-photo" width="960" height="1280" role="img" aria-label="직접 넣은 사진. 끌어서 옮기고, 두 손가락으로 벌리거나 아래 + − 단추로 크기를 바꿀 수 있어요" hidden></canvas>
+                    <!-- v7.24: 넣은 사진 오른쪽 위 'x' — 사진을 지우고 고른 엽서 그림으로 (app.js removePhoto) -->
+                    <button type="button" class="card-photo-remove" id="photoRemoveBtn" aria-label="내 사진 지우기" title="내 사진 지우기" hidden>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
                     <label class="card-field card-to">
                       <span class="sr-only">받는 사람</span>
                       <input type="text" id="cardTo" maxlength="14" autocomplete="off">
@@ -440,7 +444,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=245"></script>
+  <script src="app.js?v=246"></script>
 </body>
 
 </html>

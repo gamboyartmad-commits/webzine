@@ -3188,6 +3188,31 @@ html.intro-open { overflow: hidden; }
 .card img[hidden] { display: none; }
 .card canvas.card-photo { position: absolute; top: 0; left: 0; width: 50%; display: block; }
 .photo-tools { -webkit-user-select: none; user-select: none; }
+
+/* v7.24: 넣은 사진 오른쪽 위 'x'(사진 지우기) — 엽서 왼쪽 그림 자리 안 오른쪽 위 구석. 휴대폰에서도 누를 수 있게 24px보다 작아지지 않음 */
+.card-photo-remove {
+  position: absolute;
+  z-index: 3;
+  top: max(8px, 2.4cqh);
+  right: calc(50% + max(8px, 2.4cqh));
+  width: max(24px, 5.2cqh);
+  height: max(24px, 5.2cqh);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--tale-line);
+  border-radius: 50%;
+  background: rgb(255 253 248 / 0.92);
+  box-shadow: 0 2px 6px -2px rgb(50 40 28 / 0.35);
+  color: var(--tale-ink);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.card-photo-remove svg { width: 46%; height: 46%; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+.card-photo-remove:hover { background: #fff; transform: scale(1.06); }
+.card-photo-remove:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
+.card-photo-remove[hidden] { display: none; }
+.write-card.is-windy .card-photo-remove { opacity: 0; }
 .writer-panel { margin-top: 22px; }
 
 /* 하고 싶은 말 칸 + 글자 수 (오른쪽 아래 'N/120자') */
