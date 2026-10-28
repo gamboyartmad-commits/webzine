@@ -22,7 +22,7 @@
 <link rel="preload" as="image" href="images/tale/desk-scene.webp">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=241">
+<link rel="stylesheet" href="style.css?v=242">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -282,6 +282,8 @@
                     <span><b>게시판</b><small>모두가 보는 게시판에 남겨요</small></span>
                   </button>
                 </div>
+                <!-- v7.25: 카카오톡으로 보내면 엽서를 서버에 12개월 맡김 (app.js saveSharedPost · supabase/share.sql) -->
+                <p class="send-note" id="kakaoNote">카카오톡으로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.</p>
                 <p class="sheet-status" id="sheetStatus" aria-live="polite"></p>
                 <div class="send-done" id="sendDone" hidden>
                   <button type="button" class="stitch-btn is-accent" id="newCardBtn" hidden>새 엽서 쓰기</button>
@@ -444,7 +446,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=246"></script>
+  <script src="app.js?v=247"></script>
 </body>
 
 </html>

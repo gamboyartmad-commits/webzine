@@ -3213,6 +3213,28 @@ html.intro-open { overflow: hidden; }
 .card-photo-remove:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
 .card-photo-remove[hidden] { display: none; }
 .write-card.is-windy .card-photo-remove { opacity: 0; }
+
+/* v7.25: 카카오톡 보관 알림 — 보내기 단추들 바로 아래 작은 글 */
+.send-note {
+  max-width: 34em;
+  margin: 12px auto 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  text-align: center;
+  word-break: keep-all;
+  color: var(--tale-soft);
+}
+
+/* v7.25: 받은 엽서를 열지 못했을 때(12개월이 지났거나 불러오지 못함) — 엽서 대신 까닭 한 줄 */
+.received-view .mini-card[hidden] { display: none; }
+.received-missing {
+  margin: 14px 0 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+  word-break: keep-all;
+  color: var(--tale-ink);
+}
 .writer-panel { margin-top: 22px; }
 
 /* 하고 싶은 말 칸 + 글자 수 (오른쪽 아래 'N/120자') */

@@ -1693,16 +1693,43 @@ function uploadCardImage() {
 //        ① 표준어 글(s)을 빼 보고(받은 사람의 '표준어로 보기'는 제주어 글을 풀어서 보여 줌) ② 그래도 길면 편지 사이트 첫 화면 주소로 보냄
 //        (엽서 글은 카카오톡 메시지의 엽서 그림에 담겨 있음). 링크가 짧은 다른 기기에서도 똑같이(같은 엽서는 어디서 보내도 같은 메시지)
 //        잰 값: 링크 56자 → 메시지 3,750자, 577자 → 11,565자 → 링크 약 470자까지 됨. 여유를 두고 420자
+// v7.25: 이제는 엽서(글 · 넣은 사진)를 서버에 12개월 동안 맡기고 링크에는 엽서 번호만 담음(?id=… — 아래 saveSharedPost).
+//        링크가 늘 짧아서 편지가 길어도 단추는 늘 '엽서 보기', 받은 사람에게도 넣은 사진이 보임.
+//        kakaoUrl 은 서버에 맡기지 못했을 때만 씀(예전처럼 엽서를 링크에 담음 · 사진은 빠짐). 그래도 길면 '' → 보내지 않고 다시 눌러 달라고 함
 const KAKAO_LINK_MAX = 420;
 function kakaoUrl() {
-  const base = `${location.origin}${location.pathname}?p=`;
+  const base = `${siteUrl()}?p=`;
   const post = currentPost();
   const full = base + encodePost(post);
   if (full.length <= KAKAO_LINK_MAX) return full;
   const noStandard = base + encodePost({ ...post, standard: '' });
-  return noStandard.length <= KAKAO_LINK_MAX ? noStandard : siteUrl();
+  return noStandard.length <= KAKAO_LINK_MAX ? noStandard : '';
 }
-const KAKAO_LONG_NOTE = ' 편지가 길어서 카카오톡 메시지에는 엽서 그림이 담기고, 메시지를 누르면 편지 사이트 첫 화면이 열려요.';
+
+// 카카오톡으로 보낼 엽서를 서버(Supabase shared_posts — supabase/share.sql)에 맡기고 받은 엽서 번호로 링크를 만듦.
+// 링크를 받은 사람만 볼 수 있고 게시판에는 나오지 않음. 보낸 날부터 12개월이 지나면 열리지 않고 지워짐
+const SHARED_ID = /^[0-9a-f]{16}$/;
+async function saveSharedPost() {
+  if (!BOARD_ONLINE) throw new Error('서버 설정이 없어요');
+  const post = currentPost();
+  const res = await fetch(`${BOARD_DB.url}/rest/v1/rpc/save_shared_post`, {
+    method: 'POST',
+    headers: boardHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      p_card: post.card,
+      p_to: post.to,
+      p_message: post.message,
+      p_from: post.from,
+      p_date: post.date,
+      p_standard: post.standard || '',
+      p_photo: photoActive ? makePhotoThumb() : null,   // 게시판과 같은 크기(480×640)로 줄인 사진
+    }),
+  });
+  if (!res.ok) throw new Error(`엽서를 서버에 맡기지 못했어요 (${res.status})`);
+  const id = await res.json();
+  if (!SHARED_ID.test(id)) throw new Error('엽서 번호를 받지 못했어요');
+  return `${siteUrl()}?id=${id}`;
+}
 
 // 받는 사람 칸으로 '○○에게 제주어 엽서가 도착했어요'를 만듦. 템플릿의 To(예: 엄마에게 · 오랜만의 안부)도 자연스럽게
 function arrivalTitle(to) {
@@ -1717,32 +1744,31 @@ const mailToName = (to) => (/에게$/.test(to) ? to.replace(/에게$/, '') : TEM
 // (누른 직후에만 새 창을 열어 줌 — 특히 PC 사파리). 그때는 바로 열지 않고 { again: true } → 단추가 '카카오톡 열기'로 바뀌어
 // 한 번 더 누르면 올려 둔 그림(kakaoReady)으로 바로 열림. 그림을 올리지 못했으면 고른 엽서 그림만(예전과 같음)
 const KAKAO_TAP_MS = 1000;
-let kakaoReady = { key: '', imageUrl: '' };
-// 돌려주는 값: { toHome } — 편지가 길어 받은 엽서 대신 편지 사이트 첫 화면 주소로 보냈는지(v7.13) · 또는 { again: true }
+let kakaoReady = { key: '', imageUrl: '', url: '' };
+// 돌려주는 값: { inLink } — 서버에 맡기지 못해 엽서를 링크에 담았는지(사진은 빠짐) · { again: true } · { failed: true }(맡기지도 못하고 링크에도 안 들어감)
 async function shareToKakao(startedAt) {
   const K = await kakao();
-  const url = kakaoUrl();
   const key = cardKey();
-  let imageUrl = kakaoReady.key === key ? kakaoReady.imageUrl : '';
-  if (!imageUrl) {
-    try {
-      imageUrl = await uploadCardImage();
-    } catch (e) {
-      imageUrl = new URL(CARDS[currentCard].src, location.href).href;   // 올리기에 실패하면 엽서 그림만
-    }
-    kakaoReady = { key, imageUrl };
+  let { imageUrl, url } = kakaoReady.key === key ? kakaoReady : { imageUrl: '', url: '' };
+  if (!imageUrl || !url) {
+    // v7.25: 엽서 그림 올리기와 엽서 맡기기를 함께
+    [imageUrl, url] = await Promise.all([
+      uploadCardImage().catch(() => new URL(CARDS[currentCard].src, location.href).href),   // 올리기에 실패하면 엽서 그림만
+      saveSharedPost().catch((e) => { console.warn(e); return kakaoUrl(); }),
+    ]);
+    if (!url) return { failed: true };
+    kakaoReady = { key, imageUrl, url };
     const ua = navigator.userActivation;
     if (performance.now() - startedAt > KAKAO_TAP_MS || (ua && !ua.isActive)) return { again: true };
   }
   const post = currentPost();
   // 카카오톡 그림 카드에는 주소가 따로 보이지 않아서, 설명 줄에 편지 사이트 주소를 글자로 적어 둠
   // (편지 글은 엽서 그림 안에 이미 보임. 누르는 곳은 카드 · 아래 두 단추)
-  // v7.14: 메시지 아래 단추 두 개 — [엽서 보기](카드를 눌러도 같음) [웹진 보러 가기]. 편지가 길어 첫 화면으로 보낼 때는 [나도 엽서 쓰기].
+  // v7.14: 메시지 아래 단추 두 개 — [엽서 보기](카드를 눌러도 같음) [웹진 보러 가기]. v7.25: 첫 화면으로 보내던 [나도 엽서 쓰기]는 없앰(늘 '엽서 보기').
   // 단추를 비워 두면 카카오가 카드 링크로 기본 단추를 붙여서 메시지가 오히려 길어짐(잰 값: 링크 420자 · 단추 둘 = 9,284자 < 1만 자).
   // 웹진 단추는 이 사이트와 같은 도메인일 때만(카카오 개발자 앱에 등록된 웹 도메인이어야 함 — 다른 도메인이면 공유가 거절될 수 있음)
-  const toHome = url === siteUrl();
   const webzine = webzineUrl();
-  const buttons = [{ title: toHome ? '나도 엽서 쓰기' : '엽서 보기', link: { mobileWebUrl: url, webUrl: url } }];
+  const buttons = [{ title: '엽서 보기', link: { mobileWebUrl: url, webUrl: url } }];
   if (webzine && new URL(webzine).host === location.host) buttons.push({ title: '웹진 보러 가기', link: { mobileWebUrl: webzine, webUrl: webzine } });
   K.Share.sendDefault({
     objectType: 'feed',
@@ -1756,7 +1782,7 @@ async function shareToKakao(startedAt) {
     },
     buttons,
   });
-  return { toHome };
+  return { inLink: !url.includes('?id=') };
 }
 
 // v7.20: 그림을 올리느라 늦었을 때 카카오 단추 글자를 '카카오톡 열기'로(보내기를 다시 열면 원래대로)
@@ -1780,14 +1806,18 @@ document.getElementById('kakaoBtn').addEventListener('click', async () => {
     btn.disabled = true;
     setSheetStatus('카카오톡을 여는 중이에요...');
     try {
-      const { toHome, again } = await shareToKakao(startedAt);
+      const { inLink, again, failed } = await shareToKakao(startedAt);
+      if (failed) {
+        setSheetStatus('엽서를 보낼 준비를 하지 못했어요. 잠시 뒤에 다시 눌러 주세요.', true);
+        return;
+      }
       if (again) {
         setKakaoAgain(true);
         setSheetStatus('엽서 그림을 준비했어요. ‘카카오톡 열기’를 한 번 더 눌러 주세요.');
         return;
       }
       setKakaoAgain(false);
-      finishSend('카카오톡 공유 창을 열었어요. 받을 친구를 골라 보내 주세요.' + (toHome ? KAKAO_LONG_NOTE : '') + PHOTO_NOTE() + LOCAL_NOTE, 'kakao');
+      finishSend('카카오톡 공유 창을 열었어요. 받을 친구를 골라 보내 주세요.' + (inLink ? PHOTO_NOTE() : '') + LOCAL_NOTE, 'kakao');
     } catch (e) {
       setSheetStatus(`카카오톡을 열지 못했어요. 카카오 개발자 사이트에 이 사이트 주소(${location.origin})가 등록돼 있는지 확인해 주세요. (${e.message || e})`, true);
     } finally {
@@ -2166,6 +2196,7 @@ const receivedCard = document.getElementById('receivedCard');
 function clearReceived() {
   const params = new URLSearchParams(location.search);
   params.delete('p');
+  params.delete('id');
   const query = params.toString();
   history.replaceState(history.state, '', location.pathname + (query ? `?${query}` : ''));
 }
@@ -2173,7 +2204,7 @@ function clearReceived() {
 // 답장하기: 받은 엽서의 보낸 사람 → 내 엽서의 받는 사람, 받은 사람 → 보내는 사람으로 채우고 엽서 쓰는 곳으로
 document.getElementById('writeBackBtn').addEventListener('click', () => {
   receivedView.close();
-  if (!received) return;
+  if (!received) { openWritePage(); return; }   // v7.25: 엽서를 열지 못했을 때는 '나도 엽서 쓰기'
   // 답장은 보통 직접 쓰니까 엽서 템플릿 글은 지우고 빈칸으로 시작 ('T 내 편지 쓰기'와 같음). 템플릿은 아래 단추로 고를 수 있음
   writingOwn = true;
   const text = mobileMessage.value.trim();
@@ -2191,7 +2222,11 @@ document.getElementById('writeBackBtn').addEventListener('click', () => {
 receivedView.addEventListener('close', clearReceived);
 
 const receivedCode = location.hash.startsWith('#p=') ? location.hash.slice(3) : new URLSearchParams(location.search).get('p');
-const received = receivedCode ? decodePost(receivedCode) : null;
+let received = receivedCode ? decodePost(receivedCode) : null;
+// v7.25: 카카오톡으로 받은 엽서는 ?id=엽서 번호 — 서버에 맡겨 둔 엽서(글 · 넣은 사진)를 꺼내 옴(아래 fetchSharedPost)
+const sharedIdParam = new URLSearchParams(location.search).get('id') || '';
+const sharedId = !received && SHARED_ID.test(sharedIdParam) ? sharedIdParam : '';
+const arrivedByLink = !!received || !!sharedId;   // 받은 엽서를 먼저 보여 줄 때는 첫 화면 자동 넘김 · 쓰기 화면 바로 열기를 하지 않음
 // 받은 엽서의 '표준어로 보기' ↔ '제주어로 보기': 엽서 글만 바꿔 보여 줌 (표준어 글이 있을 때만 단추가 보임 — 없으면 아래에서 풀어서 채움)
 const receivedToggle = document.getElementById('receivedToggle');
 receivedToggle.addEventListener('click', () => {
@@ -2201,13 +2236,61 @@ receivedToggle.addEventListener('click', () => {
   receivedToggle.textContent = showStandard ? '제주어로 보기' : '표준어로 보기';
 });
 
-if (received) {
+function showReceived(post) {
+  received = post;
   hy('pc_received_view', { standard: received.standard ? 'yes' : 'no' });   // 받은 엽서 링크로 들어옴
   // v7.13: 표준어 글이 없는 링크(예전 링크 · 카카오톡 메시지 크기 때문에 뺀 링크)는 게시판처럼 제주어 글을 풀어서 보여 줌
   if (!received.standard && window.translateToStandard) received.standard = window.translateToStandard(received.message);
-  fillMiniCard(receivedCard, received);
+  fillMiniCard(receivedCard, received);   // 넣은 사진(post.photo)이 있으면 그림 자리에 사진
   receivedToggle.hidden = !received.standard || received.standard === received.message;
   receivedView.showModal();
+}
+
+// 서버에 맡겨 둔 엽서 한 장 꺼내기 (supabase/share.sql 의 get_shared_post). 없거나 12개월이 지났으면 null
+async function fetchSharedPost(id) {
+  if (!BOARD_ONLINE) return null;
+  const res = await fetch(`${BOARD_DB.url}/rest/v1/rpc/get_shared_post`, {
+    method: 'POST',
+    headers: boardHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ p_id: id }),
+  });
+  if (!res.ok) throw new Error(`엽서를 불러오지 못했어요 (${res.status})`);
+  const [r] = await res.json();
+  if (!r) return null;
+  const text = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+  return {
+    card: Number.isInteger(r.card) && r.card >= 0 && r.card < CARDS.length ? r.card : 0,
+    to: text(r.to_name, 20),
+    message: text(r.message, 400),
+    from: text(r.from_name, 20),
+    date: text(r.post_date, 10),
+    standard: text(r.standard, 400),
+    photo: typeof r.photo === 'string' && r.photo.startsWith('data:image/') ? r.photo : undefined,
+  };
+}
+
+// 엽서를 열지 못했을 때: 같은 창에 까닭만 적고, 아래 단추는 '나도 엽서 쓰기'
+function showReceivedMissing(text) {
+  document.getElementById('receivedTitle').textContent = '엽서를 열지 못했어요';
+  receivedCard.hidden = true;
+  const note = document.createElement('p');
+  note.className = 'received-missing';
+  note.textContent = text;
+  receivedCard.after(note);
+  receivedToggle.hidden = true;
+  document.getElementById('writeBackBtn').textContent = '나도 엽서 쓰기';
+  receivedView.showModal();
+}
+
+if (received) {
+  showReceived(received);
+} else if (sharedId) {
+  fetchSharedPost(sharedId)
+    .then((post) => (post ? showReceived(post) : showReceivedMissing('엽서는 보낸 날부터 12개월 동안만 볼 수 있어요. 기간이 지났거나 없는 엽서예요.')))
+    .catch((e) => {
+      console.warn(e);
+      showReceivedMissing('엽서를 불러오지 못했어요. 잠시 뒤에 다시 열어 주세요.');
+    });
 }
 
 // ---------- 안내 팝업 (? 단추) ----------
@@ -2602,8 +2685,8 @@ if (startParams.get('start') === 'write') {
   startParams.delete('start');
   const qs = startParams.toString();
   history.replaceState(history.state, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
-  if (!received) requestAnimationFrame(() => openWritePage());
-} else if (!received) {
+  if (!arrivedByLink) requestAnimationFrame(() => openWritePage());
+} else if (!arrivedByLink) {
   STOP_SLIDE.forEach((type) => window.addEventListener(type, stopAutoSlide, { passive: true }));
   slideTimer = setTimeout(runAutoSlide, AUTO_SLIDE_HOLD);
 }
