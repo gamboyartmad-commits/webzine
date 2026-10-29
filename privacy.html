@@ -82,7 +82,7 @@
           <h2 id="summary-title" class="policy-summary__title">한눈에 보기</h2>
           <dl class="policy-summary__list">
             <div><dt>회원가입</dt><dd>없어요. 누구나 가입 없이 웹진을 읽을 수 있어요.</dd></div>
-            <div><dt>엽서 메일 보내기</dt><dd>받는 분의 메일 주소와 이름을 엽서를 보내는 데만 쓰고, 웹진에 저장하지 않아요.</dd></div>
+            <div><dt>엽서 메일 보내기</dt><dd>받는 분의 메일 주소는 엽서를 보내는 데만 쓰고 저장하지 않아요. 메일의 ‘엽서 보기’를 위해 엽서(이름 · 글 · 넣은 사진)는 웹진 서버에 12개월 동안 보관해요. 링크를 받은 사람만 볼 수 있고 게시판에는 나오지 않아요.</dd></div>
             <div><dt>엽서 게시판</dt><dd>게시판에 붙인 엽서(이름 · 글 · 그림)는 모두가 볼 수 있어요. 지워 달라고 하시면 바로 지워요.</dd></div>
             <div><dt>카카오톡으로 보내기</dt><dd>‘카카오톡’ 단추를 누를 때만 엽서(글 · 넣은 사진)를 웹진 서버에 12개월 동안 보관해요. 링크를 받은 사람만 볼 수 있고 게시판에는 나오지 않아요. 엽서 그림은 카카오 서버에도 올라가요(카카오가 최대 100일 보관).</dd></div>
             <div><dt>광고 · 방문 분석</dt><dd>쿠키와 광고 식별자로 어디서 들어왔는지, 광고가 얼마나 효과가 있었는지 살펴봐요. 언제든 거부할 수 있어요.</dd></div>
@@ -122,8 +122,8 @@
               <tr>
                 <th scope="row" data-label="언제">엽서를 메일로 보낼 때(선택)</th>
                 <td data-label="받는 항목">필수: 받는 분 메일 주소<br>선택: 받는 분 이름, 보내는 분 이름<br>엽서 글(쓴 글 · 제주어로 바꾼 글)과 엽서 그림</td>
-                <td data-label="쓰는 곳">엽서를 받는 분께 메일로 전하기</td>
-                <td data-label="보관 기간">웹진은 저장하지 않아요(보내고 나면 끝). 메일을 보내는 Google 계정(Gmail)의 발송 기록은 <span data-edit="pv-mail-log">[Gmail 보낸편지함 보관 기간 확인 후 입력]</span></td>
+                <td data-label="쓰는 곳">엽서를 받는 분께 메일로 전하고, 메일의 ‘엽서 보기’를 누르면 그 엽서 보여 주기 — 링크를 받은 사람만 볼 수 있고 게시판에는 나오지 않아요</td>
+                <td data-label="보관 기간">받는 분 메일 주소는 웹진에 저장하지 않아요. 엽서(이름 · 글 · 넣은 사진)는 웹진 서버에 보낸 날부터 12개월 동안 보관한 뒤 지워요. 메일을 보내는 Google 계정(Gmail)의 발송 기록은 <span data-edit="pv-mail-log">[Gmail 보낸편지함 보관 기간 확인 후 입력]</span></td>
               </tr>
               <tr>
                 <th scope="row" data-label="언제">엽서를 게시판에 붙일 때(선택)</th>
@@ -186,7 +186,7 @@
             </thead>
             <tbody>
               <tr><th scope="row" data-label="맡은 업체">Google LLC(Google Apps Script · Gmail)</th><td data-label="맡긴 일">엽서 메일 보내기</td></tr>
-              <tr><th scope="row" data-label="맡은 업체">Supabase Inc.(서버: 대한민국)</th><td data-label="맡긴 일">엽서 게시판 · 카카오톡으로 보낸 엽서 저장 · 운영</td></tr>
+              <tr><th scope="row" data-label="맡은 업체">Supabase Inc.(서버: 대한민국)</th><td data-label="맡긴 일">엽서 게시판 · 카카오톡과 메일로 보낸 엽서 저장 · 운영</td></tr>
               <tr><th scope="row" data-label="맡은 업체">(주)카카오</th><td data-label="맡긴 일">카카오톡으로 엽서 보내기(엽서 그림 보관)</td></tr>
               <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-send">Google LLC(Gmail · Google Apps Script)</span></th><td data-label="맡긴 일">소식 · 이벤트 안내 보내기</td></tr>
               <tr><th scope="row" data-label="맡은 업체"><span data-edit="pv-vendor-form">Google LLC(Google 폼)</span></th><td data-label="맡긴 일">소식 · 이벤트 받기 신청 접수</td></tr>
@@ -227,7 +227,7 @@
             </tbody>
           </table>
         </div>
-        <p>엽서 게시판과 카카오톡으로 보낸 엽서(Supabase)는 서버가 대한민국에 있어 국외로 옮기지 않습니다.</p>
+        <p>엽서 게시판과 카카오톡 · 메일로 보낸 엽서(Supabase)는 서버가 대한민국에 있어 국외로 옮기지 않습니다.</p>
         <p>국외 이전을 원하지 않으면 엽서를 메일로 보내지 않고 이미지로 저장하거나, 6절의 방법으로 쿠키 · 광고 추적을 거부하면 됩니다. 거부해도 웹진의 글을 읽는 데에는 아무 제한이 없습니다.</p>
 
         <!-- 6. ✏️ 확인: 실제로 설치한 도구만 남긴다(설치하지 않은 도구의 줄은 지운다) -->
@@ -237,6 +237,7 @@
           <li><strong>수집하는 정보</strong> — 웹진 방문 기록(본 페이지, 머문 시간, 누른 단추), 광고를 보고 들어온 기록(광고 매체 · 캠페인 · 클릭 정보), 쿠키 · 광고 식별자, 브라우저 · 기기 정보</li>
           <li><strong>수집 방법</strong> — 이용자가 웹진을 보면 아래 도구가 자동으로 수집합니다. 웹진이 재는 행동은 ‘엽서 써보기’ 누름, 섹션 보기, 지도 단추 누름처럼 웹진 이용에 관한 것뿐입니다.</li>
           <li><strong>엽서 쓰기 사이트로 넘길 때</strong> — 광고를 보고 들어온 경우 그 광고 정보(광고 매체 · 캠페인 이름 등 UTM 값과 광고 클릭 정보)를 엽서 쓰기 사이트 주소에 붙여 함께 넘깁니다. 이름 · 연락처 같은 개인정보는 넣지 않습니다.</li>
+          <li><strong>엽서를 공유할 때</strong> — 카카오톡 · 메일 · 링크로 보낸 엽서 주소에는 어떤 방법으로 보냈는지 알려 주는 꼬리표(UTM 값)와 엽서 번호가 붙어, 받은 분이 엽서를 열었는지 · 답장했는지를 셉니다. 이름 · 연락처 같은 개인정보는 넣지 않습니다.</li>
           <li><strong>목적</strong> — 방문 통계, 광고 효과 측정, 관심사에 맞는 광고 보여 주기</li>
           <li><strong>보관 기간</strong> — 1절과 같습니다. 광고 사업자가 직접 수집한 정보는 각 사업자의 방침을 따릅니다.</li>
         </ul>

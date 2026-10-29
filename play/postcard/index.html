@@ -282,8 +282,8 @@
                     <span><b>게시판</b><small>모두가 보는 게시판에 남겨요</small></span>
                   </button>
                 </div>
-                <!-- v7.25: 카카오톡으로 보내면 엽서를 서버에 12개월 맡김 (app.js saveSharedPost · supabase/share.sql) -->
-                <p class="send-note" id="kakaoNote">카카오톡으로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.</p>
+                <!-- v7.25: 카카오톡으로 보내면 엽서를 서버에 12개월 맡김 (app.js saveSharedPost · supabase/share.sql). v7.26: 메일도 -->
+                <p class="send-note" id="kakaoNote">카카오톡 · 메일로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.</p>
                 <p class="sheet-status" id="sheetStatus" aria-live="polite"></p>
                 <div class="send-done" id="sendDone" hidden>
                   <button type="button" class="stitch-btn is-accent" id="newCardBtn" hidden>새 엽서 쓰기</button>
@@ -442,11 +442,11 @@
   </dialog>
 
   <script src="config.js?v=5"></script>
-  <script src="track.js?v=4"></script>
+  <script src="track.js?v=5"></script>
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=247"></script>
+  <script src="app.js?v=248"></script>
 </body>
 
 </html>

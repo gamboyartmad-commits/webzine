@@ -8,6 +8,8 @@
 //   — v7.21: card_id = 엽서 그림의 ID(v7.22: 고르기 띠 차례대로 'pc-card-01' ~ 'pc-card-13', 내 사진 'pc-card-photo' — app.js 의 CARDS · cardId).
 //     pc_card_pick 의 card 는 예전(v7.11)부터 있던 그림 파일 번호(card-07.webp = 7, 내 사진 = 0)
 //   · pc_received_view · 따로 열렸을 때만 pc_dwell_milestone · pc_page_time · page_view(GA4 기본)
+//   — v7.26(공유 추적, app.js): pc_send_done 에 share_id · entry_type, 받은 쪽 pc_received_view(share_method · viewer_type · share_id ·
+//     has_photo · card_id) · pc_reply_click · pc_received_fail(reason). 공유 링크에는 UTM(utm_campaign=postcard_share)
 // 단추 이름에는 사람이 쓴 글(편지 · 이름 · 게시판 글)을 담지 않는다 — id · data-track · 정해 둔 이름만.
 // 확인: 주소 끝에 ?track-debug → 화면 왼쪽 아래 · 콘솔에 보낸 이벤트가 뜬다(GA4 ID 가 없어도).
 (function () {

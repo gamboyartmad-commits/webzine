@@ -14,6 +14,8 @@
 > 7. **Voices(휴대폰 · 세로 화면)**: 사진 왼쪽 · 글 오른쪽, 손가락으로 좌우로 밀면 다음 사람(밀기 안내 한 줄은 손가락 기기에서만).
 > 8. **지도**: 핀 = **물방울 모양 위치 핀**(뾰족한 끝이 실제 자리), 채도를 낮춘 색(명소 #5a7385 · 카페·간식 #b08d47 · 맛집 #b5664c · 가게 #7b8760 · 섞인 묶음 #66574c — `css/map.css` 맨 위). 숫자 동그라미 안내 한 줄(분류 단추 위) + 숫자 동그라미에 마우스를 올리면 말풍선 ‘이 근처 제주어 상호 N곳 · 누르면 펼쳐져요’.
 
+> **58차(2026-10-29)** (엽서 v7.26) — **공유받은 사람 추적**(분석 안내 = 아래 13-5). ① 공유 링크에 UTM 꼬리표: 카톡 '엽서 보기' · '웹진 보러 가기', 링크 복사, 메일(`utm_campaign=postcard_share`, 소스 kakao · mail · link, 매체 social · email · link — GA4 기본 채널에 맞춤). 받은 엽서 창을 닫으면 주소창에서 꼬리표를 지움. ② 받은 쪽 이벤트 `pc_received_view`(share_method · viewer_type · share_id · has_photo · card_id) · `pc_reply_click` · `pc_received_fail`(reason), 보낸 쪽 `pc_send_done` 에 share_id · entry_type. 보낸 사람 본인 구분 = 이 브라우저에서 보낸 공유 번호(localStorage `hy-sent-shares`), 받은 엽서에서 시작한 탭 = sessionStorage `hy-entry`. ③ **메일에도 '엽서 보기 · 답장하기'** — 메일로 보낸 엽서도 서버(shared_posts)에 12개월 맡기고 엽서 번호를 메일 스크립트로 넘김(`프로젝트 웹사이트/_tools/mail_script.gs` — 이 저장소 밖, Apps Script 새 버전 배포 필요). 보내기 화면 안내 · `privacy.html`(한눈에 보기 · 1절 메일 줄 · 4 · 5절 · 6절 '엽서를 공유할 때') 을 '카카오톡 · 메일로 보낸 엽서'로. ④ (사이트 밖) GTM 작업공간 6 에 폴더 '5. 공유받은 사람(받은 엽서 · 답장)' — GA4 태그 3 · 메타 맞춤 이벤트 PostcardReceived(받은 사람만) · 트리거 4 · 변수 6, `GA4_이벤트_pc_send_complete` 에 share_id · entry_type 추가. 제출 전, 미리보기 확인 전. `app.js?v=248`, `track.js?v=5`.
+>
 > **57차(2026-10-28)** (엽서 v7.25) — **카카오톡으로 보낸 엽서를 서버에 12개월 맡기고 짧은 링크로**. 예전에는 카톡 링크에 엽서 글을 통째로 담아서 ① 넣은 사진이 빠지고(받은 엽서 · 답장하기 화면에 고른 엽서 그림이 보임) ② 편지가 길면(약 65자 넘게) 링크가 420자를 넘어 단추가 '나도 엽서 쓰기'(편지 사이트 첫 화면)로 바뀌었음. 이제 보낼 때 엽서(글 · 표준어 · 넣은 사진 480×640)를 Supabase `shared_posts` 에 맡기고 링크에는 엽서 번호만(`?id=` 16자리) → 단추는 늘 **'엽서 보기'**, 받은 엽서에 사진이 그대로 보임(`play/postcard/app.js` saveSharedPost · fetchSharedPost · showReceived). 서버에 맡기지 못하면 예전처럼 링크에 담고(사진 빠짐), 그래도 길면 '잠시 뒤에 다시 눌러 주세요'. 12개월이 지난 링크는 '엽서를 열지 못했어요 — 보낸 날부터 12개월 동안만 볼 수 있어요' + '나도 엽서 쓰기'. **서버**: `play/postcard/supabase/share.sql` — 표는 사이트 키로 바로 못 읽음(RLS · 정책 없음), 함수 `save_shared_post`(12개월 지난 것 지우기 · 1분 30장) · `get_shared_post`(번호가 맞고 12개월 안 지난 한 장만), 2026-10-28 goraboge-postcard 에 실행함(매일 지우기 pg_cron 은 켜지 않음 — 파일 ③). 보내기 화면 단추 아래 안내(`#kakaoNote`) '카카오톡으로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.' `privacy.html` 한눈에 보기 · 1절 표(카카오톡 줄) · 4절 Supabase 맡긴 일 · 5절에 반영(카카오 서버의 엽서 그림은 카카오 정책대로 최대 100일). 시행일은 그대로. `app.js?v=247`, `style.css?v=242`.
 >
 > **56차(2026-10-28)** (엽서 v7.24) — **엽서에 넣은 내 사진 오른쪽 위에 'x'(사진 지우기) 단추**(`play/postcard/index.html` 의 `#photoRemoveBtn`, 사진을 넣었을 때만 보임). 누르면 사진을 지우고 띠에서 고른 엽서 그림으로 돌아감 — 사진 크기 단추(− + 처음대로)는 숨고, 띠 맨 앞 칸은 다시 '+ 내 사진 추가하기', 아래 안내 '사진을 지웠어요. 다시 넣으려면 ‘내 사진 추가하기’를 눌러 주세요.'(`play/postcard/app.js` removePhoto). 크기는 PC 26px · 휴대폰 24px(24px보다 작아지지 않음, `play/postcard/style.css` `.card-photo-remove`). GTM에는 따로 세지 않음. `app.js?v=246`, `style.css?v=241`.
@@ -1861,8 +1863,10 @@ curl -s https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js | openssl dgst
 | `pc_view` · `pc_view_time` | 화면이 바뀜(flow 엽서 고르기 · 쓰기 / send 보내기 / board 게시판 / end) · 그 화면에 머문 초 | `view` · `seconds` |
 | `pc_card_pick` | 엽서 그림을 바꿈 | `card`(번호) |
 | `pc_send_open` | ‘제주어로 바꾸기’ 뒤 보내기 화면이 열림 | `jeju`(yes · no) |
-| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · mail · link · image · image_share · **board**(게시판에 붙임) |
-| `pc_received_view` | 받은 엽서 링크로 들어옴 | `standard` |
+| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · mail · link · image · image_share · **board**(게시판에 붙임). v7.26: `share_id`(공유 번호) · `entry_type`(received · new) — 아래 13-5 |
+| `pc_received_view` | 받은 엽서 링크로 들어옴 | `standard`. v7.26: `share_method` · `viewer_type` · `share_id` · `has_photo` · `card_id` — 아래 13-5 |
+| `pc_reply_click` (v7.26) | 받은 엽서에서 답장하기를 누름 | `share_method` · `viewer_type` · `share_id` |
+| `pc_received_fail` (v7.26) | 받은 엽서를 열지 못함 | `reason`(expired · load_error) · `share_method` · `share_id` |
 | `pc_dwell_milestone` · `pc_page_time` | (엽서 사이트를 따로 열었을 때만) 실제로 본 시간 | `seconds` |
 
 - **GA4 를 켜는 법(30차)**: GA4 측정 ID(G-…)를 ① 웹진 `config.js` 의 `analytics.ga4` ② 엽서 사이트 `config.js` 의 `GA4_ID` 두 곳에 **같은 값**으로. 관리 > 맞춤 정의에 맞춤 측정기준 `section` · `button` · `view` · `method` · `source` · `page`, 맞춤 측정항목 `seconds`(초)를 등록하면 보고서에서 섹션별 머문 시간 · 단추별 누름 수 · 보낸 방법별 수를 볼 수 있다. 웹진과 엽서 사이트를 오가는 링크는 교차 도메인으로 이어진다(`analytics.linkDomains`, 엽서 사이트 `WEBZINE_DOMAINS` — GA4 관리 > 데이터 스트림 > 태그 설정 > 도메인 구성에도 두 도메인을 넣는다).
@@ -1881,6 +1885,87 @@ curl -s https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js | openssl dgst
 - 인트로: 1.8초 뒤 저절로 열림 · 광고 주소면 0.7초 · 바로 보기 · ‘동작 줄이기’에서는 저절로 열지 않고 바로 보기 단추로 메인 화면에.
 - 가짜 ID 를 넣고(바깥 스크립트는 막고) 엽서 써보기를 누르면 GA4 `cta_click` + Google 광고 `conversion` + Meta `Lead` 가 불림. 꼴이 틀린 ID 는 불러오지 않고 콘솔에 알림.
 - 광고 정보는 같은 탭 안에서 기사 · 개인정보처리방침으로 옮겨 가도 남고, `ad_landing` 은 처음 들어온 페이지에서 한 번만.
+
+### 13-5. 공유받은 사람 추적 — 처음 보는 사람을 위한 안내(엽서 v7.26, 2026-10-29)
+
+**무엇을 알 수 있나**: 엽서를 쓴 사람이 카카오톡 · 메일 · 링크로 보낸 뒤, **받은 사람이 엽서를 열었는지 → 답장하기를 눌렀는지 → 자기 엽서를 다시 보냈는지**를 셉니다.
+
+```
+보낸 사람  ──(공유 링크 + 꼬리표)──▶  받은 사람이 엽서를 엶  ──▶  답장하기  ──▶  자기 엽서를 보냄
+pc_send_complete                    pc_received_view           pc_reply_click     pc_send_complete
+(share_method · share_id)           (share_method ·            (share_method)     (entry_type = received)
+                                     viewer_type · has_photo)
+```
+
+**① 공유 링크에 붙는 꼬리표(UTM)** — GA4 · 메타가 알아서 읽습니다. 캠페인은 모두 `postcard_share` 하나라서 *'공유받아 들어온 방문'만 고를 때는 캠페인 = postcard_share* 로 거르면 됩니다.
+
+| 보낸 방법 | utm_source | utm_medium(GA4 기본 채널) | utm_content |
+|---|---|---|---|
+| 카카오톡 '엽서 보기' | `kakao` | `social`(소셜) | `view_btn` |
+| 카카오톡 '웹진 보러 가기' | `kakao` | `social` | `webzine_btn` |
+| 메일 '엽서 보기 · 답장하기' | `mail` | `email`(이메일) | `view_btn` |
+| 메일 '나도 제주어 엽서 쓰기' | `mail` | `email` | `write_btn` |
+| 링크 복사 | `link` | `link`(추천) | `view_link` |
+
+받은 사람이 엽서 창을 닫으면 주소창에서 꼬리표를 지웁니다(그 주소를 다시 퍼뜨려도 다음 사람이 잘못 세어지지 않게 — GA4 는 들어올 때 이미 읽음).
+
+**② 이벤트와 값(매개변수)**
+
+| 이벤트 | 언제 | 값 |
+|---|---|---|
+| `pc_send_complete` | 보낸 사람이 보내기를 마침(원래 있던 태그) | `share_method` · `card_id` · **`share_id`** · **`entry_type`** |
+| `pc_received_view` | 받은 엽서가 열림 | `share_method` · `viewer_type` · `has_photo` · `card_id` · `share_id` |
+| `pc_reply_click` | 받은 엽서에서 답장하기 | `share_method` · `viewer_type` · `share_id` |
+| `pc_received_fail` | 받은 엽서를 열지 못함 | `reason` · `share_method` · `share_id` |
+
+| 값 이름 | 들어가는 값 | 뜻 |
+|---|---|---|
+| `share_method` | `kakao` · `mail` · `link` · `unknown` | 어떤 방법으로 받았나(꼬리표가 없는 예전 링크는 unknown) |
+| `viewer_type` | `recipient` · `sender` | 받은 사람 / **보낸 사람 본인**(같은 브라우저에서 자기가 보낸 엽서를 열어 본 것) |
+| `entry_type` | `received` · `new` | 받은 엽서를 보고 들어와서 쓴 엽서 / 처음부터 직접 쓴 엽서 |
+| `has_photo` | `yes` · `no` | 받은 엽서에 직접 넣은 사진이 있나 |
+| `share_id` | 16자리(서버에 맡긴 엽서) · `p` + 8자리(주소에 담긴 엽서) | 엽서 한 장의 공유 번호 — 보낸 쪽과 받은 쪽을 이어 봄(이름 · 연락처 아님) |
+| `reason` | `expired` · `load_error` | 12개월이 지났거나 없는 엽서 / 불러오지 못함 |
+| `card_id` | `pc-card-01` ~ `pc-card-13` · `pc-card-photo` | 엽서 그림(원래 쓰던 값) |
+
+**③ GA4 에서 처음 한 번 할 일 — 맞춤 측정기준 등록**: 관리 > 데이터 표시 > 맞춤 정의 > 맞춤 측정기준 만들기 > 범위 '이벤트'. 측정기준 이름은 알아보기 쉬운 한글로, 이벤트 매개변수는 위 값 이름 그대로.
+
+| 측정기준 이름(예) | 이벤트 매개변수 |
+|---|---|
+| 공유 방법 | `share_method` (이미 있으면 그대로) |
+| 보는 사람 | `viewer_type` |
+| 엽서 시작 | `entry_type` |
+| 사진 여부 | `has_photo` |
+| 못 연 까닭 | `reason` |
+| 공유 번호(엽서별로 볼 때만) | `share_id` |
+
+> 등록한 **날부터** 쌓입니다(그 전 데이터는 다시 채워지지 않음). 보고서에는 보통 하루 뒤에 보이고, 실시간 보고서에는 바로 보입니다.
+
+**④ 자주 볼 숫자와 보는 곳**
+
+| 알고 싶은 것 | 보는 곳 · 방법 |
+|---|---|
+| 공유받아 들어온 방문은 몇 번? 카톡 · 메일 · 링크 중 어디서? | 보고서 > 획득 > **트래픽 획득** → 표의 기본 측정기준을 '세션 캠페인'으로, `postcard_share` 를 누르거나 '세션 소스/매체'(kakao / social · mail / email · link / link)로 |
+| 받은 엽서가 몇 번 열렸나? | 보고서 > 참여도 > **이벤트** > `pc_received_view` → '보는 사람' = recipient 만, '공유 방법'별로 |
+| 보낸 엽서 대비 열린 비율 | `pc_received_view`(recipient) 수 ÷ `pc_send_complete`(공유 방법 = kakao · mail · link) 수. 한 엽서를 여러 명이 열면 100% 를 넘을 수 있음 |
+| 받은 사람 중 답장하기를 누른 비율 | `pc_reply_click` ÷ `pc_received_view`(recipient) — '사용자 수'로 보면 같은 사람이 여러 번 연 것을 한 번으로 셈 |
+| 받은 엽서 덕분에 새로 보낸 엽서 | `pc_send_complete` 에서 '엽서 시작' = received |
+| 한 단계씩 줄어드는 모양(유입경로) | 탐색 > **유입경로 탐색** → 단계 1 `pc_received_view`(보는 사람 = recipient) → 단계 2 `pc_reply_click` → 단계 3 `pc_send_complete`(엽서 시작 = received), '개방형 유입경로' 끔 |
+| 사진을 넣은 엽서가 더 많이 열리나? | `pc_received_view` 를 '사진 여부'별로 |
+| 링크가 깨져 못 여는 일이 있나? | `pc_received_fail` 을 '못 연 까닭'별로(load_error 가 늘면 서버 문제) |
+
+**메타(인스타그램 · 페이스북)**: 받은 사람(보낸 사람 본인 빼고)이 엽서를 열면 픽셀 맞춤 이벤트 **`PostcardReceived`**(`share_method` · `has_photo`)를 보냅니다. 이벤트 관리자 > 데이터 소스 > 픽셀에서 보이고, '맞춤 전환'으로 만들어 광고 성과에 쓸 수 있습니다.
+
+**알아 둘 한계**
+
+- **같은 사람인지는 IP 가 아니라 브라우저로 셉니다.** GA4 는 IP 를 보여 주지 않고, 이 사이트도 IP 를 모으지 않습니다. 보낸 사람이 보낸 엽서는 그 브라우저에 공유 번호를 적어 두어, 같은 브라우저에서 열면 `sender` 로 셉니다.
+- **카카오톡 안에서 연 엽서**: 카톡 안 브라우저는 저장 공간이 따로라, 보낸 사람이 카톡 대화방에서 자기 엽서를 눌러 확인하면 `recipient` 로 셉니다. 그래서 받은 사람 수는 '대략'으로 봅니다.
+- 꼬리표가 없는 예전 링크(v7.25 전)로 들어온 것은 `share_method = unknown` 입니다.
+- 이미지 저장 · 게시판으로 '보낸' 엽서는 받은 사람을 따라갈 링크가 없어서 `share_id` 가 비어 있습니다.
+- 메일의 '엽서 보기 · 답장하기' 단추는 메일 스크립트(Apps Script)를 새 버전으로 배포한 뒤부터 들어갑니다.
+- 광고 차단 프로그램을 쓰는 사람은 숫자에 잡히지 않습니다.
+
+**어디에 무엇이 있나**: 사이트 `play/postcard/app.js` 의 '공유 추적'(withShareUtm · shareIdOf · rememberSent · receivedInfo) · 메일 `mail_script.gs`(MAIL_UTM) · GTM 폴더 **'5. 공유받은 사람(받은 엽서 · 답장)'**(태그 GA4_이벤트_pc_received_view · pc_reply_click · pc_received_fail · 메타_맞춤이벤트_PostcardReceived, 변수 DLV - share_method · viewer_type · share_id · has_photo · entry_type · reason) + 원래 있던 태그 GA4_이벤트_pc_send_complete 에 share_id · entry_type 을 더함.
 
 ## 14. 사진 보정판(?photo — 19차, 2026-10-21)
 
