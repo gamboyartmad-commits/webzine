@@ -1348,17 +1348,53 @@ function drawCover(ctx, img, width, height) {
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
 }
 
-async function renderCard() {
-  const text = cardMessage.value + cardTo.value + cardFrom.value;
+// 지금 쓰고 있는 엽서를 그림으로 (저장 · 공유 · 메일)
+function renderCard() {
+  return paintCard({
+    art: cardImage,
+    drawPhoto: photoActive ? (ctx) => drawCover(ctx, cardPhoto, PHOTO_W, CARD_H) : null,
+    message: cardMessage.value,
+    to: cardTo.value,
+    from: cardFrom.value,
+    date: TODAY,
+    withStamp: stamped,
+  });
+}
+
+// v7.27: 받은 엽서를 그림으로 (받은 엽서 화면의 '이미지로 저장'). message = 지금 화면에 보이는 글(제주어 또는 표준어)
+async function renderPost(post, message) {
+  const art = new Image();
+  art.src = (CARDS[post.card] || CARDS[0]).src;
+  await art.decode();
+  let photo = null;
+  if (typeof post.photo === 'string' && post.photo.startsWith('data:image/')) {
+    photo = new Image();
+    photo.src = post.photo;
+    await photo.decode();
+  }
+  return paintCard({
+    art,
+    // 맡겨 둔 사진은 이미 그림 자리 비율(480×640 = 960:1280)로 잘라 둔 것
+    drawPhoto: photo ? (ctx) => ctx.drawImage(photo, 0, 0, PHOTO_W, CARD_H) : null,
+    message,
+    to: post.to,
+    from: post.from,
+    date: post.date || '',
+    withStamp: true,   // 받은 엽서 화면(mini-stamp)처럼 소인을 찍음
+  });
+}
+
+async function paintCard({ art, drawPhoto, message, to, from, date, withStamp }) {
+  const text = message + to + from;
   try { await document.fonts.load(`${FONT_PX}px "Hayeong Hand"`, text || '가'); } catch (e) { /* 기본 글꼴로 그림 */ }
-  if (!cardImage.complete) await cardImage.decode();
+  if (!art.complete) await art.decode();
 
   const canvas = document.createElement('canvas');
   canvas.width = CARD_W;
   canvas.height = CARD_H;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(cardImage, 0, 0, CARD_W, CARD_H);
-  if (photoActive) drawCover(ctx, cardPhoto, PHOTO_W, CARD_H);
+  ctx.drawImage(art, 0, 0, CARD_W, CARD_H);
+  if (drawPhoto) drawPhoto(ctx);
   ctx.font = FONT;
   ctx.fillStyle = '#2f2a22';
   ctx.textBaseline = 'alphabetic';
@@ -1369,13 +1405,13 @@ async function renderCard() {
   const descent = m.fontBoundingBoxDescent || FONT_PX * 0.2;
   const baseline = (LINE - (ascent + descent)) / 2 + ascent;
 
-  const lines = wrapLines(ctx, cardMessage.value, SPOTS.message.width).slice(0, SPOTS.message.lines);
+  const lines = wrapLines(ctx, message, SPOTS.message.width).slice(0, SPOTS.message.lines);
   lines.forEach((line, i) => ctx.fillText(line, SPOTS.message.x, SPOTS.message.top + i * LINE + baseline));
-  const toFit = toScale(cardTo.value);
+  const toFit = toScale(to);
   if (toFit < 1) ctx.font = FONT.replace(`${FONT_PX}px`, `${FONT_PX * toFit}px`);
-  ctx.fillText(cardTo.value, SPOTS.to.x, SPOTS.to.top + baseline, SPOTS.to.width);
+  ctx.fillText(to, SPOTS.to.x, SPOTS.to.top + baseline, SPOTS.to.width);
   ctx.font = FONT;
-  ctx.fillText(cardFrom.value, SPOTS.from.x, SPOTS.from.top + baseline, SPOTS.from.width);
+  ctx.fillText(from, SPOTS.from.x, SPOTS.from.top + baseline, SPOTS.from.width);
 
   // 날짜는 조금 작고 옅게
   const DATE_PX = CARD_H * 0.031;
@@ -1384,11 +1420,11 @@ async function renderCard() {
   const dm = ctx.measureText('0');
   const dAscent = dm.fontBoundingBoxAscent || DATE_PX * 0.8;
   const dDescent = dm.fontBoundingBoxDescent || DATE_PX * 0.2;
-  ctx.fillText(TODAY, SPOTS.date.x, SPOTS.date.top + (LINE - (dAscent + dDescent)) / 2 + dAscent);
+  ctx.fillText(date, SPOTS.date.x, SPOTS.date.top + (LINE - (dAscent + dDescent)) / 2 + dAscent);
 
   // 우표는 엽서 그림(card-01~12)에 인쇄된 감귤 우표(R.P. ROMÎNA · CITRUS UNSHIU)를 그대로 씀 → 그 위에 보내기 소인
   // 보내기 소인 (style.css의 .card-stamp와 같은 자리·크기)
-  if (stamped) {
+  if (withStamp) {
     const ink = cardStamp;
     if (!ink.complete) await ink.decode();
     const size = CARD_H * STAMP.size;
@@ -1528,22 +1564,28 @@ document.getElementById('sendHintTranslate').addEventListener('click', () => {
 // 펼쳐 둔 버튼 목록은 Esc로 닫히지 않게 (닫히면 4단계 화면이 비어 버림)
 sendPanel.addEventListener('cancel', (e) => e.preventDefault());
 
-// 저장
-document.getElementById('saveBtn').addEventListener('click', async () => {
-  const blob = await toBlob(await renderCard(), 'image/png');
+// 엽서 그림 저장: 휴대폰은 공유 창('이미지 저장'을 누르면 사진첩에 들어감), PC는 내려받기.
+// 'image_share' · 'image'를 돌려주고, 공유 창을 그냥 닫으면 null
+async function saveCardImage(canvas) {
+  const blob = await toBlob(canvas, 'image/png');
   const file = new File([blob], FILE_NAME, { type: 'image/png' });
-  // 휴대폰: 공유 창에서 '이미지 저장'을 누르면 사진첩에 들어감
   if (window.matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file] });
-      finishSend('엽서 그림을 저장하거나 보냈어요.', 'image_share');
-      return;
+      return 'image_share';
     } catch (e) {
-      if (e.name === 'AbortError') return;
+      if (e.name === 'AbortError') return null;
     }
   }
   download(blob);
-  finishSend('엽서를 이미지로 저장했어요.', 'image');
+  return 'image';
+}
+
+// 저장
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const method = await saveCardImage(await renderCard());
+  if (method === 'image_share') finishSend('엽서 그림을 저장하거나 보냈어요.', 'image_share');
+  else if (method === 'image') finishSend('엽서를 이미지로 저장했어요.', 'image');
 });
 
 
@@ -2314,6 +2356,28 @@ receivedToggle.addEventListener('click', () => {
   receivedToggle.textContent = showStandard ? '제주어로 보기' : '표준어로 보기';
 });
 
+// v7.27: 받은 엽서 '이미지로 저장' — 화면에 보이는 글(제주어 · 표준어로 보기 중 지금 것) 그대로 그림으로
+const receivedSaveBtn = document.getElementById('receivedSaveBtn');
+receivedSaveBtn.addEventListener('click', async () => {
+  if (!received) return;
+  receivedSaveBtn.disabled = true;
+  try {
+    const shown = receivedCard.querySelector('.card-message').textContent;
+    const method = await saveCardImage(await renderPost(received, shown));
+    if (method) {
+      hy('pc_received_save', {
+        ...receivedInfo(),
+        method,
+        text_type: receivedToggle.getAttribute('aria-pressed') === 'true' ? 'standard' : 'jeju',
+      });
+    }
+  } catch (e) {
+    console.warn(e);
+  } finally {
+    receivedSaveBtn.disabled = false;
+  }
+});
+
 function showReceived(post) {
   received = post;
   // 받은 엽서 링크로 들어옴. v7.26: 어떻게 받았는지 · 받은 사람인지 · 사진 · 엽서 그림 · 공유 번호
@@ -2363,6 +2427,7 @@ function showReceivedMissing(text, reason) {
   note.textContent = text;
   receivedCard.after(note);
   receivedToggle.hidden = true;
+  receivedSaveBtn.hidden = true;
   document.getElementById('writeBackBtn').textContent = '나도 엽서 쓰기';
   receivedView.showModal();
 }

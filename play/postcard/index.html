@@ -373,6 +373,8 @@
     <div class="sheet-buttons">
       <!-- 표준어로 보기: 링크에 표준어 글이 담겨 있을 때만 보임. 누르면 엽서 글이 표준어 ↔ 제주어로 바뀜 -->
       <button type="button" class="received-toggle" id="receivedToggle" aria-pressed="false" hidden>표준어로 보기</button>
+      <!-- v7.27: 받은 엽서를 그림으로 저장 (지금 보이는 글 그대로 · 소인 찍힌 채로). 휴대폰은 공유 창, PC는 내려받기 (app.js renderPost) -->
+      <button type="button" class="received-toggle" id="receivedSaveBtn">이미지로 저장</button>
       <button type="button" class="stitch-btn is-accent" id="writeBackBtn">답장하기</button>
     </div>
   </dialog>
@@ -446,7 +448,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=248"></script>
+  <script src="app.js?v=249"></script>
 </body>
 
 </html>
