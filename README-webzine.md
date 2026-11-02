@@ -14,6 +14,8 @@
 > 7. **Voices(휴대폰 · 세로 화면)**: 사진 왼쪽 · 글 오른쪽, 손가락으로 좌우로 밀면 다음 사람(밀기 안내 한 줄은 손가락 기기에서만).
 > 8. **지도**: 핀 = **물방울 모양 위치 핀**(뾰족한 끝이 실제 자리), 채도를 낮춘 색(명소 #5a7385 · 카페·간식 #b08d47 · 맛집 #b5664c · 가게 #7b8760 · 섞인 묶음 #66574c — `css/map.css` 맨 위). 숫자 동그라미 안내 한 줄(분류 단추 위) + 숫자 동그라미에 마우스를 올리면 말풍선 ‘이 근처 제주어 상호 N곳 · 누르면 펼쳐져요’.
 
+> **62차(2026-11-02)** (엽서 v7.29) — **인스타그램 DM으로 엽서 링크 보내기 · 쓰기 단추는 바로 쓰는 칸으로**. ① **보내기 화면에 '인스타그램' 단추**(`#instagramBtn`, 카카오톡 옆). 인스타그램에는 사이트에서 친구를 고르는 창이 없어서 휴대폰 공유 창으로 넘김: 엽서를 카톡처럼 서버에 맡겨(`saveSharedPost`, 12개월) 링크를 만들고, 링크를 복사한 뒤 공유 창을 엶. 공유 창이 없으면(PC · 일부 앱 안 브라우저) 복사 + 'DM에 붙여 넣어 주세요' 안내. 링크를 만드는 데 1초 넘게 걸려 브라우저가 공유 창을 막으면 카톡처럼 단추가 '인스타그램 열기'로 바뀌어 한 번 더 누르게 함. 받은 사람이 링크를 누르면 카톡과 같은 받은 엽서 화면(표준어로 보기 · 이미지로 저장 · 답장하기). 실제 인스타그램 앱에서 링크가 DM으로 잘 들어가는지는 휴대폰으로 확인 필요. ② **추적**: 링크에 `utm_source=instagram` · `utm_medium=social` · `utm_content=view_link`(`SHARE_UTM`). `pc_send_done` 의 `method` = instagram(공유 창) · instagram_copy(복사), 받은 쪽 `share_method` = instagram. GTM 버전 8 로 게시: `GA4_이벤트_pc_share_click_instagram`(폴더 2). ③ **보내기 단추 6개**: PC 6칸 한 줄, 휴대폰(599px 이하) 3칸 두 줄(`.scene-send .send-row`). ④ **'T 내 편지 쓰기' · 'T 메시지 편집' → 언제나 쓰는 칸으로 바로**(`goWriteField`, 61차의 '화면이 넉넉하면 안내부터' 분기를 뺌). 쓰는 칸으로 내려가면 엽서 위 템플릿 안내는 화면 위로 올라감. ⑤ **개인정보처리방침**(`privacy.html`): 인스타그램으로 보낼 때의 보관 항목 · 쓰는 곳 · 기간(12개월) 추가, 보내기 화면 안내 문구도 함께. 시행일은 아직 그대로. **한경 서버에 올릴 파일**(61차 포함): `play/postcard/index.html` · `app.js` · `style.css` · `images/card-01.webp ~ card-16.webp` · `privacy.html`.
+>
 > **61차(2026-11-02)** (엽서 v7.28) — **엽서 글 칸 넓히기 · 템플릿은 고른 사람에게만 · 글 종류 추적**. ① **우표를 없애고 편지 줄 8줄 → 11줄**: 엽서 그림 16장(`play/postcard/images/card-01~16.webp`)에서 인쇄된 감귤 우표를 지우고, To 줄을 두 칸 위로 · From 줄을 한 칸 아래로 옮겨 사이를 점선으로 채움(줄 간격 92px 그대로. 만든 도구 = 옛 폴더 `_tools/remove_card_stamp.py`, 원본 그림 = `_tools/assets/cards-8-lines/`). 글자 자리 = `app.js` 의 `SPOTS` · `style.css` 의 `.card-message` 등. 보내기 소인은 글을 가리지 않게 184px → 124px 로 줄여 오른쪽 위 To 줄 옆으로(`STAMP` · `.card-stamp` · `.mini-stamp` · `.final-postmark`). 안내 창의 예시 엽서 3장(`images/intro/postcard-*.webp`)은 미리 만든 그림이라 그대로. ② **글씨 작게(비교 페이지의 C) · 글자 수 144자 → 264자**: `.card-field` 3.8cqh → 2.9cqh, 날짜 3.1cqh → 2.37cqh(`FONT_PX` · `DATE_PX` 도 같이). 한 줄 24자 × 11줄 = 264자. 쓰는 칸 높이 176px → 340px, 글자 수 표시가 글을 가리지 않게 아래 여백. 인쇄된 To · From 글자는 그림이라 크기 그대로. ③ **템플릿은 고른 사람에게만**: 첫 화면은 빈 엽서. 'T 내 편지 쓰기' · 'T 메시지 편집'은 빈칸으로 쓰는 칸만 엶. 그림 고르기 줄과 엽서 사이의 작은 안내 '템플릿 글을 쓸 수도 있어요 **보기**'(`#templateHintBtn`)를 누르면 그 엽서의 글과 글 이름 단추가 보이고(`.template-area` · `setTemplates`), '닫기'를 누르면 템플릿 글을 지우고 숨김(직접 쓴 글은 그대로). 화면이 넉넉하면 쓰는 칸을 열 때 안내부터 보이게, 좁으면 쓰는 칸부터(`goWriteField`). ④ **글 종류 추적**(아래 13-6): `pc_send_done` 에 `letter_type`(template · template_edited · own), '보기'를 누르면 `pc_template_open`. 글 내용은 보내지 않음. GTM 버전 7 로 게시(폴더 2), GA4 맞춤 측정기준 '글 종류' 등록. **한경 서버에 올릴 파일**: `play/postcard/index.html` · `app.js` · `style.css` · `images/card-01.webp ~ card-16.webp`(올리기 전까지 실제 사이트에는 안 보이고 글 종류도 안 쌓임).
 >
 > **60차(2026-10-30)** (엽서 v7.27) — **받은 엽서 화면에 '이미지로 저장' 단추**(`play/postcard/index.html` 의 `#receivedSaveBtn`, '표준어로 보기'와 '답장하기' 사이, 같은 크림색 알약). 카카오톡 · 메일 · 링크로 받은 엽서를 화면에 보이는 그대로(글 · 넣은 사진 · 날짜 · 하영고라보게 소인) 1920×1280 PNG 로 저장 — '표준어로 보기'를 눌러 둔 상태면 표준어 글로 저장. 휴대폰은 공유 창('이미지 저장'), PC는 내려받기(파일 이름 `제주어-엽서.png`, 보내는 쪽 저장과 같음). 엽서를 열지 못했을 때('나도 엽서 쓰기')는 숨김. 코드: `play/postcard/app.js` — 엽서 그리기를 `paintCard`(공통) · `renderCard`(쓰는 엽서) · `renderPost`(받은 엽서)로 나눔, 저장은 `saveCardImage`(보내는 쪽 '이미지로 저장'과 같이 씀). 측정 이벤트 `pc_received_save`(method = image · image_share, text_type = jeju · standard, share_method · viewer_type · share_id) — GTM 에는 아직 태그 없음. 휴대폰(375px)에서는 단추가 두 줄(위 두 개 · 아래 답장하기). `app.js?v=249`.
@@ -1869,7 +1871,7 @@ curl -s https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js | openssl dgst
 | `pc_view` · `pc_view_time` | 화면이 바뀜(flow 엽서 고르기 · 쓰기 / send 보내기 / board 게시판 / end) · 그 화면에 머문 초 | `view` · `seconds` |
 | `pc_card_pick` | 엽서 그림을 바꿈 | `card`(번호) |
 | `pc_send_open` | ‘제주어로 바꾸기’ 뒤 보내기 화면이 열림 | `jeju`(yes · no) |
-| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · mail · link · image · image_share · **board**(게시판에 붙임). v7.26: `share_id`(공유 번호) · `entry_type`(received · new) — 아래 13-5. v7.28: `letter_type`(template · template_edited · own) — 아래 13-6 |
+| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · instagram · instagram_copy · mail · link · image · image_share · **board**(게시판에 붙임). v7.26: `share_id`(공유 번호) · `entry_type`(received · new) — 아래 13-5. v7.28: `letter_type`(template · template_edited · own) — 아래 13-6 |
 | `pc_received_view` | 받은 엽서 링크로 들어옴 | `standard`. v7.26: `share_method` · `viewer_type` · `share_id` · `has_photo` · `card_id` — 아래 13-5 |
 | `pc_reply_click` (v7.26) | 받은 엽서에서 답장하기를 누름 | `share_method` · `viewer_type` · `share_id` |
 | `pc_received_fail` (v7.26) | 받은 엽서를 열지 못함 | `reason`(expired · load_error) · `share_method` · `share_id` |
@@ -1896,7 +1898,7 @@ curl -s https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js | openssl dgst
 
 ### 13-5. 공유받은 사람 추적 — 처음 보는 사람을 위한 안내(엽서 v7.26, 2026-10-29)
 
-**무엇을 알 수 있나**: 엽서를 쓴 사람이 카카오톡 · 메일 · 링크로 보낸 뒤, **받은 사람이 엽서를 열었는지 → 답장하기를 눌렀는지 → 자기 엽서를 다시 보냈는지**를 셉니다.
+**무엇을 알 수 있나**: 엽서를 쓴 사람이 카카오톡 · 인스타그램 · 메일 · 링크로 보낸 뒤, **받은 사람이 엽서를 열었는지 → 답장하기를 눌렀는지 → 자기 엽서를 다시 보냈는지**를 셉니다.
 
 ```
 보낸 사람  ──(공유 링크 + 꼬리표)──▶  받은 사람이 엽서를 엶  ──▶  답장하기  ──▶  자기 엽서를 보냄
@@ -1953,9 +1955,9 @@ pc_send_complete                    pc_received_view           pc_reply_click   
 
 | 알고 싶은 것 | 보는 곳 · 방법 |
 |---|---|
-| 공유받아 들어온 방문은 몇 번? 카톡 · 메일 · 링크 중 어디서? | 보고서 > 획득 > **트래픽 획득** → 표의 기본 측정기준을 '세션 캠페인'으로, `postcard_share` 를 누르거나 '세션 소스/매체'(kakao / social · mail / email · link / link)로 |
+| 공유받아 들어온 방문은 몇 번? 카톡 · 인스타그램 · 메일 · 링크 중 어디서? | 보고서 > 획득 > **트래픽 획득** → 표의 기본 측정기준을 '세션 캠페인'으로, `postcard_share` 를 누르거나 '세션 소스/매체'(kakao / social · mail / email · link / link)로 |
 | 받은 엽서가 몇 번 열렸나? | 보고서 > 참여도 > **이벤트** > `pc_received_view` → '보는 사람' = recipient 만, '공유 방법'별로 |
-| 보낸 엽서 대비 열린 비율 | `pc_received_view`(recipient) 수 ÷ `pc_send_complete`(공유 방법 = kakao · mail · link) 수. 한 엽서를 여러 명이 열면 100% 를 넘을 수 있음 |
+| 보낸 엽서 대비 열린 비율 | `pc_received_view`(recipient) 수 ÷ `pc_send_complete`(공유 방법 = kakao · instagram · mail · link) 수. 한 엽서를 여러 명이 열면 100% 를 넘을 수 있음 |
 | 받은 사람 중 답장하기를 누른 비율 | `pc_reply_click` ÷ `pc_received_view`(recipient) — '사용자 수'로 보면 같은 사람이 여러 번 연 것을 한 번으로 셈 |
 | 받은 엽서 덕분에 새로 보낸 엽서 | `pc_send_complete` 에서 '엽서 시작' = received |
 | 한 단계씩 줄어드는 모양(유입경로) | 탐색 > **유입경로 탐색** → 단계 1 `pc_received_view`(보는 사람 = recipient) → 단계 2 `pc_reply_click` → 단계 3 `pc_send_complete`(엽서 시작 = received), '개방형 유입경로' 끔 |

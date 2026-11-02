@@ -2372,9 +2372,12 @@ body::after { background: var(--grain); opacity: 0.5; }
 
 .scene-send .send-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
   align-items: start;
+}
+@media (max-width: 599px) {
+  .scene-send .send-row { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 12px; }   /* v7.29: 단추 6개 — 휴대폰은 3칸 × 2줄 */
 }
 
 .scene-send .send-option {

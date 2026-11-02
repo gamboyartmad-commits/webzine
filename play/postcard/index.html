@@ -22,7 +22,7 @@
 <link rel="preload" as="image" href="images/tale/desk-scene.webp">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=246">
+<link rel="stylesheet" href="style.css?v=247">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -261,6 +261,11 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4C7 4 3 7.1 3 11c0 2.5 1.7 4.7 4.2 5.9l-1 3.7a.3.3 0 0 0 .4.3l4.4-2.9h1c5 0 9-3.1 9-7s-4-7-9-7z" fill="currentColor"/></svg>
                     <span><b>카카오톡</b><small>친구를 골라 엽서를 보내요</small></span>
                   </button>
+                  <!-- v7.29: 인스타그램 DM으로 엽서 링크 보내기 (app.js instagramBtn) -->
+                  <button type="button" class="send-option" id="instagramBtn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="7" r="1.3" fill="currentColor"/></svg>
+                    <span><b>인스타그램</b><small>DM으로 엽서 링크를 보내요</small></span>
+                  </button>
                   <button type="button" class="send-option" id="mailOption" aria-expanded="false" aria-controls="mailForm">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
                     <span><b>메일</b><small>엽서 그림이 메일에 바로 보여요</small></span>
@@ -286,7 +291,7 @@
                   </button>
                 </div>
                 <!-- v7.25: 카카오톡으로 보내면 엽서를 서버에 12개월 맡김 (app.js saveSharedPost · supabase/share.sql). v7.26: 메일도 -->
-                <p class="send-note" id="kakaoNote">카카오톡 · 메일로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.</p>
+                <p class="send-note" id="kakaoNote">카카오톡 · 인스타그램 · 메일로 보낸 엽서(글 · 사진)는 서버에 12개월 동안 보관한 뒤 지워요. 링크를 받은 사람만 볼 수 있고, 게시판에는 나오지 않아요.</p>
                 <p class="sheet-status" id="sheetStatus" aria-live="polite"></p>
                 <div class="send-done" id="sendDone" hidden>
                   <button type="button" class="stitch-btn is-accent" id="newCardBtn" hidden>새 엽서 쓰기</button>
@@ -451,7 +456,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=255"></script>
+  <script src="app.js?v=257"></script>
 </body>
 
 </html>

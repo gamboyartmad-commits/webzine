@@ -583,14 +583,11 @@ function placeCardEdit() {
 
 function goWriteField(id) {
   openWriter();
+  const heading = writerPanel;   // 쓰는 칸 맨 위(To)
   const bar = document.querySelector('.tale-bar');
-  const pageTop = (el) => el.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0) - 16;
-  // 화면이 넉넉하면 엽서 위 템플릿 안내부터 쓰는 칸까지 함께 보이게, 좁으면 쓰는 칸 맨 위(To)부터
-  const field = document.getElementById(id);
-  const roomy = !templateArea.hidden
-    && field.getBoundingClientRect().top + window.scrollY - pageTop(templateArea) + 80 < window.innerHeight;
-  window.scrollTo({ top: pageTop(roomy ? templateArea : writerPanel), behavior: smoothScroll() });
-  field.focus({ preventScroll: true });
+  const top = heading.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0) - 16;
+  window.scrollTo({ top, behavior: smoothScroll() });
+  document.getElementById(id).focus({ preventScroll: true });
 }
 
 // 엽서 칸들은 손가락 · 마우스를 그냥 통과시키므로(pointer-events: none) 엽서 전체에서 받아, 오른쪽 글 쓰는 면을 눌렀을 때만.
@@ -1522,6 +1519,7 @@ function openSend() {
   // v7.20: 카카오 도구만 미리 불러 둠. 엽서 그림은 '카카오톡' 단추를 누를 때만 올림(사용자 — 예전에는 여기서 미리 올렸음)
   if (KAKAO_JS_KEY) kakao().catch(() => {});
   setKakaoAgain(false);
+  setInstagramAgain(false);
   sendPanel.show();   // 창이 아니라 엽서 아래에 펼쳐지는 버튼 목록
   hy('pc_send_open', { jeju: jejuApplied ? 'yes' : 'no', card_id: pickedCardId() });   // 제주어로 바꾼 뒤 보내기 화면이 열림(v7.21: 어떤 엽서 그림으로)
 }
@@ -1678,6 +1676,7 @@ const SHARE_UTM = {
   kakao: { utm_source: 'kakao', utm_medium: 'social' },
   mail: { utm_source: 'mail', utm_medium: 'email' },
   link: { utm_source: 'link', utm_medium: 'link' },
+  instagram: { utm_source: 'instagram', utm_medium: 'social' },   // v7.29
 };
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
 function withShareUtm(url, method, content) {
@@ -1925,15 +1924,20 @@ async function shareToKakao(startedAt) {
 }
 
 // v7.20: 그림을 올리느라 늦었을 때 카카오 단추 글자를 '카카오톡 열기'로(보내기를 다시 열면 원래대로)
-function setKakaoAgain(on) {
-  const btn = document.getElementById('kakaoBtn');
+function setSendAgain(btn, on, againTitle, againSub) {
   const title = btn && btn.querySelector('b');
   const sub = btn && btn.querySelector('small');
   if (!title || !sub) return;
   if (!btn.dataset.title) { btn.dataset.title = title.textContent; btn.dataset.sub = sub.textContent; }
-  title.textContent = on ? '카카오톡 열기' : btn.dataset.title;
-  sub.textContent = on ? '한 번 더 누르면 카카오톡이 열려요' : btn.dataset.sub;
+  title.textContent = on ? againTitle : btn.dataset.title;
+  sub.textContent = on ? againSub : btn.dataset.sub;
   btn.classList.toggle('is-ready', on);
+}
+function setKakaoAgain(on) {
+  setSendAgain(document.getElementById('kakaoBtn'), on, '카카오톡 열기', '한 번 더 누르면 카카오톡이 열려요');
+}
+function setInstagramAgain(on) {
+  setSendAgain(document.getElementById('instagramBtn'), on, '인스타그램 열기', '한 번 더 누르면 공유 창이 열려요');
 }
 
 document.getElementById('kakaoBtn').addEventListener('click', async () => {
@@ -1977,6 +1981,60 @@ document.getElementById('kakaoBtn').addEventListener('click', async () => {
   // 키도 공유 창도 없는 PC 브라우저: 링크를 복사해 두고 카카오톡에 붙여 넣게 안내
   await copyText(shareText(url));
   finishSend('엽서 링크와 편지 사이트 주소를 복사했어요. 카카오톡 대화창에 붙여 넣어 보내 주세요.' + PHOTO_NOTE() + LOCAL_NOTE, 'kakao_copy', url);
+});
+
+// v7.29: 인스타그램 DM으로 링크 보내기. 인스타그램에는 사이트에서 친구를 고르는 창이 없어서(카카오 SDK 같은 것이 없음) 휴대폰 공유 창으로 넘김.
+// 엽서는 카카오톡처럼 서버에 맡기고(saveSharedPost) 링크에는 번호만 → 받은 사람이 누르면 받은 엽서 · 답장하기가 보임.
+// 공유 창에서 링크가 안 넘어가는 기기도 있을 수 있어 링크를 먼저 복사해 둠. 공유 창이 없으면(PC · 일부 앱 안 브라우저) 복사 + 붙여 넣기 안내.
+// 서버에 맡기느라 늦으면 브라우저가 공유 창을 막으므로 카카오와 같이 '한 번 더 눌러 주세요'
+const INSTA_TAP_MS = 1000;
+const instagramBtn = document.getElementById('instagramBtn');
+let instaReady = { key: '', url: '' };
+const instaAgainText = '링크를 준비했어요. ‘인스타그램 열기’를 한 번 더 눌러 주세요.';
+
+instagramBtn.addEventListener('click', async () => {
+  if (cardHasBadWord()) { setSheetStatus(BAD_WORD_MESSAGE, true); return; }
+  const startedAt = performance.now();
+  const key = cardKey();
+  let { url } = instaReady.key === key ? instaReady : { url: '' };
+  const justSaved = !url;
+  if (justSaved) {
+    instagramBtn.disabled = true;
+    setSheetStatus('인스타그램으로 보낼 링크를 만드는 중이에요...');
+    url = await saveSharedPost()
+      .then((u) => withShareUtm(u, 'instagram', 'view_link'))
+      .catch((e) => { console.warn(e); return withShareUtm(postUrl(), 'instagram', 'view_link'); });   // 서버에 못 맡기면 예전처럼 엽서를 링크에 담음(사진은 빠짐)
+    instagramBtn.disabled = false;
+    instaReady = { key, url };
+  }
+  const note = (url.includes('?id=') ? '' : PHOTO_NOTE()) + LOCAL_NOTE;
+  const canShare = window.matchMedia('(pointer: coarse)').matches && navigator.share;
+  const ua = navigator.userActivation;
+  if (canShare && justSaved && (performance.now() - startedAt > INSTA_TAP_MS || (ua && !ua.isActive))) {
+    setInstagramAgain(true);
+    setSheetStatus(instaAgainText);
+    return;
+  }
+  const copied = await copyText(`제주어 엽서가 도착했어요.\n엽서 보기: ${url}`);
+  setInstagramAgain(false);
+  if (!canShare) {
+    if (copied) finishSend(`엽서 링크를 복사했어요. 인스타그램 DM에 붙여 넣어 보내 주세요.${note}`, 'instagram_copy', url);
+    else setSheetStatus('링크를 복사하지 못했어요. 다시 눌러 주세요.', true);
+    return;
+  }
+  try {
+    await navigator.share({ title: '제주어 엽서', text: '제주어 엽서가 도착했어요. 엽서 보기:', url });
+    finishSend(`인스타그램을 골랐다면 받을 친구에게 보내 주세요.${copied ? ' 링크도 복사해 두었으니, 안 되면 DM에 붙여 넣어 주세요.' : ''}${note}`, 'instagram', url);
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      setInstagramAgain(true);
+      setSheetStatus(instaAgainText);
+    } else if (copied) {
+      setSheetStatus('엽서 링크를 복사해 두었어요. 인스타그램 DM에 붙여 넣어 보내 주세요.');
+    } else if (err.name !== 'AbortError') {
+      setSheetStatus('공유 창을 열지 못했어요. 다시 눌러 주세요.', true);
+    }
+  }
 });
 
 // 메일 (Google Apps Script 웹앱)
@@ -2378,7 +2436,7 @@ const arrivedByLink = !!received || !!sharedId;   // 받은 엽서를 먼저 보
 const startUtmSource = new URLSearchParams(location.search).get('utm_source') || '';
 const receivedShareId = sharedId || (receivedCode ? `p${fingerprint(receivedCode)}` : '');
 const receivedInfo = () => ({
-  share_method: SHARE_UTM[startUtmSource] ? startUtmSource : 'unknown',   // kakao · mail · link (꼬리표 없는 예전 링크는 unknown)
+  share_method: SHARE_UTM[startUtmSource] ? startUtmSource : 'unknown',   // kakao · mail · link · instagram (꼬리표 없는 예전 링크는 unknown)
   viewer_type: sentHere(receivedShareId) ? 'sender' : 'recipient',
   share_id: receivedShareId,
 });
