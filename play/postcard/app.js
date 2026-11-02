@@ -2,11 +2,11 @@
 const hy = (name, params) => { try { if (window.hyTrack) window.hyTrack(name, params); } catch (e) { /* 측정만 빠짐 */ } };
 
 // ---------- 엽서 목록 ----------
-// 16장 모두 같은 틀(1920×1280, 오른쪽 절반에 To / 8줄 / From)이라 쓰는 자리가 같음
+// 16장 모두 같은 틀(1920×1280, 오른쪽 절반에 To / 11줄 / From)이라 쓰는 자리가 같음
 // hidden: true 인 그림은 고르기 띠에서 뺌. 번호(순서)는 그대로 두어야 예전에 보낸 엽서 링크 · 게시판 엽서가 같은 그림으로 열림
 
 // 그림을 고치면 IMG_V를 올려서 브라우저에 남은 예전 그림 대신 새 그림을 받게 함
-const IMG_V = '?v=3';   // v2: 미리 찍혀 있던 소인을 지운 그림, v3: 우표를 75%로 줄인 그림 (_tools/shrink_card_stamp.py)
+const IMG_V = '?v=4';   // v2: 미리 찍혀 있던 소인을 지운 그림, v3: 우표를 75%로 줄인 그림, v4: 우표를 지우고 편지 줄을 11줄로 (_tools/remove_card_stamp.py)
 // id = 성과 측정용 엽서 ID(v7.22): 고르기 띠에 보이는 차례대로 'pc-card-01' ~ 'pc-card-13'(띠에서 뺀 hidden 그림은 고를 수 없어 ID 가 없다).
 // 새 그림을 띠에 더하면 다음 번호(pc-card-14 …)를 주고, 이미 준 번호는 바꾸지 않는다(바꾸면 지난 측정과 어긋난다)
 const CARDS = [
@@ -446,7 +446,7 @@ photoRemoveBtn.addEventListener('click', (e) => {
 markPicked();
 scrollToSlot(centerSlot, 'instant');
 
-// ---------- 엽서 내용은 엽서에 그려진 8줄까지만 ----------
+// ---------- 엽서 내용은 엽서에 그려진 11줄까지만 ----------
 
 // 줄을 넘겨 쓰면 글자가 엽서 밖으로 밀려나므로, 넘친 만큼 끝에서부터 잘라냄
 function fitLines() {
@@ -471,7 +471,7 @@ PAIRS.forEach(([mobile, card]) => {
     card.value = mobile.value;
     if (card === cardMessage) {
       fitLines();
-      if (mobile.value !== card.value) mobile.value = card.value;   // 8줄을 넘긴 만큼은 여기서도 지움
+      if (mobile.value !== card.value) mobile.value = card.value;   // 11줄을 넘긴 만큼은 여기서도 지움
       card.dispatchEvent(new Event('input'));
     }
   });
@@ -490,8 +490,8 @@ const CARD_TO_WRITER = [
   [document.getElementById('cardFrom'), 'mobileFrom'],
 ];
 
-// 마음 쓰기 칸('당신의 마음을 들려주세요.' · To · 하고 싶은 말 · From)은 처음엔 숨겨 두고(엽서 템플릿 글만),
-// 'T 내 편지 쓰기' · 엽서 위 줄글을 누르면 열림
+// 마음 쓰기 칸('당신의 마음을 들려주세요.' · To · 하고 싶은 말 · From)은 처음엔 숨겨 두고(빈 엽서만),
+// 'T 내 편지 쓰기' · 'T 메시지 편집' · 엽서 위 줄글을 누르면 열림
 const writerPanel = document.getElementById('writerPanel');
 const writeOpenBtn = document.getElementById('writeOpenBtn');
 function openWriter() {
@@ -499,6 +499,8 @@ function openWriter() {
   writerPanel.hidden = false;
   writeOpenBtn.setAttribute('aria-expanded', 'true');
 }
+// v7.28: 첫 화면과 쓰는 칸은 빈칸. 엽서 위 '템플릿 글을 쓸 수도 있어요 보기'를 고른 사람에게만 템플릿(엽서 글 + 단추 줄)이 보임 (setTemplates)
+let templatesOn = false;
 // 'T 내 편지 쓰기': 엽서 템플릿 글(To · 편지)을 지우고 빈칸으로 열어 직접 쓰게 함.
 // 이미 직접 쓴 글은 지우지 않음. 이때부터는 엽서를 바꿔도 템플릿 글이 다시 써지지 않음(그 엽서 글은 단추로만)
 let writingOwn = false;
@@ -551,13 +553,13 @@ writeOpenBtn.addEventListener('click', () => {
 });
 
 // 'T 메시지 편집' (엽서 안, 글 바로 아랫줄 가운데): 엽서에 있는 글을 그대로 둔 채 편지 쓰는 칸으로.
-// 엽서 글과 쓰는 칸은 늘 같은 글이라 옮길 것은 없음. 8줄을 다 채우면 From 줄 밑 오른쪽 아래로
+// 엽서 글과 쓰는 칸은 늘 같은 글이라 옮길 것은 없음. 11줄을 다 채우면 오른쪽 위 To 줄 옆으로
 const cardEditBtn = document.getElementById('cardEditBtn');
 cardEditBtn.addEventListener('click', (e) => {
   e.stopPropagation();   // 엽서 누르기(가까운 칸으로)와 겹치지 않게
   goWriteField('mobileMessage');
 });
-const CARD_LINES = 8;
+const CARD_LINES = 11;
 let cardEditKey = '';
 function placeCardEdit() {
   const box = cardMessage.clientHeight;
@@ -581,11 +583,14 @@ function placeCardEdit() {
 
 function goWriteField(id) {
   openWriter();
-  const heading = writerPanel;   // 쓰는 칸 맨 위(To)
   const bar = document.querySelector('.tale-bar');
-  const top = heading.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0) - 16;
-  window.scrollTo({ top, behavior: smoothScroll() });
-  document.getElementById(id).focus({ preventScroll: true });
+  const pageTop = (el) => el.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0) - 16;
+  // 화면이 넉넉하면 엽서 위 템플릿 안내부터 쓰는 칸까지 함께 보이게, 좁으면 쓰는 칸 맨 위(To)부터
+  const field = document.getElementById(id);
+  const roomy = !templateArea.hidden
+    && field.getBoundingClientRect().top + window.scrollY - pageTop(templateArea) + 80 < window.innerHeight;
+  window.scrollTo({ top: pageTop(roomy ? templateArea : writerPanel), behavior: smoothScroll() });
+  field.focus({ preventScroll: true });
 }
 
 // 엽서 칸들은 손가락 · 마우스를 그냥 통과시키므로(pointer-events: none) 엽서 전체에서 받아, 오른쪽 글 쓰는 면을 눌렀을 때만.
@@ -606,7 +611,7 @@ CARD_TO_WRITER.forEach(([field, id]) => {
 });
 
 // ---------- 엽서 템플릿: 엽서(그림)마다 어울리는 To · 편지 글 ----------
-// 엽서를 고르면 그 엽서의 To와 편지 글이 바로 써짐(엽서에도). 단, 직접 쓴 글이 있으면 지우지 않고
+// 엽서 위 '보기'를 누르면(v7.28) 고른 엽서의 To와 편지 글이 써지고, 그 뒤로 엽서를 바꾸면 그 엽서 글로 바뀜. 단, 직접 쓴 글이 있으면 지우지 않고
 // 아래 '이 엽서에 어울리는 글' 단추로만 보여 줌(누르면 바꾸고 '되돌리기' 8초).
 // 노부부 엽서(16번)처럼 글이 두 가지인 엽서는 단추로 골라 씀.
 // jeju = 미리 다듬은 제주어 문장(번역 규칙에 맡기면 어색해지는 곳이 있어서). 낱말은 jeju-dict.js(『개정증보 제주어사전』)의
@@ -666,6 +671,8 @@ const isTemplateText = (text) => ALL_TEMPLATES.some((t) => t.text === text.trim(
 const mobileTo = document.getElementById('mobileTo');
 const templateRow = document.querySelector('.letter-templates');
 const templateList = document.getElementById('templateList');
+const templateArea = document.getElementById('templateArea');
+const templateHintBtn = document.getElementById('templateHintBtn');
 let templateChips = [];
 const cardToBox = document.querySelector('#card .card-to');
 const syncToScale = () => requestAnimationFrame(() => fitToField(cardToBox, cardTo.value));
@@ -693,9 +700,18 @@ function writeField(input, value) {
   input.dispatchEvent(new Event('input', { bubbles: true }));   // 엽서에도 옮김
 }
 
+// v7.28 성과 측정: 보낸 글이 템플릿인지(pc_send_done 의 letter_type). 글 내용은 보내지 않고 종류만
+let usedTemplate = false;   // 템플릿을 고른 뒤 글을 다 지우기 전까지 true
+const letterType = () => {
+  const sent = cardMessage.value.trim();
+  if (ALL_TEMPLATES.some((t) => t.text === sent || t.jeju === sent)) return 'template';   // 템플릿 그대로(표준어 · 제주어)
+  return usedTemplate ? 'template_edited' : 'own';
+};
+
 function writeTemplate(t) {
   writeField(mobileTo, t.to);
   writeField(mobileMessage, t.text);
+  usedTemplate = true;
   markTemplate();
 }
 
@@ -706,9 +722,11 @@ const hasOwnText = () => {
   return (text && !isTemplateText(text)) || (to && !TEMPLATE_TOS.has(to));
 };
 
-// 엽서를 바꿀 때: 직접 쓴 글이 없으면 그 엽서 글로 바로 채우고, 엽서 아래 단추 줄에 그 엽서의 글을 보여 줌
+// 엽서를 바꿀 때: 직접 쓴 글이 없으면 그 엽서 글로 바로 채우고, 엽서 위 단추 줄에 그 엽서의 글을 보여 줌 ('보기'를 고르기 전에는 빈칸 그대로)
 function onCardTemplate(index) {
   const list = CARD_TEMPLATES[index] || [];
+  templateArea.hidden = !list.length;   // 내 사진 칸처럼 템플릿이 없으면 안내도 숨김
+  if (!templatesOn) return;
   const own = hasOwnText();
   if (list.length && !own && !writingOwn && !list.some((t) => t.text === mobileMessage.value.trim())) writeTemplate(list[0]);
   templateList.textContent = '';
@@ -743,7 +761,27 @@ function onCardTemplate(index) {
   markTemplate();
 }
 onCardChange = onCardTemplate;
-onCardTemplate(currentCard);   // 첫 엽서(해녀 바다)의 글로 시작
+onCardTemplate(currentCard);
+
+// 엽서 위 안내 단추: 누른 사람에게만 템플릿을 보여 주고, 다시 누르면 닫으면서 템플릿 글을 지움(직접 쓴 글은 그대로)
+function setTemplates(on) {
+  templatesOn = on;
+  writingOwn = false;
+  hideTemplateUndo();
+  if (on) {
+    onCardTemplate(currentCard);
+  } else {
+    if (isTemplateText(mobileMessage.value)) writeField(mobileMessage, '');
+    if (TEMPLATE_TOS.has(mobileTo.value.trim())) writeField(mobileTo, '');
+    templateRow.hidden = true;
+  }
+  templateHintBtn.setAttribute('aria-expanded', String(on));
+  templateHintBtn.innerHTML = on ? '템플릿 글 <b>닫기</b>' : '템플릿 글을 쓸 수도 있어요 <b>보기</b>';
+}
+templateHintBtn.addEventListener('click', () => {
+  setTemplates(!templatesOn);
+  if (templatesOn) hy('pc_template_open', { card_id: pickedCardId() });   // v7.28 성과 측정: 템플릿을 열어 본 사람
+});
 
 document.getElementById('templateUndoBtn').addEventListener('click', () => {
   const back = undo;
@@ -751,18 +789,20 @@ document.getElementById('templateUndoBtn').addEventListener('click', () => {
   if (!back) return;
   writeField(mobileTo, back.to);
   writeField(mobileMessage, back.text);
+  usedTemplate = false;
   markTemplate();
   mobileMessage.focus({ preventScroll: true });
 });
 
 mobileMessage.addEventListener('input', (e) => {
   markTemplate();
+  if (!mobileMessage.value.trim()) usedTemplate = false;   // 글을 다 지우면 그 뒤로 쓰는 글은 직접 쓴 글
   if (e.isTrusted) hideTemplateUndo();   // 손으로 고쳐 쓰기 시작하면 되돌리기는 숨김
 });
 cardMessage.addEventListener('input', () => requestAnimationFrame(markTemplate));
 
-// 하고 싶은 말 글자 수 (최대 144자, 칸 오른쪽 아래 'N/144자') — v7.11: 하영 손글씨로 엽서 한 줄에 한글 18자 × 8줄 = 144자.
-// 띄어쓰기 · 문장부호가 섞이면 더 들어가지만(보통 문장 약 177자) 한글만 이어 써도 잘리지 않게 144자로 둠
+// 하고 싶은 말 글자 수 (최대 264자, 칸 오른쪽 아래 'N/264자') — v7.28: 하영 손글씨로 엽서 한 줄에 한글 24자 × 11줄 = 264자.
+// 띄어쓰기 · 문장부호가 섞이면 더 들어가지만 한글만 이어 써도 잘리지 않게 264자로 둠
 const messageCount = document.querySelector('#messageCount b');
 const updateMessageCount = () => { messageCount.textContent = graphemes(mobileMessage.value).length; };
 mobileMessage.addEventListener('input', updateMessageCount);
@@ -806,7 +846,7 @@ let letter = { standard: '', jeju: '' };
 // 이야기(flow): SCENE 01~02. 화면이 멈춘 채(sticky) 스크롤에 맞춰 카메라가 움직이고(아래 '동화 장면'),
 //   종이 한 장이 동화 위로 밀려 올라오며 엽서 고르기 + 마음 쓰기 (한 화면).
 //   여기서부터는 버튼을 누를 때마다 화면이 통째로 바뀜 (앞 화면 내용은 보이지 않음):
-//   '제주어로 바꾸기' → 보내기(send: 제주어 엽서에 우표 · 소인, 제주어 편지 고치기는 펼쳐서) → 보내기를 마치면 엔딩(end)
+//   '제주어로 바꾸기' → 보내기(send: 제주어 엽서에 소인, 제주어 편지 고치기는 펼쳐서) → 보내기를 마치면 엔딩(end)
 // 게시판(board): 따로 보는 화면
 // 화면을 바꿀 때마다 브라우저 기록을 쌓아 휴대폰 뒤로 가기 · 뒤로 버튼으로 한 화면씩 돌아옴. 화면마다 보던 자리를 기억함
 const scene2 = document.getElementById('scene2');
@@ -927,7 +967,7 @@ function setTrStatus(text, warning) {
   trStatus.classList.toggle('is-warning', !!warning);
 }
 
-// 편지 칸은 글 길이만큼 줄 단위로 늘어나서 안에서 따로 스크롤하지 않게 (엽서처럼 최소 8줄, 휴대폰은 5줄)
+// 편지 칸은 글 길이만큼 줄 단위로 늘어나서 안에서 따로 스크롤하지 않게 (최소 8줄, 휴대폰은 5줄)
 function fitHeight(el) {
   const line = parseFloat(getComputedStyle(el).lineHeight) || 38;
   const minLines = narrowScreen.matches ? 5 : 8;
@@ -994,7 +1034,7 @@ translateBtn.addEventListener('click', () => {
     openSec('translate');
     jejuEditor.hidden = true;
     jejuEditBtn.setAttribute('aria-expanded', 'false');
-    // 바뀐 제주어 편지를 엽서에 담고 바로 보내기 화면으로 (8줄을 넘거나 보낼 수 없는 말이면 여기 머묾)
+    // 바뀐 제주어 편지를 엽서에 담고 바로 보내기 화면으로 (11줄을 넘거나 보낼 수 없는 말이면 여기 머묾)
     const problem = jejuProblem();
     if (problem) {
       setStatus(problem, true);
@@ -1016,7 +1056,7 @@ function jejuProblem() {
   const before = cardMessage.value;
   const fits = putOnCard(trJeju.value);
   putOnCard(before);
-  return fits ? '' : '제주어로 바꾸니 엽서 8줄을 넘어가요. 편지를 조금 줄여 주세요.';
+  return fits ? '' : '제주어로 바꾸니 엽서 11줄을 넘어가요. 편지를 조금 줄여 주세요.';
 }
 
 // 보내기 화면의 '제주어 편지 고치기': 펼치면 표준어 · 제주어 두 편지 (고치면 엽서에 바로 반영)
@@ -1032,7 +1072,7 @@ jejuEditBtn.addEventListener('click', () => {
   }
 });
 
-// 보내기 화면의 완성 엽서 그림을 지금 글로 다시 그림 (우표 · 소인은 그 위에 그대로)
+// 보내기 화면의 완성 엽서 그림을 지금 글로 다시 그림 (소인은 그 위에 그대로)
 let refreshTimer = null;
 function refreshFinal() {
   if (secSend.hidden) return;
@@ -1048,13 +1088,13 @@ function refreshFinal() {
   }, 350);
 }
 
-// 제주어 편지를 엽서에 담음 (엽서 8줄을 넘으면 알려 주고 엽서는 그대로)
+// 제주어 편지를 엽서에 담음 (엽서 11줄을 넘으면 알려 주고 엽서는 그대로)
 function applyJeju() {
   if (putOnCard(trJeju.value)) {
     setTrStatus('');
     return true;
   }
-  setTrStatus('제주어로 바꾼 편지가 엽서 8줄을 넘어가요. 아래 제주어 편지를 조금 줄여 주세요.', true);
+  setTrStatus('제주어로 바꾼 편지가 엽서 11줄을 넘어가요. 아래 제주어 편지를 조금 줄여 주세요.', true);
   return false;
 }
 
@@ -1096,7 +1136,7 @@ trJeju.addEventListener('input', () => {
   refreshFinal();
 });
 
-// 엽서에 글을 담아 보고, 엽서 8줄을 넘으면 되돌림.
+// 엽서에 글을 담아 보고, 엽서 11줄을 넘으면 되돌림.
 // 2단계 페이지에 있을 때는 엽서가 숨어 있어 높이를 잴 수 없으므로 잠깐 펼쳐서 잼 (화면에는 안 보임)
 function putOnCard(text) {
   const before = cardMessage.value;
@@ -1117,7 +1157,7 @@ function putOnCard(text) {
 // 엽서 다시 쓰기: 고친 표준어 편지를 엽서에 담고 돌아감
 document.getElementById('trBack').addEventListener('click', () => {
   if (!putOnCard(trStandard.value)) {
-    setTrStatus('표준어 편지가 엽서 8줄을 넘어가요. 조금 줄여 주세요.', true);
+    setTrStatus('표준어 편지가 엽서 11줄을 넘어가요. 조금 줄여 주세요.', true);
     trStandard.focus();
     return;
   }
@@ -1165,8 +1205,8 @@ cardMessage.addEventListener('input', clearStamp);
   el.addEventListener('input', () => { if (!secSend.hidden) closeSec('send'); });
 });
 
-// SCENE 04: 소인 없이 그린 완성 엽서를 보여 주고, 화면에 들어오면 귤 우표 → 하영고라보게 소인이 차례로 찍힘.
-// 저장 · 공유하는 그림에는 우표와 소인이 함께 그려짐 (renderCard의 stamped)
+// SCENE 04: 소인 없이 그린 완성 엽서를 보여 주고, 화면에 들어오면 하영고라보게 소인이 찍힘.
+// 저장 · 공유하는 그림에는 소인이 함께 그려짐 (renderCard의 stamped)
 const finalCard = document.getElementById('finalCard');
 const finalImage = document.getElementById('finalImage');
 
@@ -1198,7 +1238,7 @@ async function showFinalCard() {
   } finally {
     trNextBtn.disabled = false;
   }
-  stamped = true;   // 이제부터 저장 · 공유 그림에는 우표와 소인이 찍힘
+  stamped = true;   // 이제부터 저장 · 공유 그림에는 소인이 찍힘
   ending.hidden = true;
   finalCard.classList.remove('is-stamping', 'is-stamped');
   finalCard.dataset.pending = '1';
@@ -1228,7 +1268,7 @@ const stampWatch = 'IntersectionObserver' in window ? new IntersectionObserver((
 if (stampWatch) stampWatch.observe(finalCard);
 else finalCard.classList.add('is-stamped');
 
-// 고친 편지로 엽서 다시 찍기: 제주어 편지를 엽서에 담고 우표 · 소인을 다시 찍음
+// 고친 편지로 엽서 다시 찍기: 제주어 편지를 엽서에 담고 소인을 다시 찍음
 document.getElementById('trNext').addEventListener('click', () => {
   if (!trJeju.value.trim()) {
     setTrStatus('제주어 편지가 비어 있어요. ‘원래 편지로 다시 바꾸기’를 눌러 주세요.', true);
@@ -1239,7 +1279,7 @@ document.getElementById('trNext').addEventListener('click', () => {
     return;
   }
   if (!putOnCard(trJeju.value)) {
-    setTrStatus('제주어로 바꾼 편지가 엽서 8줄을 넘어가요. 조금 줄여 주세요.', true);
+    setTrStatus('제주어로 바꾼 편지가 엽서 11줄을 넘어가요. 조금 줄여 주세요.', true);
     trJeju.focus();
     return;
   }
@@ -1294,19 +1334,18 @@ document.getElementById('cardDate').textContent = TODAY;
 const CARD_W = 1920;
 const CARD_H = 1280;
 const LINE = 92;                       // 엽서 줄 간격
-const FONT_PX = CARD_H * 0.038;        // style.css의 font-size: 3.8cqh
+const FONT_PX = CARD_H * 0.029;        // style.css의 font-size: 2.9cqh
 const LETTER_FAMILY = '"Hayeong Hand", "NanumMyeongjo YetHangul", "Malgun Gothic", "Apple SD Gothic Neo", serif';   // v7.11: 엽서 글씨 = 하영 손글씨 (style.css의 --letter-font)
 const FONT = `${FONT_PX}px ${LETTER_FAMILY}`;
 const SPOTS = {
-  message: { x: 1064, top: 313, width: 727, lines: 8 },
-  to: { x: 1130, top: 221, width: 560 },   // 줄인 우표(1704) 앞까지 — 긴 To도 편지 글과 같은 크기로. 이보다 길면 글자를 줄임 (toScale)
-  from: { x: 1405, top: 1049, width: 270 },
-  date: { x: 1064, top: 1049 },            // style.css의 .card-date (글자는 3.1cqh)
+  message: { x: 1064, top: 129, width: 727, lines: 11 },
+  to: { x: 1130, top: 37, width: 560 },    // 소인(1700) 앞까지 — 긴 To도 편지 글과 같은 크기로. 이보다 길면 글자를 줄임 (toScale)
+  from: { x: 1405, top: 1141, width: 270 },
+  date: { x: 1064, top: 1141 },            // style.css의 .card-date (글자는 2.37cqh)
 };
 
-// 원래 엽서에 인쇄돼 있던 소인과 같은 자리·크기 (style.css의 .card-stamp)
-const STAMP = { left: 0.8266, top: 0.0699, size: 0.1434, angle: 0 };   // 우표를 75%로 줄이며 소인도 같은 비율로
-// 귤 우표: 엽서 그림에 인쇄된 우표(1662,90 ~ 1846,334)를 덮는 자리
+// 보내기 소인: 오른쪽 위 To 줄 옆 빈자리 (style.css의 .card-stamp)
+const STAMP = { left: 0.8854, top: 0.0125, size: 0.0969, angle: 0 };   // v7.28: 편지 줄을 가리지 않게 작게
 
 // 긴 To(예: 사과하고 싶은 사람에게)는 소인 앞까지 들어가게 글자 크기를 줄임: 1 = 그대로, 0.7 = 70%
 const measureCtx = document.createElement('canvas').getContext('2d');
@@ -1414,7 +1453,7 @@ async function paintCard({ art, drawPhoto, message, to, from, date, withStamp })
   ctx.fillText(from, SPOTS.from.x, SPOTS.from.top + baseline, SPOTS.from.width);
 
   // 날짜는 조금 작고 옅게
-  const DATE_PX = CARD_H * 0.031;
+  const DATE_PX = CARD_H * 0.0237;
   ctx.font = `${DATE_PX}px ${LETTER_FAMILY}`;
   ctx.fillStyle = '#6f6455';
   const dm = ctx.measureText('0');
@@ -1422,8 +1461,7 @@ async function paintCard({ art, drawPhoto, message, to, from, date, withStamp })
   const dDescent = dm.fontBoundingBoxDescent || DATE_PX * 0.2;
   ctx.fillText(date, SPOTS.date.x, SPOTS.date.top + (LINE - (dAscent + dDescent)) / 2 + dAscent);
 
-  // 우표는 엽서 그림(card-01~12)에 인쇄된 감귤 우표(R.P. ROMÎNA · CITRUS UNSHIU)를 그대로 씀 → 그 위에 보내기 소인
-  // 보내기 소인 (style.css의 .card-stamp와 같은 자리·크기)
+    // 보내기 소인 (style.css의 .card-stamp와 같은 자리·크기)
   if (withStamp) {
     const ink = cardStamp;
     if (!ink.complete) await ink.decode();
@@ -1508,7 +1546,7 @@ function finishSend(text, method = '', shareUrl = '') {
   // v7.26: share_id = 보낸 링크의 공유 번호(받은 쪽 pc_received_view 와 이어 봄), entry_type = 받은 엽서를 보고 들어와 쓴 사람이면 received
   const shareId = shareIdOf(shareUrl);
   rememberSent(shareId);
-  hy('pc_send_done', { method, card_id: pickedCardId(), share_id: shareId, entry_type: entryType() });   // v7.11 성과 측정: 어떤 방법으로 보냈는지(track.js), v7.21: 어떤 엽서 그림을 보냈는지
+  hy('pc_send_done', { method, card_id: pickedCardId(), share_id: shareId, entry_type: entryType(), letter_type: letterType() });   // v7.11 성과 측정: 어떤 방법으로 보냈는지(track.js), v7.21: 어떤 엽서 그림을 보냈는지, v7.28: 어떤 글을 보냈는지
 }
 
 // 엔딩: 편지가 제주 바람을 타고 하늘로 날아가고, 마지막 문장과 로고. 보낸 뒤 한 번만 저절로 내려감
@@ -2313,7 +2351,7 @@ document.getElementById('writeBackBtn').addEventListener('click', () => {
   receivedView.close();
   if (!received) { openWritePage(); return; }   // v7.25: 엽서를 열지 못했을 때는 '나도 엽서 쓰기'
   hy('pc_reply_click', receivedInfo());   // v7.26: 받은 엽서에서 답장하기를 누름
-  // 답장은 보통 직접 쓰니까 엽서 템플릿 글은 지우고 빈칸으로 시작 ('T 내 편지 쓰기'와 같음). 템플릿은 아래 단추로 고를 수 있음
+  // 답장은 보통 직접 쓰니까 엽서 템플릿 글은 지우고 빈칸으로 시작 ('T 내 편지 쓰기'와 같음). 템플릿은 엽서 위 '보기'로 고를 수 있음
   writingOwn = true;
   const text = mobileMessage.value.trim();
   if (!text || isTemplateText(text)) writeField(mobileMessage, '');

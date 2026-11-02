@@ -126,7 +126,7 @@ body::after {
 .card-field,
 .card-field input {
   font-family: var(--letter-font);
-  font-size: 3.8cqh;
+  font-size: 2.9cqh;
   line-height: 7.1875cqh;
   color: #2f2a22;
 }
@@ -149,10 +149,10 @@ body::after {
 }
 
 .card-message {
-  top: 24.45%;
+  top: 10.08%;
   left: 55.42%;
   width: 37.86%;
-  height: 57.5cqh;   /* 8줄 */
+  height: 79.0625cqh;   /* 11줄 */
   resize: none;
   overflow: hidden;
   outline: none;
@@ -169,22 +169,22 @@ body::after {
   width: 14%;
 }
 
-.card-to { top: 17.27%; left: 58.85%; }    /* To 줄 */
+.card-to { top: 2.89%; left: 58.85%; }    /* To 줄 */
 
 /* 쓴 날짜: 글 쓰는 줄 아래, From 줄 왼쪽 (yyyy.mm.dd) */
 .card .card-date,
 .mini-card .card-date {
-  top: 81.95%;
+  top: 89.14%;
   left: 55.42%;
   width: 16%;
   height: 7.1875cqh;
-  font-size: 3.1cqh;
+  font-size: 2.37cqh;
   letter-spacing: 0.02em;
   color: #6f6455;
   white-space: nowrap;
   pointer-events: none;
 }
-.card-from { top: 81.95%; left: 73.18%; }  /* From 줄 */
+.card-from { top: 89.14%; left: 73.18%; }  /* From 줄 */
 
 .card-message:focus-visible,
 .card-field input:focus-visible {
@@ -1251,15 +1251,15 @@ body::after {
 }
 
 /* ---------- 보내기 소인 ----------
-   엽서 그림에 원래 인쇄돼 있던 소인 자리(1920×1280 기준 지름 200px, 가운데 1627,211)에 그대로.
+   오른쪽 위 To 줄 옆 빈자리(1920×1280 기준 지름 124px, 왼쪽 위 1700,16). 편지 줄을 가리지 않게 작게.
    자리·크기는 app.js의 STAMP와 같게. 찍을 때: 위에서 크게 내려와 꾹 눌리고, 엽서가 살짝 눌림 */
 
 .card .card-stamp {
   inset: auto;
-  left: 82.66%;
-  top: 6.99%;
-  width: 14.34cqh;
-  height: 14.34cqh;
+  left: 88.54%;
+  top: 1.25%;
+  width: 9.69cqh;
+  height: 9.69cqh;
   opacity: 0.92;
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -1289,9 +1289,9 @@ body::after {
 /* 게시판 · 받은 엽서는 이미 보낸 엽서라 늘 소인이 찍혀 있음 */
 .mini-card .mini-stamp {
   inset: auto;
-  left: 82.66%;
-  top: 6.99%;
-  width: 9.56%;
+  left: 88.54%;
+  top: 1.25%;
+  width: 6.46%;
   height: auto;
   opacity: 0.92;
   mix-blend-mode: multiply;
@@ -1324,7 +1324,7 @@ body::after {
 
 .mobile-names { display: contents; }
 .mobile-names label:first-child { order: 1; }
-.mobile-writer textarea { order: 2; height: 176px; }
+.mobile-writer textarea { order: 2; height: 340px; }
 .mobile-names label:last-child { order: 3; }
 
 .mobile-names label {
@@ -2122,9 +2122,9 @@ body::after { background: var(--grain); opacity: 0.5; }
 }
 
 .final-postmark {
-  left: 82.66%;
-  top: 6.99%;
-  width: 9.56%;
+  left: 88.54%;
+  top: 1.25%;
+  width: 6.46%;
   mix-blend-mode: multiply;
 }
 
@@ -3084,7 +3084,7 @@ html.intro-open { overflow: hidden; }
 .card .card-to,
 .mini-card .card-to { width: 29.17%; }   /* 줄인 우표 앞까지 (app.js SPOTS.to.width 560) */
 .card .card-to input,
-.mini-card .card-to { font-size: calc(3.8cqh * var(--to-scale, 1)); }
+.mini-card .card-to { font-size: calc(2.9cqh * var(--to-scale, 1)); }
 
 /* ---------- 'T 내 편지 쓰기' 단추 (풍경 고르기 설명 아래 오른쪽, 엽서 바로 위) ---------- */
 .pick-tools {
@@ -3240,6 +3240,7 @@ html.intro-open { overflow: hidden; }
 /* 하고 싶은 말 칸 + 글자 수 (오른쪽 아래 'N/120자') */
 .scene-pick .mobile-writer .message-box { order: 3; position: relative; }
 .message-box textarea { display: block; width: 100%; padding-bottom: 30px; }
+.message-box textarea { padding-bottom: 32px; }   /* 글 끝이 글자 수 표시에 가리지 않게 */
 .message-count {
   position: absolute;
   right: 14px;
@@ -3297,13 +3298,13 @@ html.intro-open { overflow: hidden; }
 /* 게시판 크게 보기: '표준어로 보기' 단추를 '닫기' 왼쪽에 */
 .board-view .sheet-close { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
 
-/* ---------- 'T 메시지 편집': 엽서 안, 글 바로 아랫줄 가운데 (8줄을 다 채우면 From 줄 밑 오른쪽 아래) ---------- */
+/* ---------- 'T 메시지 편집': 엽서 안, 글 바로 아랫줄 가운데 (11줄을 다 채우면 오른쪽 위 To 줄 옆) ---------- */
 .card-edit-btn {
   position: absolute;
   z-index: 3;
   left: 74.35%;   /* 편지 칸(55.42% + 37.86%)의 가운데 */
-  /* 두 점선 사이 한가운데. 엽서 그림의 점선은 y=390, 482, … (1280 중, 92씩) → 사이 가운데 = (344 + 92 × 줄 수) / 1280 */
-  top: calc(26.875% + var(--edit-line, 1) * 7.1875cqh);
+  /* 두 점선 사이 한가운데. 엽서 그림의 점선은 y=206, 298, … (1280 중, 92씩) → 사이 가운데 = (160 + 92 × 줄 수) / 1280 */
+  top: calc(12.5% + var(--edit-line, 1) * 7.1875cqh);
   transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
@@ -3326,7 +3327,7 @@ html.intro-open { overflow: hidden; }
 }
 .card-edit-btn .write-open-t { font-size: 1.15em; }
 .card-edit-btn:hover { background: #fff; transform: translate(-50%, calc(-50% - 1px)); }
-.card-edit-btn.is-full { left: auto; right: 6.72%; top: auto; bottom: 1.6%; transform: none; }
+.card-edit-btn.is-full { left: auto; right: 6.72%; top: 3.4%; transform: none; }
 .card-edit-btn.is-full:hover { transform: translateY(-1px); }
 .card-edit-btn:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
 .card-edit-btn[hidden] { display: none; }
@@ -3414,7 +3415,24 @@ html.intro-open { overflow: hidden; }
 /* 내 사진 · 엽서 그림 고르기를 단추 바로 아래로 옮김 → 엽서와 간격 */
 .scene-pick .pick-tools + .picker { margin: 16px auto 18px; }
 /* v7.17: 템플릿 단추 줄이 엽서 그림 고르기 줄 바로 아래 → 그다음 엽서 */
-.scene-pick .picker + .letter-templates { margin: -6px auto 16px; }
+
+/* v7.28: 그림 고르기 줄과 엽서 사이의 작은 안내 '템플릿 글을 쓸 수도 있어요 보기' — 누른 사람에게만 글 이름 단추 줄이 보임 */
+.template-area { width: min(640px, 100%); margin: -8px auto 12px; }
+.template-area[hidden] { display: none; }
+.template-area .letter-templates { max-width: none; margin: 4px 0 0; }
+.template-area .letter-templates-list { justify-content: safe center; }
+.template-hint-btn {
+  min-height: 36px;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--tale-soft);
+  cursor: pointer;
+}
+.template-hint-btn b { margin-left: 2px; font-weight: 700; color: var(--tale-ink); text-decoration: underline; text-underline-offset: 3px; }
+.template-hint-btn:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; border-radius: 4px; }
 .strip-photo-label { font-size: 12px; line-height: 1.3; text-align: center; word-break: keep-all; padding: 0 6px; }
 
 /* 보내기 화면: '← 편지 다시 쓰기' 오른쪽에 돋보기 */

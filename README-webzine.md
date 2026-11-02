@@ -14,6 +14,8 @@
 > 7. **Voices(휴대폰 · 세로 화면)**: 사진 왼쪽 · 글 오른쪽, 손가락으로 좌우로 밀면 다음 사람(밀기 안내 한 줄은 손가락 기기에서만).
 > 8. **지도**: 핀 = **물방울 모양 위치 핀**(뾰족한 끝이 실제 자리), 채도를 낮춘 색(명소 #5a7385 · 카페·간식 #b08d47 · 맛집 #b5664c · 가게 #7b8760 · 섞인 묶음 #66574c — `css/map.css` 맨 위). 숫자 동그라미 안내 한 줄(분류 단추 위) + 숫자 동그라미에 마우스를 올리면 말풍선 ‘이 근처 제주어 상호 N곳 · 누르면 펼쳐져요’.
 
+> **61차(2026-11-02)** (엽서 v7.28) — **엽서 글 칸 넓히기 · 템플릿은 고른 사람에게만 · 글 종류 추적**. ① **우표를 없애고 편지 줄 8줄 → 11줄**: 엽서 그림 16장(`play/postcard/images/card-01~16.webp`)에서 인쇄된 감귤 우표를 지우고, To 줄을 두 칸 위로 · From 줄을 한 칸 아래로 옮겨 사이를 점선으로 채움(줄 간격 92px 그대로. 만든 도구 = 옛 폴더 `_tools/remove_card_stamp.py`, 원본 그림 = `_tools/assets/cards-8-lines/`). 글자 자리 = `app.js` 의 `SPOTS` · `style.css` 의 `.card-message` 등. 보내기 소인은 글을 가리지 않게 184px → 124px 로 줄여 오른쪽 위 To 줄 옆으로(`STAMP` · `.card-stamp` · `.mini-stamp` · `.final-postmark`). 안내 창의 예시 엽서 3장(`images/intro/postcard-*.webp`)은 미리 만든 그림이라 그대로. ② **글씨 작게(비교 페이지의 C) · 글자 수 144자 → 264자**: `.card-field` 3.8cqh → 2.9cqh, 날짜 3.1cqh → 2.37cqh(`FONT_PX` · `DATE_PX` 도 같이). 한 줄 24자 × 11줄 = 264자. 쓰는 칸 높이 176px → 340px, 글자 수 표시가 글을 가리지 않게 아래 여백. 인쇄된 To · From 글자는 그림이라 크기 그대로. ③ **템플릿은 고른 사람에게만**: 첫 화면은 빈 엽서. 'T 내 편지 쓰기' · 'T 메시지 편집'은 빈칸으로 쓰는 칸만 엶. 그림 고르기 줄과 엽서 사이의 작은 안내 '템플릿 글을 쓸 수도 있어요 **보기**'(`#templateHintBtn`)를 누르면 그 엽서의 글과 글 이름 단추가 보이고(`.template-area` · `setTemplates`), '닫기'를 누르면 템플릿 글을 지우고 숨김(직접 쓴 글은 그대로). 화면이 넉넉하면 쓰는 칸을 열 때 안내부터 보이게, 좁으면 쓰는 칸부터(`goWriteField`). ④ **글 종류 추적**(아래 13-6): `pc_send_done` 에 `letter_type`(template · template_edited · own), '보기'를 누르면 `pc_template_open`. 글 내용은 보내지 않음. GTM 버전 7 로 게시(폴더 2), GA4 맞춤 측정기준 '글 종류' 등록. **한경 서버에 올릴 파일**: `play/postcard/index.html` · `app.js` · `style.css` · `images/card-01.webp ~ card-16.webp`(올리기 전까지 실제 사이트에는 안 보이고 글 종류도 안 쌓임).
+>
 > **60차(2026-10-30)** (엽서 v7.27) — **받은 엽서 화면에 '이미지로 저장' 단추**(`play/postcard/index.html` 의 `#receivedSaveBtn`, '표준어로 보기'와 '답장하기' 사이, 같은 크림색 알약). 카카오톡 · 메일 · 링크로 받은 엽서를 화면에 보이는 그대로(글 · 넣은 사진 · 날짜 · 하영고라보게 소인) 1920×1280 PNG 로 저장 — '표준어로 보기'를 눌러 둔 상태면 표준어 글로 저장. 휴대폰은 공유 창('이미지 저장'), PC는 내려받기(파일 이름 `제주어-엽서.png`, 보내는 쪽 저장과 같음). 엽서를 열지 못했을 때('나도 엽서 쓰기')는 숨김. 코드: `play/postcard/app.js` — 엽서 그리기를 `paintCard`(공통) · `renderCard`(쓰는 엽서) · `renderPost`(받은 엽서)로 나눔, 저장은 `saveCardImage`(보내는 쪽 '이미지로 저장'과 같이 씀). 측정 이벤트 `pc_received_save`(method = image · image_share, text_type = jeju · standard, share_method · viewer_type · share_id) — GTM 에는 아직 태그 없음. 휴대폰(375px)에서는 단추가 두 줄(위 두 개 · 아래 답장하기). `app.js?v=249`.
 
 > **59차(2026-10-29)** — **기사 두 편의 공유 미리보기 그림(og:image)을 1200x630 으로**(점검표 'og:image 크기'). 예전에는 기사 썸네일(1200x900)을 그대로 썼음. 썸네일은 웹진 첫 화면 인터뷰 카드에도 쓰여서 그대로 두고, 같은 그림을 잘라 새 파일: `assets/interviews/interview-01-og.jpg`(위에서 100px부터 630px — 네 사람 얼굴이 모두 들어가게) · `interview-02-og.jpg`(210px부터 — 오름 · 바다 · 세 사람). `articles/interview01.html` · `interview02.html` 의 og:image 주소와 og:image:height(900 → 630). 그림 설명(og:image:alt)은 같은 그림이라 그대로. 한경 서버에 올린 뒤 카카오 · 페이스북 공유 디버거에서 캐시를 새로 불러야 바로 보임.
@@ -1867,11 +1869,12 @@ curl -s https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js | openssl dgst
 | `pc_view` · `pc_view_time` | 화면이 바뀜(flow 엽서 고르기 · 쓰기 / send 보내기 / board 게시판 / end) · 그 화면에 머문 초 | `view` · `seconds` |
 | `pc_card_pick` | 엽서 그림을 바꿈 | `card`(번호) |
 | `pc_send_open` | ‘제주어로 바꾸기’ 뒤 보내기 화면이 열림 | `jeju`(yes · no) |
-| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · mail · link · image · image_share · **board**(게시판에 붙임). v7.26: `share_id`(공유 번호) · `entry_type`(received · new) — 아래 13-5 |
+| **`pc_send_done`** | 보내기를 마침(엽서 완성 전환) | `method` = kakao · kakao_share · kakao_copy · mail · link · image · image_share · **board**(게시판에 붙임). v7.26: `share_id`(공유 번호) · `entry_type`(received · new) — 아래 13-5. v7.28: `letter_type`(template · template_edited · own) — 아래 13-6 |
 | `pc_received_view` | 받은 엽서 링크로 들어옴 | `standard`. v7.26: `share_method` · `viewer_type` · `share_id` · `has_photo` · `card_id` — 아래 13-5 |
 | `pc_reply_click` (v7.26) | 받은 엽서에서 답장하기를 누름 | `share_method` · `viewer_type` · `share_id` |
 | `pc_received_fail` (v7.26) | 받은 엽서를 열지 못함 | `reason`(expired · load_error) · `share_method` · `share_id` |
 | `pc_received_save` (v7.27) | 받은 엽서를 이미지로 저장 | `method`(image · image_share) · `text_type`(jeju · standard) · `share_method` · `viewer_type` · `share_id` — GTM 태그 아직 없음 |
+| `pc_template_open` (v7.28) | 엽서 위 '템플릿 글을 쓸 수도 있어요 보기'를 누름(닫을 때는 안 남음) | `card_id` |
 | `pc_dwell_milestone` · `pc_page_time` | (엽서 사이트를 따로 열었을 때만) 실제로 본 시간 | `seconds` |
 
 - **GA4 를 켜는 법(30차)**: GA4 측정 ID(G-…)를 ① 웹진 `config.js` 의 `analytics.ga4` ② 엽서 사이트 `config.js` 의 `GA4_ID` 두 곳에 **같은 값**으로. 관리 > 맞춤 정의에 맞춤 측정기준 `section` · `button` · `view` · `method` · `source` · `page`, 맞춤 측정항목 `seconds`(초)를 등록하면 보고서에서 섹션별 머문 시간 · 단추별 누름 수 · 보낸 방법별 수를 볼 수 있다. 웹진과 엽서 사이트를 오가는 링크는 교차 도메인으로 이어진다(`analytics.linkDomains`, 엽서 사이트 `WEBZINE_DOMAINS` — GA4 관리 > 데이터 스트림 > 태그 설정 > 도메인 구성에도 두 도메인을 넣는다).
@@ -1971,6 +1974,24 @@ pc_send_complete                    pc_received_view           pc_reply_click   
 - 광고 차단 프로그램을 쓰는 사람은 숫자에 잡히지 않습니다.
 
 **어디에 무엇이 있나**: 사이트 `play/postcard/app.js` 의 '공유 추적'(withShareUtm · shareIdOf · rememberSent · receivedInfo) · 메일 `mail_script.gs`(MAIL_UTM) · GTM 폴더 **'5. 공유받은 사람(받은 엽서 · 답장)'**(태그 GA4_이벤트_pc_received_view · pc_reply_click · pc_received_fail · 메타_맞춤이벤트_PostcardReceived, 변수 DLV - share_method · viewer_type · share_id · has_photo · entry_type · reason) + 원래 있던 태그 GA4_이벤트_pc_send_complete 에 share_id · entry_type 을 더함.
+
+### 13-6. 템플릿 쓴 사람 · 직접 쓴 사람 보기 — 처음 보는 사람을 위한 안내(엽서 v7.28, 2026-11-02)
+
+**무엇을 알 수 있나**: 보낸 엽서가 템플릿 그대로인지, 고친 것인지, 직접 쓴 것인지. 글 내용은 보내지 않고 종류만 보냅니다.
+
+| GA4 에 보이는 값 | 뜻 |
+|---|---|
+| `template` | 템플릿 글을 그대로 보냄(표준어 · 제주어 모두) |
+| `template_edited` | 템플릿을 고른 뒤 고쳐서 보냄. 전체 선택 후 바로 덮어써도 글이 빈 적이 없어 여기로 잡힘 |
+| `own` | 직접 써서 보냄(템플릿을 골랐다가 글을 다 지우고 쓴 경우 포함) |
+
+**보는 곳**
+
+1. **바로 확인(실시간)**: 보고서 > 실시간 개요 > '이벤트 이름별 이벤트 수'에서 `pc_send_complete` 를 누르고 `letter_type` 을 누름. 최근 30분만 보임.
+2. **기간별 표(탐색)**: 왼쪽 탐색 > 자유 형식. 측정기준에 '이벤트 이름' · '글 종류', 측정항목에 '이벤트 수' · '활성 사용자'를 넣고 행에 '글 종류', 값에 두 측정항목. 필터 '이벤트 이름 = pc_send_complete'. 등록 전 데이터는 '(not set)' 또는 빠져 있고, 표준 보고서 · 탐색에 나오기까지 24~48시간 걸릴 수 있음.
+3. **템플릿을 열어 본 사람 중 쓴 비율**: 같은 탐색에서 `pc_template_open` 이벤트 수 ÷ `pc_send_complete` 중 template + template_edited 수.
+
+**어디에 무엇이 있나**: 사이트 `play/postcard/app.js` 의 `letterType` · `usedTemplate` · `setTemplates` · GTM 폴더 '2. 엽서 쓰기 사이트'(태그 GA4_이벤트_pc_send_complete · GA4_이벤트_pc_template_open, 변수 DLV - letter_type) · GA4 관리 > 맞춤 정의('글 종류').
 
 ## 14. 사진 보정판(?photo — 19차, 2026-10-21)
 
