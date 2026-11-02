@@ -2135,6 +2135,57 @@ body::after { background: var(--grain); opacity: 0.5; }
 .final-card.is-stamped .final-tangerine { opacity: 1; }
 .final-card.is-stamped .final-postmark { opacity: 0.9; }
 
+/* v7.29: 제주어로 바뀐 엽서가 나올 때 — 엽서가 잠깐 어두워지고, 바람과 함께 흰 글씨가 실려 왔다가 사라진 뒤 소인이 찍힘 */
+.final-wind { inset: 0; z-index: 5; width: 100%; height: 100%; overflow: hidden; }
+.final-wind path { stroke-width: 2.5; filter: drop-shadow(0 0 4px rgb(255 255 255 / 0.55)); }
+.final-card.is-windy .final-wind path { animation: wind-sweep 1.2s cubic-bezier(0.35, 0, 0.25, 1) both; }
+.final-card.is-windy .final-wind path:nth-child(2) { animation-delay: 0.08s; }
+.final-card.is-windy .final-wind path:nth-child(3) { animation-delay: 0.16s; }
+.final-card.is-windy .final-wind path:nth-child(4) { animation-delay: 0.24s; }
+.final-card.is-windy .final-wind path:nth-child(5) { animation-delay: 0.32s; }
+.final-card.is-windy.is-stamping { animation: card-flutter 1.1s ease both, card-thud 0.36s ease 2.08s; }
+.final-card.is-windy.is-stamping .final-postmark { animation-delay: 1.7s; }
+.final-toast {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 1em;
+  background: radial-gradient(ellipse at 50% 50%, rgb(16 32 38 / 0.74) 0%, rgb(16 32 38 / 0.5) 100%);
+  font-family: var(--story-font);
+  font-size: clamp(22px, 4vw, 36px);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+.final-toast:empty { display: none; }
+.final-toast span { display: inline-block; white-space: pre; }
+.final-card.is-windy .final-toast { animation: final-veil 1.8s ease both; }
+.final-card.is-windy .final-toast span {
+  animation: final-char 1.5s cubic-bezier(0.3, 0.1, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 25ms + 0.05s);
+}
+@keyframes final-veil {
+  0% { opacity: 0; }
+  14%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes final-char {
+  0% { opacity: 0; transform: translateX(-20px); filter: blur(7px); }
+  24%, 72% { opacity: 1; transform: none; filter: none; }
+  100% { opacity: 0; transform: translateX(24px); filter: blur(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .final-card.is-windy .final-wind path,
+  .final-card.is-windy .final-toast span { animation: none; }
+}
+
 @keyframes tangerine-stick {
   from { opacity: 0; transform: translate(-40%, -70%) scale(1.8) rotate(-16deg); }
   70% { opacity: 1; transform: scale(0.96) rotate(1.5deg); }
@@ -2417,6 +2468,13 @@ body::after { background: var(--grain); opacity: 0.5; }
 /* 카카오톡은 노란 동그라미 */
 .scene-send .send-kakao { background: none; border: none; }
 .scene-send .send-kakao svg { background: #fee500; box-shadow: 0 4px 10px rgb(60 45 30 / 0.12); color: #3a1d1d; }
+
+/* 인스타그램은 앱 아이콘 색 동그라미 + 흰 그림 */
+.scene-send .send-instagram svg {
+  background: radial-gradient(circle at 25% 105%, #ffd600 0%, #ff7a00 25%, #ff0069 50%, #d300c5 72%, #7638fa 100%);
+  box-shadow: 0 4px 10px rgb(60 45 30 / 0.12);
+  color: #fff;
+}
 
 .scene-send .send-option b {
   display: block;

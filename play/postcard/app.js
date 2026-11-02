@@ -1042,6 +1042,7 @@ translateBtn.addEventListener('click', () => {
     letter = { standard: trStandard.value, jeju: trJeju.value };
     editAlertDismissed = false;
     hideEditAlert();
+    finalCard.dataset.windy = trJeju.value.trim() !== trStandard.value.trim() ? '1' : '';   // 실제로 제주어로 바뀌었을 때만 바람 · 완료 문구
     showFinalCard();
   });
 });
@@ -1206,6 +1207,8 @@ cardMessage.addEventListener('input', clearStamp);
 // 저장 · 공유하는 그림에는 소인이 함께 그려짐 (renderCard의 stamped)
 const finalCard = document.getElementById('finalCard');
 const finalImage = document.getElementById('finalImage');
+const finalToast = document.getElementById('finalToast');
+let finalWindTimer = null;
 
 // v7.16: 돋보기('편지 다시 쓰기' 오른쪽) — 제주어로 바뀐 엽서의 편지 부분(엽서 그림의 오른쪽 반)을 화면에 크게
 const letterZoom = document.getElementById('letterZoom');
@@ -1247,7 +1250,7 @@ async function showFinalCard() {
     jejuEditBtn.setAttribute('aria-expanded', 'false');
     delete finalCard.dataset.pending;
     void finalCard.offsetWidth;
-    finalCard.classList.add(calmMotion.matches ? 'is-stamped' : 'is-stamping');
+    stampFinalCard();
     finalCard.scrollIntoView({ behavior: smoothScroll(), block: 'center' });
   } else {
     goView('send', true);
@@ -1255,11 +1258,33 @@ async function showFinalCard() {
   }
 }
 
+// 완성 엽서에 소인을 찍음. v7.29: 제주어로 막 바뀐 엽서면 먼저 바람이 스치고 '제주어로 변환 완료'(동작 줄이기 설정이면 문구만)
+function stampFinalCard() {
+  finalCard.classList.add(calmMotion.matches ? 'is-stamped' : 'is-stamping');
+  if (finalCard.dataset.windy !== '1') return;
+  finalCard.dataset.windy = '';
+  finalToast.textContent = '';
+  [...'제주어로 변환 완료'].forEach((ch, i) => {   // 글자마다 바람에 실려 오도록
+    const span = document.createElement('span');
+    span.textContent = ch;
+    span.style.setProperty('--i', i);
+    finalToast.appendChild(span);
+  });
+  finalCard.classList.remove('is-windy');
+  void finalCard.offsetWidth;
+  finalCard.classList.add('is-windy');
+  clearTimeout(finalWindTimer);
+  finalWindTimer = setTimeout(() => {
+    finalCard.classList.remove('is-windy');
+    finalToast.textContent = '';
+  }, 2900);
+}
+
 const stampWatch = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
   entries.forEach((en) => {
     if (!en.isIntersecting || !finalCard.dataset.pending) return;
     delete finalCard.dataset.pending;
-    finalCard.classList.add(calmMotion.matches ? 'is-stamped' : 'is-stamping');
+    stampFinalCard();
   });
 }, { threshold: 0.6 }) : null;
 if (stampWatch) stampWatch.observe(finalCard);

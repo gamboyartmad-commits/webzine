@@ -22,7 +22,7 @@
 <link rel="preload" as="image" href="images/tale/desk-scene.webp">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=247">
+<link rel="stylesheet" href="style.css?v=251">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -127,7 +127,7 @@
                       <span class="sr-only">받는 사람</span>
                       <input type="text" id="cardTo" maxlength="14" autocomplete="off">
                     </label>
-                    <textarea class="card-field card-message" id="cardMessage" maxlength="264" aria-label="엽서 내용" placeholder="여기에 마음을 적어 보세요"></textarea>
+                    <textarea class="card-field card-message" id="cardMessage" maxlength="264" aria-label="엽서 내용" placeholder="마음을 적어서 편지를 보내면 제주어로 변환됩니다."></textarea>
                     <label class="card-field card-from">
                       <span class="sr-only">보내는 사람</span>
                       <input type="text" id="cardFrom" maxlength="10" autocomplete="off">
@@ -162,7 +162,7 @@
                   <label>From <input type="text" id="mobileFrom" maxlength="10" autocomplete="off" placeholder="보내는 사람"></label>
                 </div>
                 <div class="message-box">
-                  <textarea id="mobileMessage" maxlength="264" aria-label="엽서 내용" aria-describedby="messageCount" placeholder="여기에 마음을 적어 보세요. 엽서에 바로 보여요."></textarea>
+                  <textarea id="mobileMessage" maxlength="264" aria-label="엽서 내용" aria-describedby="messageCount" placeholder="마음을 적어서 편지를 보내면 제주어로 변환됩니다."></textarea>
                   <span class="message-count" id="messageCount"><b>0</b>/264자</span>
                 </div>
                 <!-- 템플릿으로 바꾸기 전 글로 되돌리기 (직접 쓴 글이 있었을 때만 잠깐 보임) -->
@@ -205,6 +205,15 @@
         <figure class="final-card" id="finalCard">
           <img class="final-image" id="finalImage" alt="완성된 제주어 엽서">
           <img class="final-postmark" id="finalPostmark" src="images/stamp-goraboge.png?v=2" alt="하영 고라보게 소인" aria-hidden="true">
+          <!-- v7.29: 제주어로 바뀐 엽서가 나올 때 바람이 스치고 '제주어로 변환 완료' (app.js stampFinalCard) -->
+          <svg class="wind final-wind" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M-40 90 C80 50 180 120 300 80 S520 40 660 90"/>
+            <path d="M-40 150 C100 110 220 190 340 140 S540 100 660 160"/>
+            <path d="M-40 210 C90 180 210 250 320 200 S530 160 660 220"/>
+            <path d="M-40 270 C120 240 240 300 380 260 S560 230 660 270"/>
+            <path d="M-40 330 C100 300 220 370 340 320 S540 290 660 340"/>
+          </svg>
+          <p class="final-toast" id="finalToast" role="status"></p>
         </figure>
 
         <!-- 제주어 편지 고치기: 눌러서 펼침. 표준어 원문 · 제주어 결과(둘 다 고칠 수 있음) · 다시 바꾸기. 고치면 위 엽서에 바로 반영 -->
@@ -262,7 +271,7 @@
                     <span><b>카카오톡</b><small>친구를 골라 엽서를 보내요</small></span>
                   </button>
                   <!-- v7.29: 인스타그램 DM으로 엽서 링크 보내기 (app.js instagramBtn) -->
-                  <button type="button" class="send-option" id="instagramBtn">
+                  <button type="button" class="send-option send-instagram" id="instagramBtn">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="7" r="1.3" fill="currentColor"/></svg>
                     <span><b>인스타그램</b><small>DM으로 엽서 링크를 보내요</small></span>
                   </button>
@@ -456,7 +465,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=257"></script>
+  <script src="app.js?v=260"></script>
 </body>
 
 </html>
