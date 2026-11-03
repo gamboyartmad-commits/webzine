@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>게시판 관리 · 하영고라보게</title>
 <!-- 엽서 게시판 관리자 페이지. 사이트 어디에도 링크하지 않음.
-     숨기기 · 삭제 권한은 데이터베이스 규칙(supabase/board_admin.sql)이 지킴: 관리자 계정으로 로그인해야만 됨 -->
+     숨기기 · 삭제 권한은 데이터베이스 규칙(supabase/board_admin.sql · reactions.sql)이 지킴: 관리자 계정으로 로그인해야만 됨 -->
 <style>
   :root {
     --paper: #f6eddd;
@@ -68,6 +68,15 @@
   .item-actions { display: flex; gap: 6px; margin-left: auto; }
   .item-actions .btn { min-height: 32px; padding: 4px 12px; font-size: 13px; }
   .empty { padding: 40px 0; text-align: center; color: var(--soft); }
+  .mode { display: flex; gap: 6px; margin-bottom: 14px; }
+  .mode button { padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px; background: #fffaf1; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink); cursor: pointer; }
+  .mode button[aria-pressed='true'] { background: var(--dark); color: #fbf3e4; }
+  .comments { display: grid; gap: 8px; }
+  .comment { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fffdf8; }
+  .comment.is-hidden { opacity: 0.6; border-style: dashed; }
+  .comment.is-hidden .badge { background: var(--red); color: #fff; }
+  .comment-text { flex: 1 1 280px; min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
+  .comment-text small { display: block; font-size: 12px; color: var(--soft); }
 </style>
 </head>
 <body>
@@ -85,12 +94,16 @@
 
   <!-- 관리 화면 -->
   <section id="panel" hidden>
+    <div class="mode" role="group" aria-label="관리할 것">
+      <button type="button" data-mode="posts" aria-pressed="true">엽서</button>
+      <button type="button" data-mode="comments" aria-pressed="false">댓글</button>
+    </div>
     <div class="bar">
       <span class="count" id="count"></span>
       <div class="filter" role="group" aria-label="보기">
         <button type="button" data-filter="all" aria-pressed="true">전체</button>
-        <button type="button" data-filter="shown" aria-pressed="false">보이는 엽서</button>
-        <button type="button" data-filter="hidden" aria-pressed="false">숨긴 엽서</button>
+        <button type="button" data-filter="shown" aria-pressed="false">보이는 것</button>
+        <button type="button" data-filter="hidden" aria-pressed="false">숨긴 것</button>
       </div>
       <button type="button" class="btn light" id="reloadBtn">새로고침</button>
       <button type="button" class="btn light" id="logoutBtn">로그아웃</button>
@@ -111,6 +124,9 @@
 
   let session = null;   // { token, email, expires }
   let posts = [];
+  let comments = [];
+  let postInfo = new Map();   // 엽서 번호 → 받는 사람 · 글 (댓글이 어느 엽서에 달렸는지 보여 주려고)
+  let mode = 'posts';
   let filter = 'all';
 
   function saveSession(s) {
@@ -193,7 +209,16 @@
   async function reload() {
     setStatus($('panelStatus'), '불러오는 중...');
     try {
-      posts = await api('/rest/v1/board_posts?select=id,card,to_name,message,from_name,post_date,photo,hidden,created_at&order=created_at.desc&limit=500');
+      if (mode === 'posts') {
+        posts = await api('/rest/v1/board_posts?select=id,card,to_name,message,from_name,post_date,photo,hidden,created_at&order=created_at.desc&limit=500');
+      } else {
+        const [rows, cards] = await Promise.all([
+          api('/rest/v1/board_comments?select=id,post_id,name,body,hidden,created_at&order=created_at.desc&limit=500'),
+          api('/rest/v1/board_posts?select=id,to_name,message&limit=500'),
+        ]);
+        comments = rows;
+        postInfo = new Map(cards.map((c) => [c.id, c]));
+      }
       setStatus($('panelStatus'), '');
       render();
     } catch (err) {
@@ -201,6 +226,13 @@
     }
   }
   $('reloadBtn').addEventListener('click', reload);
+
+  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('list').textContent = '';
+    reload();
+  }));
 
   document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => {
     filter = b.dataset.filter;
@@ -211,7 +243,74 @@
   const cardSrc = (n) => `images/card-${String((Number(n) || 0) + 1).padStart(2, '0')}.webp?v=2`;
   const when = (iso) => new Date(iso).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' });
 
+  function renderComments() {
+    const hiddenCount = comments.filter((c) => c.hidden).length;
+    $('count').textContent = `전체 ${comments.length}개 · 보이는 댓글 ${comments.length - hiddenCount}개 · 숨긴 댓글 ${hiddenCount}개`;
+    const list = $('list');
+    list.className = 'comments';
+    list.textContent = '';
+    const shown = comments.filter((c) => (filter === 'all' ? true : filter === 'hidden' ? c.hidden : !c.hidden));
+    if (!shown.length) {
+      list.innerHTML = '<p class="empty">댓글이 없어요.</p>';
+      return;
+    }
+    shown.forEach((c) => {
+      const item = document.createElement('article');
+      item.className = `comment${c.hidden ? ' is-hidden' : ''}`;
+      item.innerHTML = `
+        <span class="badge"></span>
+        <div class="comment-text"><span class="body"></span><small></small></div>
+        <div class="item-actions">
+          <button type="button" class="btn light" data-act="toggle"></button>
+          <button type="button" class="btn danger" data-act="delete">삭제</button>
+        </div>`;
+      // 사람들이 쓴 글은 textContent로만 넣음 (HTML로 해석되지 않게)
+      item.querySelector('.badge').textContent = c.hidden ? '숨김' : '보임';
+      item.querySelector('.body').textContent = c.body;
+      const card = postInfo.get(c.post_id);
+      const about = card ? ` (To. ${card.to_name || '받는 사람 없음'} — ${card.message.replace(/\s+/g, ' ').slice(0, 24)}…)` : '';
+      item.querySelector('small').textContent = `${c.name || '익명'} · ${when(c.created_at)} · 엽서 #${c.post_id}${about}`;
+      item.querySelector('[data-act="toggle"]').textContent = c.hidden ? '다시 보이기' : '숨기기';
+      item.querySelector('[data-act="toggle"]').addEventListener('click', (e) => setCommentHidden(c, !c.hidden, e.currentTarget));
+      item.querySelector('[data-act="delete"]').addEventListener('click', (e) => removeComment(c, e.currentTarget));
+      list.appendChild(item);
+    });
+  }
+
+  async function setCommentHidden(c, hidden, btn) {
+    btn.disabled = true;
+    try {
+      const rows = await api(`/rest/v1/board_comments?id=eq.${c.id}`, {
+        method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ hidden }),
+      });
+      if (!rows || !rows.length) throw new Error('권한이 없어요');
+      c.hidden = hidden;
+      setStatus($('panelStatus'), hidden ? `댓글을 숨겼어요. 사이트에서 보이지 않아요.` : `댓글을 다시 보이게 했어요.`);
+      render();
+    } catch (err) {
+      setStatus($('panelStatus'), `바꾸지 못했어요. (${err.message})`, true);
+      btn.disabled = false;
+    }
+  }
+
+  async function removeComment(c, btn) {
+    if (!window.confirm(`이 댓글을 완전히 지울까요?\n\n"${c.body}"\n\n지우면 되돌릴 수 없어요. (잠깐 안 보이게만 하려면 '숨기기')`)) return;
+    btn.disabled = true;
+    try {
+      const rows = await api(`/rest/v1/board_comments?id=eq.${c.id}`, { method: 'DELETE', headers: { Prefer: 'return=representation' } });
+      if (!rows || !rows.length) throw new Error('권한이 없어요');
+      comments = comments.filter((x) => x.id !== c.id);
+      setStatus($('panelStatus'), '댓글을 지웠어요.');
+      render();
+    } catch (err) {
+      setStatus($('panelStatus'), `지우지 못했어요. (${err.message})`, true);
+      btn.disabled = false;
+    }
+  }
+
   function render() {
+    if (mode === 'comments') { renderComments(); return; }
+    $('list').className = 'list';
     const hiddenCount = posts.filter((p) => p.hidden).length;
     $('count').textContent = `전체 ${posts.length}장 · 보이는 엽서 ${posts.length - hiddenCount}장 · 숨긴 엽서 ${hiddenCount}장`;
     const list = $('list');

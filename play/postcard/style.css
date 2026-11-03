@@ -709,88 +709,6 @@ body::after {
 
 /* ---------- 엽서 게시판 (코르크판) ---------- */
 
-.board {
-  width: min(1000px, 100%);
-  margin: 40px auto 0;
-  padding: 14px;
-  border-radius: 4px;
-  background: var(--grain), #d9c4a0;   /* 밝은 나무 틀 */
-  box-shadow: 0 14px 32px rgba(40, 30, 15, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
-}
-
-.board-inner {
-  position: relative;
-  padding: clamp(30px, 4vw, 44px) clamp(14px, 3vw, 34px);
-  /* 코르크: 따뜻한 갈색 위에 잔 점 */
-  background:
-    radial-gradient(rgba(95, 58, 22, 0.22) 1px, transparent 1.6px) 0 0 / 7px 7px,
-    radial-gradient(rgba(255, 236, 200, 0.18) 1px, transparent 1.6px) 3px 4px / 9px 9px,
-    var(--grain),
-    #c9a272;
-  box-shadow: inset 0 2px 10px rgba(60, 35, 10, 0.45);
-}
-
-.board-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px 28px;
-}
-
-/* 게시판에 붙은 엽서 한 장 */
-.board-card {
-  position: relative;
-  width: clamp(150px, 20%, 200px);
-  padding: 0;
-  border: none;
-  background: #fff;
-  cursor: zoom-in;
-  box-shadow: 0 6px 12px rgba(50, 30, 10, 0.38);
-  transform: rotate(var(--r, 0deg));
-  transform-origin: 50% 10px;   /* 가운데 핀을 축으로 기울어진 것처럼 */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.board-card:hover,
-.board-card:focus-visible {
-  z-index: 2;
-  transform: rotate(0deg) translateY(-4px) scale(1.04);
-  box-shadow: 0 12px 22px rgba(50, 30, 10, 0.42);
-  outline: none;
-}
-
-.board-card:focus-visible { box-shadow: 0 0 0 3px #fffdf6, 0 0 0 5px var(--ink); }
-
-/* 엽서 위쪽 가운데에 꽂은 압정: 동그란 머리(::before) + 판에 비친 그림자(::after) */
-.board-card::before,
-.board-card::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.board-card::before {
-  top: 2px;
-  z-index: 4;
-  width: 15px;
-  height: 15px;
-  margin-left: -7.5px;
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85) 0 2px, transparent 3px), var(--pin, #d9533c);
-  box-shadow: inset -2px -2px 3px rgba(0, 0, 0, 0.28), 0 1px 1px rgba(40, 20, 5, 0.35);
-}
-
-.board-card::after {
-  top: 12px;
-  z-index: 3;
-  width: 13px;
-  height: 7px;
-  margin-left: -2px;
-  background: rgba(40, 20, 5, 0.35);
-  filter: blur(2px);
-}
-
 /* 엽서 모양 그대로 줄여서 보여 줌: .card-field 위치·글자 크기를 그대로 씀 */
 .mini-card {
   position: relative;
@@ -813,17 +731,6 @@ body::after {
   inset: 0 auto 0 0;
   width: 50%;
   object-fit: cover;
-}
-
-/* 방금 붙인 엽서는 위에서 툭 떨어져 꽂히는 것처럼 */
-.board-card.is-new { animation: pin-drop 0.6s ease-out; }
-
-@keyframes pin-drop {
-  from { transform: translateY(-40px) rotate(var(--r, 0deg)); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .board-card.is-new { animation: none; }
 }
 
 /* 게시판에 붙이기 미리보기 */
@@ -875,12 +782,6 @@ body::after {
 .board-view::backdrop { background: rgba(30, 22, 10, 0.55); }
 
 .board-view-card { box-shadow: 0 2px 8px rgba(40, 30, 15, 0.22); }
-
-@media all   /* 모바일 전용: 늘 휴대폰 화면 규칙 */ {
-  .board { margin-top: 28px; padding: 9px; }
-  .board-inner { padding: 18px 12px 34px; }
-  .board-card { width: min(220px, 70%); }
-}
 
 @media all   /* 모바일 전용: 늘 휴대폰 화면 규칙 */ {
 
@@ -1429,30 +1330,6 @@ body::after {
 
 .send-panel .send-back { display: block; margin: 12px auto 0; }
 
-/* ---------- 게시판 화면 ---------- */
-
-.board { width: 100%; margin: 0; padding: 10px; border-radius: 10px; }
-
-.board-head {
-  padding: 4px 4px 14px;
-  text-align: center;
-}
-
-.board-head .text-btn { display: block; margin: 0 0 4px; color: #6b4f35; }
-
-.board-title {
-  margin: 0;
-  font-family: var(--story-font);
-  font-size: 21px;
-  color: #3b2a14;
-  outline: none;
-}
-
-.board-desc { margin: 4px 0 0; font-size: 13px; color: #6b5537; }
-
-.board-grid { gap: 26px; }
-.board-card { width: min(320px, 88%); }
-
 /* 3단계 제주어: 바뀐 제주어 편지가 먼저, 원래 쓴 편지는 그 아래 */
 .translate-page { padding-top: 14px; }
 .tr-head { padding: 12px 86px 22px 14px; }
@@ -1580,168 +1457,7 @@ body::after { background: var(--grain); opacity: 0.5; }
   .bar-btn { white-space: normal; line-height: 1.25; }
 }
 
-/* ---------- SCENE 01 · 02 앞부분: 멈춘 화면 안의 제주 ---------- */
-
 .tale[hidden] { display: none; }
-
-.story {
-  position: relative;
-  height: 320svh;   /* 이야기 길이: 마지막 100svh는 SCENE 02 종이가 덮어 오는 구간 */
-}
-
-.stage {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-  background: #cfe0e2;
-}
-
-/* SCENE 02 종이가 덮어 올 때 뒤 장면을 조금 어둡게 */
-.stage::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  background: #2c241d;
-  opacity: var(--dim, 0);
-  pointer-events: none;
-}
-
-/* 색연필 그림 두 장. 상자 위치 · 크기는 app.js의 measureStory가 화면에 맞춰(cover) 정함 */
-.world {
-  position: absolute;
-  inset: 0;
-  will-change: transform;
-}
-
-.art {
-  position: absolute;
-  will-change: transform, opacity;
-}
-
-/* 풍경 세 층: 하늘(그림 전체) 위에 땅 · 앞 풀밭을 같은 자리로 겹침 */
-.art-prologue { transform-origin: 50% 70%; }
-
-.art-prologue img {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  will-change: translate;
-}
-
-.art-sky { top: 0; height: 100%; animation: sky-drift 26s ease-in-out infinite alternate; }
-.art-land { top: 62.77%; height: 37.23%; }
-.art-grass {
-  top: 79.17%;
-  height: 20.83%;
-  transform-origin: 50% 100%;
-  animation: grass-sway 5.5s ease-in-out infinite alternate;
-}
-
-/* 구름이 흘러가듯 하늘만 아주 조금 */
-@keyframes sky-drift {
-  from { transform: translateX(-0.8%) scale(1.02); }
-  to { transform: translateX(0.8%) scale(1.02); }
-}
-
-@keyframes grass-sway {
-  from { transform: skewX(-1.2deg); }
-  to { transform: skewX(1.2deg); }
-}
-
-.art-desk { opacity: 0; }
-
-/* ---------- 실제 편지: 봉투 뒷면 · 엽서 · 앞주머니 세 겹 ---------- */
-
-.letter {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 3;
-  width: 240px;
-  height: 160px;
-  opacity: 0;
-  filter: drop-shadow(0 14px 16px rgb(60 45 30 / 0.22));
-  will-change: transform;
-}
-
-.letter-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* 봉투 그림 속 엽서 자리와 같게 (원본 1536×1024에서 305,196 · 폭 925) */
-.letter-card {
-  position: absolute;
-  left: 19.9%;
-  top: 19.1%;
-  width: 60.2%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  border-radius: 2px;
-  box-shadow: 0 1px 4px rgb(40 30 15 / 0.22);
-  transform: rotate(0.6deg);
-  will-change: transform;
-}
-
-/* ---------- 프롤로그 글 ---------- */
-
-.story-copy {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  padding: 0 24px 6vh;
-  text-align: center;
-  pointer-events: none;
-}
-
-.prologue { margin: 0; font-family: var(--story-font); font-weight: 700; }
-
-.prologue-main {
-  display: block;
-  font-size: clamp(28px, 5vw, 60px);
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  color: var(--tale-ink);
-  text-shadow: 0 1px 0 rgb(255 250 240 / 0.7), 0 0 24px rgb(255 248 236 / 0.8);
-}
-
-.prologue-sub {
-  display: block;
-  margin-top: 16px;
-  font-family: var(--hand-font);
-  font-weight: 400;
-  font-size: clamp(24px, 2.8vw, 34px);
-  color: #5d5246;
-  opacity: 0;
-  animation: soft-rise 1.4s ease 1.9s forwards;
-}
-
-.jump-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 34px;
-  padding: 11px 20px;
-  border: 1px solid rgb(62 56 50 / 0.3);
-  border-radius: 999px;
-  background: rgb(255 250 240 / 0.82);
-  font-size: 15px;
-  color: var(--tale-ink);
-  text-decoration: none;
-  pointer-events: auto;
-  opacity: 0;
-  animation: soft-rise 1s ease 2.6s forwards;
-}
-
-.jump-btn:hover { background: #fffaf0; }
-.jump-btn:focus-visible { outline: 2px solid var(--tale-ink); outline-offset: 3px; }
 
 @keyframes soft-rise {
   from { opacity: 0; transform: translateY(12px); }
@@ -1751,11 +1467,6 @@ body::after { background: var(--grain); opacity: 0.5; }
 /* 한 글자씩 잉크가 번지듯 */
 .word { display: inline-block; white-space: nowrap; }
 .ch { display: inline-block; }
-
-.prologue-main .ch {
-  animation: ink-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i) * 55ms + 250ms);
-}
 
 [data-chars] .ch { opacity: 0; }
 
@@ -1767,36 +1478,6 @@ body::after { background: var(--grain); opacity: 0.5; }
 @keyframes ink-in {
   from { opacity: 0; transform: translateY(0.3em); filter: blur(6px); }
   to { opacity: 1; transform: none; filter: none; }
-}
-
-.scroll-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 4.5%;
-  z-index: 5;
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: #5d5246;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.scroll-hint i {
-  display: block;
-  width: 1px;
-  height: 34px;
-  background: linear-gradient(#5d5246, transparent);
-  transform-origin: top;
-  animation: hint-drop 2s ease-in-out infinite;
-}
-
-@keyframes hint-drop {
-  0% { transform: scaleY(0); }
-  50% { transform: scaleY(1); }
-  100% { transform: scaleY(1); opacity: 0; }
 }
 
 /* ---------- 장면 공통 ---------- */
@@ -1885,13 +1566,12 @@ body::after { background: var(--grain); opacity: 0.5; }
 .sheet-status.is-warning,
 .tr-note.is-warning { color: #b9562a; }
 
-/* ---------- SCENE 02: 종이 한 장이 동화 위로 밀려 올라옴 ---------- */
+/* ---------- SCENE 02: 게시판 아래 편지 쓰는 종이 ---------- */
 
 .scene-pick {
   z-index: 2;
   min-height: 100svh;
-  margin-top: -100svh;
-  padding-top: clamp(96px, 15vh, 150px);
+  padding-top: clamp(30px, 5vh, 52px);
   background: var(--grain), var(--tale-paper);
 }
 
@@ -1906,7 +1586,7 @@ body::after { background: var(--grain); opacity: 0.5; }
   top: calc(var(--edge-h) * -0.6);
   height: var(--edge-h);
   filter: drop-shadow(0 -2px 3px rgb(40 30 20 / 0.16)) drop-shadow(0 -10px 18px rgb(40 30 20 / 0.12));
-  clip-path: inset(-80px 0 0 0);   /* 그림자는 위로만 (아래 가장자리에 번진 그림자 줄은 잘라 냄) */
+  clip-path: inset(-80px 0 2px 0);   /* 그림자는 위로만 (아래 가장자리에 번진 그림자 줄은 잘라 냄) */
   pointer-events: none;
 }
 
@@ -2315,26 +1995,6 @@ body::after { background: var(--grain); opacity: 0.5; }
 .scene-end.is-playing .end-logo { animation-delay: 3.8s; }
 .scene-end.is-playing .end-actions { animation-delay: 4.4s; }
 
-/* ---------- 이야기 중에 떠 있는 '바로 편지 쓰기' ---------- */
-
-.float-cta {
-  position: fixed;
-  right: clamp(14px, 3vw, 32px);
-  bottom: calc(18px + env(safe-area-inset-bottom));
-  z-index: 40;
-  padding: 13px 22px;
-  border-radius: 999px;
-  background: var(--tale-dark);
-  font-size: 15px;
-  font-weight: 700;
-  color: #fbf3e4;
-  text-decoration: none;
-  box-shadow: 0 10px 22px rgb(40 30 20 / 0.25);
-  animation: soft-rise 0.4s ease both;
-}
-
-.float-cta[hidden] { display: none; }
-
 /* ---------- 뒤로가기: 화면 아래 왼쪽 ---------- */
 
 .back-fab {
@@ -2361,44 +2021,18 @@ body::after { background: var(--grain); opacity: 0.5; }
 .back-fab[hidden] { display: none; }
 .back-fab:hover { background: #fffaf0; }
 .back-fab:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
-.float-cta:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
-
-/* ---------- 게시판 (따로 보는 화면) ---------- */
-
-.board {
-  width: min(1000px, 100%);
-  margin: 0 auto;
-  padding: 84px 14px 40px;
-  background: none;
-  box-shadow: none;
-}
-
-.board-title { font-family: var(--story-font); color: var(--tale-ink); }
 
 /* ---------- 휴대폰 구도 ---------- */
 
 @media (max-width: 719px) {
-  .story { height: 290svh; }
-  .prologue-main { font-size: clamp(26px, 7.4vw, 34px); }
   .scene { padding-left: 16px; padding-right: 16px; }
-  .float-cta { right: 14px; }
 }
 
 /* ---------- 움직임 줄이기: 카메라 움직임 · 글자 번짐 · 바람 · 비행 없이 ---------- */
 
-.story.is-calm { height: 100svh; }
-.story.is-calm .stage { position: relative; }
-.story.is-calm + .scene-pick { margin-top: 0; }
-
 @media (prefers-reduced-motion: reduce) {
-  .art-sky,
-  .art-grass,
-  .scroll-hint i { animation: none; }
-  .prologue-main .ch,
   [data-chars] .ch,
   [data-chars].is-in .ch { animation: none; opacity: 1; }
-  .prologue-sub,
-  .jump-btn { animation: none; opacity: 1; }
   .scene-end .end-text span,
   .scene-end .end-logo,
   .scene-end .end-actions { animation: none !important; opacity: 1; }
@@ -2819,7 +2453,6 @@ html.intro-open { overflow: hidden; }
 .stitch-btn.is-accent,
 .tale-btn,
 .tale-btn.is-primary,
-.jump-btn,
 .back-fab {
   display: inline-flex;
   align-items: center;
@@ -2843,7 +2476,6 @@ html.intro-open { overflow: hidden; }
 
 .stitch-btn:hover,
 .tale-btn:hover,
-.jump-btn:hover,
 .back-fab:hover {
   background: #4a433c;
   transform: translateY(-2px);
@@ -2852,7 +2484,6 @@ html.intro-open { overflow: hidden; }
 
 .stitch-btn:focus-visible,
 .tale-btn:focus-visible,
-.jump-btn:focus-visible,
 .back-fab:focus-visible {
   outline: 3px solid var(--tale-tangerine);
   outline-offset: 3px;
@@ -2866,8 +2497,7 @@ html.intro-open { overflow: hidden; }
 .stitch-btn.is-small { min-height: 40px; padding: 8px 18px; font-size: 14px; }
 .mail-row .stitch-btn { min-height: 46px; padding: 10px 22px; flex: none; }
 .back-fab { min-height: 46px; padding: 0 20px 0 16px; font-size: 15px; }
-.jump-btn { padding: 12px 24px; font-size: 15px; }
-.stitch-btn[hidden], .tale-btn[hidden], .jump-btn[hidden] { display: none; }
+.stitch-btn[hidden], .tale-btn[hidden] { display: none; }
 
 /* '제주어 편지 고치기' 단추는 쓰지 않음 (보내기 화면에서 숨김) */
 .jeju-edit-toggle[hidden] { display: none; }
@@ -3441,28 +3071,6 @@ html.intro-open { overflow: hidden; }
    v7.16 (2026-10-23)
    ===================================================================== */
 
-/* 첫 화면: 처음부터 책상 그림(편지가 놓인 책상 · 뒤로 바다와 들판). 예전 첫 장면(제주 풍경)은 뺐다.
-   이야기 길이를 줄였다(스크롤하지 않아도 app.js 의 '저절로 내려가기'가 편지 쓰는 화면까지 데려간다) */
-.art-desk { opacity: 1; }
-.letter { opacity: 1; }
-.story { height: 230svh; }
-
-/* 첫 화면 글이 더 빨리 다 보이게(약 2초) — 잠시 뒤 저절로 내려가므로 */
-@media (prefers-reduced-motion: no-preference) {   /* '동작 줄이기'는 위의 규칙대로 바로 보임. v7.17: 인트로 2.3초 — 글이 1초 안에 다 나타나게 */
-  .prologue-main .ch { animation-duration: 0.5s; animation-delay: calc(var(--i) * 20ms + 60ms); }
-  .prologue-sub { animation: soft-rise 0.6s ease 0.3s forwards; }
-  .jump-btn { animation: soft-rise 0.5s ease 0.5s forwards; }
-}
-
-/* 첫 화면 글: 하늘 쪽(위)에 — 편지 봉투를 가리지 않게 */
-.story-copy {
-  place-content: start center;
-  padding: max(84px, 11svh) 24px 0;
-}
-@media (min-width: 720px) {
-  .story-copy { padding-top: max(96px, 9svh); }
-}
-
 /* '당신의 마음을 제주어로 전해보세요' 아래 아주 작은 설명 */
 .scene-desc {
   margin: -6px auto 14px;
@@ -3593,3 +3201,563 @@ html.is-typing-letter .back-fab { display: none; }
   color: #fff8ee;
 }
 .intro-pop-examples { touch-action: pan-y; }
+
+/* =====================================================================
+   v7.31 — 인트로 '동화 장면'을 빼고, 맨 위에 흰 바탕 게시판 · 바로 아래에 편지 쓰는 곳
+   있는 엽서만 한 쪽에 9장씩(어느 화면이든 한 줄에 3장 × 3줄), 넘으면 세모 단추나 손으로 옆으로 넘김. 누르면 그 자리에서 커지고, 옆으로 밀면 다음 엽서
+   ===================================================================== */
+
+/* 위 막대: 봉투(편지 쓰는 곳으로) · 엽서 더미(게시판으로) */
+.bar-icon {
+  display: inline-grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 50px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--tale-ink);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bar-icon:focus-visible { outline: 2px solid var(--tale-ink); outline-offset: 2px; border-radius: 6px; }
+
+.bar-icon-art {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 28px;
+  transition: transform 0.3s ease;
+}
+
+.bar-icon:hover .bar-icon-art { transform: translateY(-2px) rotate(-4deg); }
+
+.bar-icon-label {
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: 0 0 5px rgb(255 250 240 / 0.95), 0 0 2px rgb(255 250 240 / 0.95);
+}
+
+.bar-letter img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgb(60 45 30 / 0.28));
+}
+
+.bar-stack img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 20px;
+  margin: -10px 0 0 -15px;
+  border-radius: 1px;
+  box-shadow: 0 1px 3px rgb(60 45 30 / 0.34);
+}
+
+.bar-stack img:nth-child(1) { transform: translate(-6px, -2px) rotate(-14deg); }
+.bar-stack img:nth-child(2) { transform: translate(5px, -1px) rotate(11deg); }
+.bar-stack img:nth-child(3) { transform: translateY(2px) rotate(-2deg); }
+
+/* 게시판: 흰 바탕 */
+.board {
+  --cols: 3;
+  --gap-x: clamp(10px, 3vw, 20px);
+  --gap-y: clamp(14px, 3vw, 22px);
+  position: relative;
+  padding: 72px 0 clamp(50px, 6vw, 70px);
+  background: #fff;
+}
+
+/* 화면 높이가 낮으면 게시판을 조금 작게 — 아래 편지 쓰는 곳이 첫 화면에 보이도록 */
+@media (min-width: 720px) { .board .board-pages { width: min(760px, 100%, 80svh); } }
+
+.board-head {
+  padding: 0 16px 10px;
+  text-align: center;
+}
+
+.board-title {
+  margin: 0;
+  font-family: var(--story-font);
+  font-size: clamp(24px, 2.8vw, 30px);
+  font-weight: 700;
+  color: var(--tale-ink);
+  outline: none;
+}
+
+.board-desc {
+  margin: 2px 0 0;
+  font-size: clamp(14.5px, 1.3vw, 16px);
+  line-height: 1.45;
+  color: var(--tale-soft);
+}
+
+/* 휴대폰은 '댓글과 좋아요…' 대신 'N명이 썼어요' */
+.board-desc-count { display: none; }
+.board-desc-count strong { font-size: 1.14em; font-weight: 800; color: #c2571a; }
+
+@media (max-width: 719px) {
+  .board-desc-react { display: none; }
+  .board-desc-count { display: block; }
+  .board-desc-count[hidden] { display: none; }
+}
+
+/* 쪽들을 옆으로 나란히 — 손으로 밀면 한 쪽씩 멈춤 */
+.board-pages {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.board-pages::-webkit-scrollbar { display: none; }
+.board-pages:empty { min-height: 200px; }
+
+/* 휴대폰만: 엽서를 더 작게(한 번에 3장, app.js boardPerPage) — 아래 편지 쓰는 곳이 첫 화면에 더 보이도록 */
+@media (max-width: 719px) {
+  .board .board-pages { width: min(100%, 84vw); }
+  .board-pages:empty { min-height: 80px; }
+}
+
+/* 휴대폰: 위 막대 '게시판'을 누르면 나오는 모든 엽서 화면 */
+.board-all { min-height: 100svh; padding-bottom: 96px; }
+.board-all .board-head { padding-bottom: 14px; }
+.board-all-grid { justify-content: flex-start; scroll-snap-align: none; }
+
+.board-page {
+  flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: var(--gap-y) var(--gap-x);
+  padding: 10px 16px 14px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.board-card {
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc((100% - var(--gap-x) * (var(--cols) - 1)) / var(--cols));
+  padding: 0;
+  border: 0;
+  background: #fff;
+  cursor: zoom-in;
+  box-shadow: 0 4px 12px rgb(50 40 28 / 0.2), 0 1px 2px rgb(50 40 28 / 0.2);
+  transform: rotate(var(--r, 0deg));
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: board-card-settle 0.6s ease backwards;
+  animation-delay: calc(var(--n, 0) * 26ms);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.board-card:hover {
+  z-index: 2;
+  transform: rotate(0deg) translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 20px rgb(50 40 28 / 0.26);
+}
+
+.board-card:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
+.board-card.is-flying { visibility: hidden; }
+
+/* 작은 엽서 위 좋아요 · 댓글 수 (그림 쪽 아래에 놓아 글을 가리지 않음) */
+.board-card-react {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  max-width: calc(100% - 8px);
+  padding: 1px 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(46 40 34 / 0.78);
+  font-size: 10px;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #fff;
+}
+
+.board-card-react[hidden] { display: none; }
+
+/* 방금 붙인 엽서는 위에서 툭 내려앉는 것처럼 */
+.board-card.is-new { animation: board-card-drop 0.6s ease-out; }
+
+@keyframes board-card-settle {
+  from { opacity: 0; transform: translateY(12px) rotate(var(--r, 0deg)); }
+}
+
+@keyframes board-card-drop {
+  from { opacity: 0; transform: translateY(-40px) rotate(var(--r, 0deg)); }
+}
+
+.board-empty {
+  margin: 0;
+  padding: 0 16px 24px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--tale-soft);
+}
+
+.board-empty[hidden] { display: none; }
+
+/* 쪽 넘기기: 세모 단추는 늘 보이고, 넘길 쪽이 없으면 흐리게 */
+.board-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.board-pager[hidden] { display: none; }
+
+.board-pager-arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--tale-dark);
+  cursor: pointer;
+  transition: transform 0.18s ease, color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.board-pager-arrow svg {
+  width: 26px;
+  height: 26px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.board-pager-arrow:disabled { opacity: 0.22; cursor: default; }
+.board-pager-arrow:not(:disabled):hover { color: var(--tale-tangerine); transform: scale(1.12); }
+.board-pager-arrow:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
+
+.board-pager-dots { display: flex; align-items: center; }
+.board-pager-dots[hidden] { display: none; }
+.board-pager-num { min-width: 52px; font-size: 15px; font-weight: 700; text-align: center; color: var(--tale-ink); }
+.board-pager-num[hidden] { display: none; }
+
+/* 휴대폰만: 세모 단추를 엽서 양옆으로 (점 · 숫자는 엽서 아래) */
+@media (max-width: 719px) {
+  #boardSection { display: grid; grid-template-columns: 8vw minmax(0, 1fr) 8vw; }
+  #boardSection .board-head,
+  #boardSection .board-empty { grid-column: 1 / -1; }
+  #boardSection .board-pages { grid-column: 2; grid-row: 2; width: 100%; }
+  #boardSection .board-pager:not([hidden]) { display: contents; }
+  #boardPagePrev { grid-column: 1; grid-row: 2; }
+  #boardPageNext { grid-column: 3; grid-row: 2; }
+  #boardSection .board-pager-arrow { align-self: center; justify-self: center; width: 100%; height: 56px; }
+  #boardSection .board-pager-arrow svg { width: 22px; height: 22px; }
+  #boardPageDots,
+  #boardPageNum { grid-column: 1 / -1; grid-row: 3; justify-self: center; justify-content: center; }
+  #boardPageNum { padding-top: 6px; }
+}
+
+/* 점은 작게 보여도 누르는 자리는 넉넉하게 */
+.board-pager-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.board-pager-dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(62 56 50 / 0.22);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.board-pager-dot[aria-current]::before { background: var(--tale-tangerine); transform: scale(1.25); }
+.board-pager-dot:focus-visible { outline: 2px solid var(--tale-ink); outline-offset: -4px; border-radius: 6px; }
+
+/* 크게 보기: 뒤를 하얗게 가리고 엽서만 커짐 */
+.board-zoom {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 12px 0 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+  --zoom-w: min(92vw, calc(44svh * 1.5));
+  color: var(--tale-ink);
+  outline: none;
+}
+
+.board-zoom[open] { display: flex; flex-direction: column; align-items: center; }
+.board-zoom::backdrop { background: #fff; animation: board-veil-in 0.34s ease both; }
+.board-zoom.is-closing::backdrop { animation: board-veil-out 0.34s ease both; }
+
+@keyframes board-veil-in { from { opacity: 0; } }
+@keyframes board-veil-out { to { opacity: 0; } }
+
+.board-zoom-track {
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: calc(var(--zoom-w) / 1.5 + 26px);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.board-zoom-track:active { cursor: grabbing; }
+
+.board-zoom-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.board-zoom-card {
+  width: var(--zoom-w);
+  background: #fff;
+  box-shadow: 0 14px 34px rgb(50 40 28 / 0.26), 0 2px 6px rgb(50 40 28 / 0.18);
+  transform: rotate(var(--r, 0deg));
+}
+
+.board-zoom-foot {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 16px calc(14px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: soft-rise 0.45s ease 0.12s backwards;
+  transition: opacity 0.2s ease;
+}
+
+.board-zoom.is-closing .board-zoom-foot,
+.board-zoom.is-closing .board-zoom-arrow { opacity: 0; pointer-events: none; }
+
+/* 휴대폰에서는 엽서가 작아 글이 잘 안 보이므로 아래에 한 번 더 크게 */
+.board-zoom-text {
+  display: none;
+  flex: none;
+  width: min(100%, 560px);
+  max-height: 22svh;
+  margin: 0;
+  padding: 10px 14px;
+  overflow-y: auto;
+  border-radius: 4px;
+  background: var(--tale-paper);
+  font-family: var(--letter-font);
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 719px) { .board-zoom-text { display: block; } .board-zoom-text:empty { display: none; } }
+
+.board-zoom-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tale-soft);
+}
+
+.board-zoom-hint[hidden] { display: none; }
+
+.board-zoom-tools { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.board-zoom-tools .stitch-btn { min-height: 44px; padding: 8px 22px; font-size: 15px; }
+
+.board-zoom-arrow {
+  position: absolute;
+  top: 44%;
+  display: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid rgb(62 56 50 / 0.18);
+  border-radius: 50%;
+  background: #fff;
+  font-family: var(--story-font);
+  font-size: 20px;
+  color: var(--tale-ink);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.board-zoom-arrow:hover { background: var(--tale-paper); }
+.board-zoom-arrow:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
+.board-zoom-arrow.is-prev { left: clamp(10px, 2.4vw, 36px); }
+.board-zoom-arrow.is-next { right: clamp(10px, 2.4vw, 36px); }
+
+@media (hover: hover) and (min-width: 720px) { .board-zoom-arrow { display: block; } }
+.board-zoom.is-single .board-zoom-arrow { display: none; }
+
+/* 좋아요 */
+.board-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgb(62 56 50 / 0.2);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tale-ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.board-like[hidden] { display: none; }
+.board-like svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linejoin: round; transition: transform 0.2s ease; }
+.board-like:hover { background: var(--tale-paper); }
+.board-like:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
+.board-like[aria-pressed='true'] { border-color: #d9533c; color: #c2432d; }
+.board-like[aria-pressed='true'] svg { fill: #d9533c; stroke: #d9533c; transform: scale(1.08); }
+
+/* 댓글 */
+.board-talk {
+  flex: none;
+  width: min(100%, 560px);
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--tale-line);
+  text-align: left;
+}
+
+.board-talk[hidden] { display: none; }
+
+.board-talk-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tale-ink);
+}
+
+.board-talk-empty { margin: 8px 0; font-size: 14px; color: var(--tale-soft); }
+.board-talk-empty[hidden] { display: none; }
+
+.board-talk-list { margin: 0; padding: 0; list-style: none; }
+.board-talk-list li { padding: 8px 0; border-bottom: 1px solid rgb(62 56 50 / 0.08); }
+.board-talk-list li:last-child { border-bottom: 0; }
+
+.board-talk-head { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.board-talk-head strong { color: var(--tale-ink); }
+.board-talk-head span { font-size: 12px; color: var(--tale-soft); }
+
+.board-talk-list p {
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--tale-ink);
+  overflow-wrap: anywhere;
+}
+
+/* 쓰는 칸은 댓글이 길어져도 아래에 붙어 있음 */
+.board-talk-form {
+  position: sticky;
+  bottom: -14px;
+  display: flex;
+  gap: 6px;
+  padding: 8px 0;
+  background: #fff;
+}
+
+.board-talk-form input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgb(62 56 50 / 0.24);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 16px;   /* 아이폰에서 칸을 누를 때 화면이 커지지 않게 */
+  color: var(--tale-ink);
+}
+
+.board-talk-form input:focus { outline: 2px solid var(--tale-tangerine); outline-offset: 0; border-color: transparent; }
+#boardTalkName { flex: 0 0 74px; }
+#boardTalkBody { flex: 1 1 auto; }
+
+.board-talk-send {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--tale-dark);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fbf3e4;
+  cursor: pointer;
+}
+
+.board-talk-send:disabled { opacity: 0.55; cursor: progress; }
+.board-talk-send:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
+
+.board-talk-status { margin: 0; font-size: 13px; color: #b9562a; }
+.board-talk-status:empty { display: none; }
+
+/* 넓은 화면: 왼쪽에 엽서, 오른쪽에 좋아요 · 댓글 */
+@media (min-width: 900px) {
+  .board-zoom { --zoom-w: min(calc(100vw - 500px), 860px, calc((100svh - 70px) * 1.5)); padding: 0; }
+  .board-zoom[open] { flex-direction: row; align-items: stretch; }
+  .board-zoom-track { flex: 1 1 auto; width: auto; height: auto; min-width: 0; }
+  .board-zoom-foot {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 390px;
+    width: 390px;
+    height: 100%;
+    padding: 22px 18px 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: -1px 0 0 var(--tale-line);
+  }
+  .board-talk { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; width: 100%; }
+  .board-talk-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .board-talk-form { position: static; }
+  .board-zoom-arrow.is-next { right: 406px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-card,
+  .board-card.is-new,
+  .board-zoom-foot,
+  .board-zoom::backdrop,
+  .board-zoom.is-closing::backdrop { animation: none; }
+}

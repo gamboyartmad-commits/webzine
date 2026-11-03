@@ -111,9 +111,6 @@ const pickedCardId = () => (photoActive ? PHOTO_CARD_ID : cardId(currentCard));
 
 // 고른 그림을 동화 속 봉투 안 엽서에도 똑같이
 function syncPreview() {
-  const letterCard = document.getElementById('letterCard');
-  if (letterCard && letterCard.getAttribute('src') !== cardImage.getAttribute('src')) letterCard.src = cardImage.getAttribute('src');
-  if (letterCard) letterCard.alt = `봉투에 든 엽서 — ${CARDS[currentCard].alt}`;   // v7.19: 대체텍스트도 고른 엽서로
 }
 
 const tileCenter = (k) => cardTiles[k].offsetLeft + cardTiles[k].offsetWidth / 2;
@@ -815,7 +812,6 @@ const writingBox = () => (narrowScreen.matches ? mobileMessage : cardMessage);
 
 const translateBtn = document.getElementById('translateBtn');
 const writePanelEl = document.getElementById('writePanel');
-const boardSection = document.getElementById('boardSection');
 const translatePage = document.getElementById('translatePage');
 const trStandard = document.getElementById('trStandard');
 const trJeju = document.getElementById('trJeju');
@@ -839,17 +835,14 @@ const TR_NOTE = '「개정증보 제주어사전」을 바탕으로 한 참고�
 // 지금 편지의 두 모습. 엽서에 제주어 편지를 담은 뒤 글을 고치지 않았으면 그대로 다시 보여 줌
 let letter = { standard: '', jeju: '' };
 
-// ---------- 제주 동화 한 편: 화면 단위 ----------
-// 이야기(flow): SCENE 01~02. 화면이 멈춘 채(sticky) 스크롤에 맞춰 카메라가 움직이고(아래 '동화 장면'),
-//   종이 한 장이 동화 위로 밀려 올라오며 엽서 고르기 + 마음 쓰기 (한 화면).
+// ---------- 화면 단위 ----------
+// 쓰는 곳(flow): 첫 화면 (v7.31 — 예전 첫 화면 '동화 장면'은 뺐다). 위에 다른 사람들이 쓴 엽서(게시판), 바로 아래에 엽서 고르기 + 마음 쓰기.
 //   여기서부터는 버튼을 누를 때마다 화면이 통째로 바뀜 (앞 화면 내용은 보이지 않음):
 //   '제주어로 바꾸기' → 보내기(send: 제주어 엽서에 소인, 제주어 편지 고치기는 펼쳐서) → 보내기를 마치면 엔딩(end)
-// 게시판(board): 따로 보는 화면
 // 화면을 바꿀 때마다 브라우저 기록을 쌓아 휴대폰 뒤로 가기 · 뒤로 버튼으로 한 화면씩 돌아옴. 화면마다 보던 자리를 기억함
 const scene2 = document.getElementById('scene2');
 const secSend = document.getElementById('secSend');
 const ending = document.getElementById('ending');
-const floatCta = document.getElementById('floatCta');
 const SECTIONS = { pick: scene2, translate: translatePage, send: secSend };
 const calmMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const smoothScroll = () => (calmMotion.matches ? 'auto' : 'smooth');
@@ -858,11 +851,12 @@ const PAGES = {
   flow: storyPage,
   send: document.getElementById('pageSend'),
   end: document.getElementById('pageEnd'),
+  all: document.getElementById('pageAll'),
 };
-const BACK_OF = { send: 'flow', end: 'send' };   // 뒤로 가면 갈 화면
+const BACK_OF = { send: 'flow', end: 'send', all: 'flow' };   // 뒤로 가면 갈 화면
 let view = 'flow';
 let stepDepth = 0;                                  // 이 사이트 안에서 쌓은 기록 수
-const scrollMemory = { flow: 0, send: 0, end: 0, board: 0 };  // 화면마다 보던 자리 ('pick' = 엽서 고르기, 'write' = 마음 쓰기)
+const scrollMemory = { flow: 0, send: 0, end: 0, all: 0 };  // 화면마다 보던 자리 ('pick' = 엽서 고르기, 'write' = 마음 쓰기)
 
 function openSec(name) {
   SECTIONS[name].hidden = false;
@@ -886,23 +880,17 @@ function renderView(next) {
   view = next;
   document.body.dataset.view = next;
   hy('pc_view', { view: next });   // v7.11 성과 측정: 어느 화면을 열었는지(머문 시간은 track.js 가 화면마다 잰다)
-  writePanelEl.hidden = next === 'board';
   Object.entries(PAGES).forEach(([name, el]) => { el.hidden = name !== next; });
-  boardSection.hidden = next !== 'board';
   if (next === 'flow' && jejuApplied) backToStandard();   // 쓰는 곳은 늘 평소 말로
   let y = scrollMemory[next] || 0;
-  if (y === 'pick') y = scene2.getBoundingClientRect().top + window.scrollY;
+  if (y === 'pick') y = writeTop();
   if (y === 'write') {
     openWriter();   // 편지 쓰는 자리로 돌아올 때는 쓰는 칸을 열어 둠
     y = writerPanel.getBoundingClientRect().top + window.scrollY - 90;
   }
   window.scrollTo(0, y);
-  updateFloatCta();
-  if (next === 'flow') {
-    scrollToSlot(centerSlot, 'instant');   // 숨어 있던 띠를 지금 그림에 맞춰 다시 놓음
-    measureStory();
-    requestStory();
-  }
+  updateBackBtn();
+  if (next === 'flow') scrollToSlot(centerSlot, 'instant');   // 숨어 있던 띠를 지금 그림에 맞춰 다시 놓음
 }
 
 // 다음 페이지로 (기록을 하나 쌓음). fresh면 그 페이지 맨 위부터
@@ -929,8 +917,27 @@ function backToStandard() {
   closeSec('send');
 }
 
-const goBoard = () => goView('board', true);
-const leaveBoard = () => backView('flow');
+// 쓰는 곳의 맨 위 (게시판 아래, 위 막대에 가리지 않게)
+function writeTop() {
+  const bar = document.querySelector('.tale-bar');
+  return scene2.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0);
+}
+
+// 위 막대 '게시판': 휴대폰은 모든 엽서 화면으로, PC는 게시판(쓰는 곳 위쪽)으로
+function goBoard() {
+  if (boardPhone.matches) {
+    if (view === 'all') window.scrollTo({ top: 0, behavior: smoothScroll() });
+    else goView('all', true);
+    loadAllBoardPosts();
+    return;
+  }
+  if (view === 'flow') {
+    window.scrollTo({ top: 0, behavior: smoothScroll() });
+    return;
+  }
+  scrollMemory.flow = 0;
+  goView('flow');
+}
 
 window.addEventListener('popstate', (e) => {
   const state = e.state || {};
@@ -2114,27 +2121,9 @@ mailForm.addEventListener('submit', async (e) => {
 });
 
 // ---------- 엽서 게시판 ----------
-// 사람들이 붙인 엽서를 코르크판에 보여 줌. 누르면 크게 볼 수 있음.
+// 쓰는 곳 위쪽. 사람들이 붙인 엽서를 살짝씩 기울여 한 쪽에 9장씩(휴대폰은 3장씩) 보여 주고, 넘으면 옆으로 넘김. 누르면 크게 볼 수 있음.
 // config.js에 Supabase 주소·키가 있으면 모두가 같은 게시판을 봄 (supabase/board.sql).
-// 없으면 예전처럼 이 브라우저에만 저장됨. 붙인 엽서가 3장이 안 되면 예시 엽서를 함께 보여 줌
-
-const BOARD_POSTCARDS = [
-  {
-    card: 0, to: '할망', from: '손녀 민지', date: '2026.10.15', tilt: -4, pin: '#d9533c',
-    message: '할망, 펜안ᄒᆞ우까? 제주 바당이 하영 기렵수다. ᄒᆞᆫ저 보고정 ᄒᆞ우다.',
-    standard: '할머니, 편안하세요? 제주 바다가 많이 그리워요. 어서 보고 싶어요.',
-  },
-  {
-    card: 2, to: '어멍', from: '막내', date: '2026.10.16', tilt: 3, pin: '#3f7fc4',
-    message: '어멍, ᄎᆞᆷ말 고맙수다.\n늘 건강ᄒᆞᆸ서. ᄉᆞ랑ᄒᆞᆸ네다.',
-    standard: '엄마, 정말 고마워요.\n늘 건강하세요. 사랑합니다.',
-  },
-  {
-    card: 3, to: '지수', from: '하은', date: '2026.10.17', tilt: -2, pin: '#e8b62f',
-    message: '친구광 ᄒᆞᆫ듸 ᄇᆞ름 부는 ᄆᆞ을을 걸엇수다. 늴 ᄒᆞᆨ교에서 만나게!',
-    standard: '친구랑 같이 바람 부는 마을을 걸었어요. 내일 학교에서 만나자!',
-  },
-];
+// 없으면 예전처럼 이 브라우저에만 저장됨
 
 // 엽서 한 장을 줄인 모양으로 그림 (글자 자리는 쓰는 엽서와 같은 .card-* 위치를 씀)
 function fillMiniCard(el, post) {
@@ -2162,52 +2151,298 @@ function fillMiniCard(el, post) {
   }
 }
 
-const boardGrid = document.getElementById('boardGrid');
+const boardPages = document.getElementById('boardPages');
+const boardEmpty = document.getElementById('boardEmpty');
+const boardPager = document.getElementById('boardPager');
+const boardPageDots = document.getElementById('boardPageDots');
+const boardPagePrev = document.getElementById('boardPagePrev');
+const boardPageNext = document.getElementById('boardPageNext');
 const boardView = document.getElementById('boardView');
-const boardViewCard = document.getElementById('boardViewCard');
 const boardViewToggle = document.getElementById('boardViewToggle');
-let boardViewPost = null;
+const boardZoomTrack = document.getElementById('boardZoomTrack');
+const boardZoomText = document.getElementById('boardZoomText');
+const boardZoomCount = document.getElementById('boardZoomCount');
+const boardZoomHint = document.getElementById('boardZoomHint');
 
-// 크게 본 엽서의 '표준어로 보기' ↔ '제주어로 보기'
-// 표준어 글이 함께 저장된 엽서는 그 글을, 없는 엽서(예전 엽서)는 제주어 글을 대략 풀어서(translateToStandard) 보여 줌
-function openBoardView(post) {
-  boardViewPost = post;
-  if (!post.standard && window.translateToStandard) post.standard = window.translateToStandard(post.message);
-  fillMiniCard(boardViewCard, post);
-  boardViewToggle.hidden = !post.standard || post.standard === post.message;
-  boardViewToggle.setAttribute('aria-pressed', 'false');
-  boardViewToggle.textContent = '표준어로 보기';
-  boardView.showModal();
-}
-boardViewToggle.addEventListener('click', () => {
-  if (!boardViewPost) return;
-  const showStandard = boardViewToggle.getAttribute('aria-pressed') !== 'true';
-  boardViewCard.querySelector('.card-message').textContent = showStandard ? boardViewPost.standard : boardViewPost.message;
-  boardViewToggle.setAttribute('aria-pressed', String(showStandard));
-  boardViewToggle.textContent = showStandard ? '제주어로 보기' : '표준어로 보기';
-});
+let boardPosts = [];
+let boardPage = 0;
+const boardPhone = window.matchMedia('(max-width: 719px)');   // style.css 의 휴대폰 게시판과 같은 기준
+const boardPerPage = () => (boardPhone.matches ? 3 : 9);
+const boardAllGrid = document.getElementById('boardAllGrid');
+const BOARD_TILTS = [-2.4, 1.6, -0.9, 2.2, -1.7, 0.8, 2.8, -1.2, 1.1, -2.9, 1.9, -0.6, 2.5];
+const ZOOM_TILTS = [-1.6, 1.2, -0.7, 1.8, -1.1, 0.6];
 
-const PIN_COLORS = ['#d9533c', '#3f7fc4', '#e8b62f', '#5f9a4a', '#c45aa0'];
-const TILTS = [-4, 3, -2, 4, -3, 2];
-
-// 게시판에 엽서 한 장 붙이기
-function addBoardCard(post, { prepend = false, fresh = false } = {}) {
-  const n = boardGrid.children.length;
+// 엽서 한 장 (게시판의 단추)
+function makeBoardCard(index, fresh) {
+  const post = boardPosts[index];
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'board-card' + (fresh ? ' is-new' : '');
-  btn.style.setProperty('--r', `${post.tilt ?? TILTS[n % TILTS.length]}deg`);
-  btn.style.setProperty('--pin', post.pin || PIN_COLORS[n % PIN_COLORS.length]);
+  btn.dataset.index = index;
+  btn.style.setProperty('--r', `${BOARD_TILTS[index % BOARD_TILTS.length]}deg`);
+  btn.style.setProperty('--n', index % boardPerPage());
   btn.setAttribute('aria-label', `${post.from || '누군가'} 님이 ${post.to || '누군가'} 님에게 쓴 엽서 크게 보기`);
   const mini = document.createElement('div');
   mini.className = 'mini-card';
   fillMiniCard(mini, post);
   btn.appendChild(mini);
-  btn.addEventListener('click', () => openBoardView(post));
-  if (prepend) boardGrid.prepend(btn);
-  else boardGrid.appendChild(btn);
+  const badge = document.createElement('span');
+  badge.className = 'board-card-react';
+  badge.setAttribute('aria-hidden', 'true');
+  btn.appendChild(badge);
+  paintBoardCard(btn);
   return btn;
 }
+
+// 있는 엽서를 한 쪽 장수씩 나눠 깖 (세모 단추는 늘 보이고, 넘길 쪽이 있을 때만 눌림)
+function renderBoard(fresh = false) {
+  boardPages.textContent = '';
+  boardPageDots.textContent = '';
+  const perPage = boardPerPage();
+  const pages = Math.ceil(boardPosts.length / perPage);
+  for (let p = 0; p < pages; p += 1) {
+    const page = document.createElement('div');
+    page.className = 'board-page';
+    for (let i = p * perPage; i < Math.min(boardPosts.length, (p + 1) * perPage); i += 1) {
+      page.appendChild(makeBoardCard(i, fresh && i === 0));
+    }
+    boardPages.appendChild(page);
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'board-pager-dot';
+    dot.setAttribute('aria-label', `${p + 1}쪽`);
+    dot.addEventListener('click', () => turnBoardPage(p));
+    boardPageDots.appendChild(dot);
+  }
+  boardAllGrid.textContent = '';
+  if (boardPhone.matches) boardPosts.forEach((_, i) => boardAllGrid.appendChild(makeBoardCard(i, fresh && i === 0)));
+  boardPager.hidden = pages < 1;
+  boardPageDots.hidden = pages < 2 || pages > 7;
+  document.getElementById('boardPageNum').hidden = pages <= 7;   // 쪽이 많으면 점 대신 숫자
+  boardPage = 0;
+  boardPages.scrollLeft = 0;
+  syncBoardPager();
+}
+
+function syncBoardPager() {
+  [...boardPageDots.children].forEach((dot, p) => {
+    if (p === boardPage) dot.setAttribute('aria-current', 'true');
+    else dot.removeAttribute('aria-current');
+  });
+  document.getElementById('boardPageNum').textContent = `${boardPage + 1} / ${boardPageDots.children.length}`;
+  boardPagePrev.disabled = boardPage === 0;
+  boardPageNext.disabled = boardPage >= boardPageDots.children.length - 1;
+}
+
+function turnBoardPage(p, smooth = true) {
+  boardPages.scrollTo({ left: p * boardPages.clientWidth, behavior: smooth ? smoothScroll() : 'auto' });
+  if (p !== boardPage) hy('pc_board_page', { page: p + 1 });
+  boardPage = p;
+  syncBoardPager();
+}
+
+boardPagePrev.addEventListener('click', () => turnBoardPage(boardPage - 1));
+boardPageNext.addEventListener('click', () => turnBoardPage(boardPage + 1));
+
+// 손으로 밀어 넘겼을 때
+// (넘어가는 중에 지나치는 쪽을 현재 쪽으로 착각하지 않게 스크롤이 멈춘 뒤에 잼)
+let boardScrollTimer = 0;
+boardPages.addEventListener('scroll', () => {
+  clearTimeout(boardScrollTimer);
+  boardScrollTimer = setTimeout(() => {
+    const p = Math.round(boardPages.scrollLeft / (boardPages.clientWidth || 1));
+    if (p === boardPage) return;
+    boardPage = p;
+    hy('pc_board_page', { page: p + 1 });
+    syncBoardPager();
+  }, 140);
+}, { passive: true });
+
+window.addEventListener('resize', () => { boardPages.scrollLeft = boardPage * boardPages.clientWidth; });
+boardPhone.addEventListener?.('change', () => renderBoard());   // 화면을 돌려 PC 칸 수로 바뀔 때 등
+
+[boardPages, boardAllGrid].forEach((grid) => grid.addEventListener('click', (e) => {
+  const btn = e.target instanceof Element ? e.target.closest('.board-card') : null;
+  if (btn) openBoardZoom(Number(btn.dataset.index), btn);
+}));
+
+// ---------- 게시판: 엽서 크게 보기 ----------
+// 누른 엽서가 그 자리에서 가운데로 커지고 뒤는 하얗게 가려짐. 옆으로 밀면(화살표 · 화살표 키) 다음 엽서, 끝에 닿으면 처음으로.
+// 한 번 누르면(또는 닫기) 다시 제자리로 작아짐. 양쪽 엽서를 미리 그려 두었다가 넘길 때 자리만 바꿈
+let zoomSlides = [...boardZoomTrack.children];
+let zoomIndex = 0;
+let zoomFrom = null;     // 엽서가 나온 자리(게시판의 엽서)
+let zoomBusy = false;    // 커지거나 넘어가는 중
+let zoomDrag = null;
+const zoomAt = (d) => (zoomIndex + d + boardPosts.length * 2) % boardPosts.length;
+const zoomCard = () => zoomSlides[1].firstElementChild;
+
+function fillZoomSlide(k, d) {
+  const card = zoomSlides[k].firstElementChild;
+  fillMiniCard(card, boardPosts[zoomAt(d)]);
+  card.style.setProperty('--r', `${ZOOM_TILTS[zoomAt(d) % ZOOM_TILTS.length]}deg`);
+}
+
+function placeZoomSlides() {
+  zoomSlides.forEach((slide, k) => { slide.style.transform = `translateX(${(k - 1) * 100}%)`; });
+}
+
+// 가운데 엽서의 글 · '표준어로 보기' · 몇 번째인지. 표준어 글이 없는 예전 엽서는 제주어 글을 대략 풀어서(translateToStandard) 보여 줌
+function showZoomInfo() {
+  const post = boardPosts[zoomIndex];
+  if (!post.standard && window.translateToStandard) post.standard = window.translateToStandard(post.message);
+  boardZoomText.textContent = post.message;
+  boardViewToggle.hidden = !post.standard || post.standard === post.message;
+  boardViewToggle.setAttribute('aria-pressed', 'false');
+  boardViewToggle.textContent = '표준어로 보기';
+  boardZoomCount.textContent = `${zoomIndex + 1} / ${boardPosts.length}`;
+  boardZoomHint.hidden = boardPosts.length < 2;
+  boardView.classList.toggle('is-single', boardPosts.length < 2);
+  showZoomReact();
+}
+
+boardViewToggle.addEventListener('click', () => {
+  const post = boardPosts[zoomIndex];
+  const showStandard = boardViewToggle.getAttribute('aria-pressed') !== 'true';
+  const text = showStandard ? post.standard : post.message;
+  zoomCard().querySelector('.card-message').textContent = text;
+  boardZoomText.textContent = text;
+  boardViewToggle.setAttribute('aria-pressed', String(showStandard));
+  boardViewToggle.textContent = showStandard ? '제주어로 보기' : '표준어로 보기';
+});
+
+// 게시판의 엽서 자리 ↔ 가운데 사이를 날아감
+function zoomFly(btn, back) {
+  const card = zoomCard();
+  const a = btn.getBoundingClientRect();
+  const b = card.getBoundingClientRect();
+  const small = {
+    transform: `translate(${(a.left + a.width / 2) - (b.left + b.width / 2)}px, ${(a.top + a.height / 2) - (b.top + b.height / 2)}px) scale(${btn.offsetWidth / card.offsetWidth}) rotate(${btn.style.getPropertyValue('--r')})`,
+  };
+  const big = { transform: `rotate(${card.style.getPropertyValue('--r')})` };
+  return card.animate(back ? [big, small] : [small, big], { duration: back ? 380 : 480, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }).finished;
+}
+
+function openBoardZoom(index, btn) {
+  if (boardView.open) return;
+  zoomIndex = index;
+  zoomFrom = btn;
+  zoomSlides.forEach((_, k) => fillZoomSlide(k, k - 1));
+  placeZoomSlides();
+  showZoomInfo();
+  hy('pc_board_open', {});
+  boardView.showModal();
+  if (calmMotion.matches) return;
+  btn.classList.add('is-flying');
+  zoomBusy = true;
+  zoomFly(btn, false).catch(() => {}).finally(() => { zoomBusy = false; btn.classList.remove('is-flying'); });
+}
+
+// 닫을 때 돌아갈 자리: 넘겨 본 엽서가 있는 쪽을 펴 두고 그 엽서로. 화면 밖이면 그 자리에서 사라짐
+function zoomHome() {
+  if (view === 'all') {
+    const card = boardAllGrid.querySelector(`[data-index="${zoomIndex}"]`);
+    if (card) card.scrollIntoView({ block: 'center', behavior: 'instant' });   // 넘겨 본 엽서가 있는 자리로
+    return card;
+  }
+  turnBoardPage(Math.floor(zoomIndex / boardPerPage()), false);
+  const el = boardPages.querySelector(`[data-index="${zoomIndex}"]`);
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight ? el : null;
+}
+
+async function closeBoardZoom() {
+  if (!boardView.open || zoomBusy) return;
+  const home = zoomHome();
+  zoomBusy = true;
+  boardView.classList.add('is-closing');
+  if (home && !calmMotion.matches) {
+    home.classList.add('is-flying');
+    await zoomFly(home, true).catch(() => {});
+    home.classList.remove('is-flying');
+  } else if (!calmMotion.matches) {
+    await boardView.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220 }).finished.catch(() => {});
+  }
+  // 창을 닫으면 브라우저가 처음 누른 엽서로 초점을 돌리며 화면을 옮기므로, 보던 자리를 지킴
+  const y = window.scrollY;
+  const left = boardPages.scrollLeft;
+  boardView.close();
+  window.scrollTo(0, y);
+  boardPages.scrollLeft = left;
+  if (home) home.focus({ preventScroll: true });
+  zoomBusy = false;
+}
+
+boardView.addEventListener('close', () => {
+  boardView.classList.remove('is-closing');
+  zoomBusy = false;
+});
+boardView.addEventListener('cancel', (e) => { e.preventDefault(); closeBoardZoom(); });
+boardView.addEventListener('click', (e) => { if (e.target === boardView) closeBoardZoom(); });
+// 크게 보는 동안 뒤 게시판은 움직이지 않게 (댓글 칸은 스크롤됨)
+boardView.addEventListener('wheel', (e) => { if (!(e.target instanceof Element && e.target.closest('.board-zoom-foot'))) e.preventDefault(); }, { passive: false });
+boardView.addEventListener('keydown', (e) => {
+  if (e.target instanceof Element && e.target.matches('input')) return;   // 댓글을 쓰는 중에는 넘기지 않음
+  if (e.key === 'ArrowRight') turnZoom(1);
+  else if (e.key === 'ArrowLeft') turnZoom(-1);
+});
+document.getElementById('boardZoomClose').addEventListener('click', closeBoardZoom);
+document.getElementById('boardZoomPrev').addEventListener('click', () => turnZoom(-1));
+document.getElementById('boardZoomNext').addEventListener('click', () => turnZoom(1));
+
+// 다음(1) · 이전(-1) 엽서로. startX = 손으로 밀던 자리
+async function turnZoom(dir, startX = 0) {
+  if (zoomBusy || boardPosts.length < 2) return;
+  zoomBusy = true;
+  hy('pc_board_swipe', { direction: dir > 0 ? 'next' : 'prev' });
+  const w = boardZoomTrack.offsetWidth;
+  if (!calmMotion.matches) {
+    await boardZoomTrack.animate(
+      [{ transform: `translateX(${startX}px)` }, { transform: `translateX(${-dir * w}px)` }],
+      { duration: 300, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' },
+    ).finished.catch(() => {});
+  }
+  fillMiniCard(zoomCard(), boardPosts[zoomIndex]);   // 표준어로 보던 엽서는 제주어로 되돌려 둠
+  zoomIndex = zoomAt(dir);
+  zoomSlides = dir > 0 ? [zoomSlides[1], zoomSlides[2], zoomSlides[0]] : [zoomSlides[2], zoomSlides[0], zoomSlides[1]];
+  fillZoomSlide(dir > 0 ? 2 : 0, dir);
+  placeZoomSlides();
+  boardZoomTrack.style.transform = '';
+  showZoomInfo();
+  zoomBusy = false;
+}
+
+boardZoomTrack.addEventListener('pointerdown', (e) => {
+  if (zoomBusy || e.button) return;
+  zoomDrag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, moved: false };
+  boardZoomTrack.setPointerCapture(e.pointerId);
+});
+boardZoomTrack.addEventListener('pointermove', (e) => {
+  if (!zoomDrag) return;
+  zoomDrag.dx = e.clientX - zoomDrag.x;
+  if (!zoomDrag.moved && Math.abs(zoomDrag.dx) < 8) return;
+  zoomDrag.moved = true;
+  boardZoomTrack.style.transform = `translateX(${zoomDrag.dx}px)`;
+});
+boardZoomTrack.addEventListener('pointerup', () => {
+  if (!zoomDrag) return;
+  const { dx, moved, t } = zoomDrag;
+  zoomDrag = null;
+  if (!moved) { closeBoardZoom(); return; }   // 한 번 누르면 제자리로
+  const fast = Math.abs(dx) / (performance.now() - t) > 0.45;
+  if (boardPosts.length > 1 && (fast || Math.abs(dx) > Math.min(boardZoomTrack.offsetWidth * 0.2, 110))) {
+    boardZoomTrack.style.transform = '';
+    turnZoom(dx < 0 ? 1 : -1, dx);
+  } else {
+    boardZoomTrack.style.transform = '';
+    if (!calmMotion.matches) boardZoomTrack.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: 240, easing: 'ease-out' });
+  }
+});
+boardZoomTrack.addEventListener('pointercancel', () => {
+  zoomDrag = null;
+  boardZoomTrack.style.transform = '';
+});
 
 // 이 브라우저에서 게시판에 붙인 엽서 (서버가 생기기 전까지는 이 기기에만 저장됨)
 const BOARD_KEY = 'jeju-postcard-board';
@@ -2246,20 +2481,23 @@ function boardHeaders(extra = {}) {
 }
 
 // standard = 제주어로 바꾸기 전 표준어 글 (크게 보기의 '표준어로 보기'). supabase/board.sql의 standard 칸
+let boardTotal = null;         // 게시판에 붙은 엽서 전체 수 (서버가 알려 줌)
 let boardHasStandard = true;   // 데이터베이스에 standard 칸이 없으면(아직 SQL을 안 돌렸으면) false로 바뀌고 예전처럼
-async function fetchBoardPosts() {
-  const cols = `card,to_name,message,from_name,post_date,photo${boardHasStandard ? ',standard' : ''}`;
+async function fetchBoardPosts(offset = 0) {
+  const cols = `id,card,to_name,message,from_name,post_date,photo${boardHasStandard ? ',standard' : ''}`;
   const res = await fetch(
-    `${BOARD_DB.url}/rest/v1/board_posts?select=${cols}&order=created_at.desc&limit=${BOARD_LIMIT}`,
-    { headers: boardHeaders() },
+    `${BOARD_DB.url}/rest/v1/board_posts?select=${cols}&order=created_at.desc&limit=${BOARD_LIMIT}&offset=${offset}`,
+    { headers: boardHeaders({ Prefer: 'count=exact' }) },
   );
   if (!res.ok && boardHasStandard && (res.status === 400 || res.status === 401)) {
     boardHasStandard = false;
-    return fetchBoardPosts();
+    return fetchBoardPosts(offset);
   }
   if (!res.ok) throw new Error(`게시판을 불러오지 못했어요 (${res.status})`);
+  const total = Number((res.headers.get('content-range') || '').split('/')[1]);
+  boardTotal = total > 0 ? total : null;
   return (await res.json()).map((r) => ({
-    card: r.card, to: r.to_name, message: r.message, from: r.from_name, date: r.post_date, photo: r.photo || undefined,
+    id: r.id, card: r.card, to: r.to_name, message: r.message, from: r.from_name, date: r.post_date, photo: r.photo || undefined,
     standard: r.standard || '',
   }));
 }
@@ -2274,18 +2512,18 @@ async function sendBoardPost(post) {
     photo: post.photo || null,
   };
   if (boardHasStandard && post.standard) body.standard = post.standard.slice(0, 400);
-  let res = await fetch(`${BOARD_DB.url}/rest/v1/board_posts`, {
+  let res = await fetch(`${BOARD_DB.url}/rest/v1/board_posts?select=id`, {
     method: 'POST',
-    headers: boardHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+    headers: boardHeaders({ 'Content-Type': 'application/json', Prefer: 'return=representation' }),
     body: JSON.stringify(body),
   });
   if (!res.ok && body.standard && (res.status === 400 || res.status === 401)) {
     // 데이터베이스에 아직 standard 칸이 없으면 표준어 없이 다시
     boardHasStandard = false;
     delete body.standard;
-    res = await fetch(`${BOARD_DB.url}/rest/v1/board_posts`, {
+    res = await fetch(`${BOARD_DB.url}/rest/v1/board_posts?select=id`, {
       method: 'POST',
-      headers: boardHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+      headers: boardHeaders({ 'Content-Type': 'application/json', Prefer: 'return=representation' }),
       body: JSON.stringify(body),
     });
   }
@@ -2297,25 +2535,245 @@ async function sendBoardPost(post) {
       ? '지금 붙이는 사람이 많아요. 잠시 뒤에 다시 붙여 주세요.'
       : '게시판에 붙이지 못했어요. 잠시 뒤에 다시 해 주세요.');
   }
+  try { post.id = (await res.json())[0].id; } catch (e) { /* 번호를 못 받으면 새로고침 전까지 좋아요 · 댓글만 빠짐 */ }
 }
 
-// 예시 엽서는 실제 엽서가 3장이 안 될 때만 (data-example로 표시해 두고 나중에 뺌)
-BOARD_POSTCARDS.forEach((post) => { addBoardCard(post).dataset.example = ''; });
+// ---------- 게시판: 좋아요 · 댓글 (supabase/reactions.sql) ----------
+// 로그인 없이 누구나. 좋아요는 이 브라우저의 임의 번호로 엽서마다 한 번만(다시 누르면 취소), 댓글은 모두가 볼 수 있음.
+// 데이터베이스에 아직 표가 없으면(SQL을 안 돌렸으면) 이 칸들은 보이지 않고 게시판은 그대로 쓸 수 있음
+const boardLikeBtn = document.getElementById('boardLikeBtn');
+const boardLikeCount = document.getElementById('boardLikeCount');
+const boardTalk = document.getElementById('boardTalk');
+const boardTalkEmpty = document.getElementById('boardTalkEmpty');
+const boardTalkList = document.getElementById('boardTalkList');
+const boardTalkForm = document.getElementById('boardTalkForm');
+const boardTalkName = document.getElementById('boardTalkName');
+const boardTalkBody = document.getElementById('boardTalkBody');
+const boardTalkSend = document.getElementById('boardTalkSend');
+const boardTalkStatus = document.getElementById('boardTalkStatus');
+const boardCommentCount = document.getElementById('boardCommentCount');
+const TALK_NAME_KEY = 'jeju-postcard-talk-name';
+const LIKER_KEY = 'jeju-postcard-liker';
+
+const likerId = (() => {
+  let id = '';
+  try { id = localStorage.getItem(LIKER_KEY) || ''; } catch (e) { /* 저장 공간이 막혀 있으면 이번 방문만 */ }
+  if (/^[a-z0-9-]{16,40}$/.test(id)) return id;
+  id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+  try { localStorage.setItem(LIKER_KEY, id); } catch (e) { /* 위와 같음 */ }
+  return id;
+})();
+try { boardTalkName.value = localStorage.getItem(TALK_NAME_KEY) || ''; } catch (e) { /* 위와 같음 */ }
+
+let reactionsOn = false;
+const boardReact = new Map();      // 엽서 번호 → { likes, comments, liked }
+const reactOf = (post) => boardReact.get(post.id) || { likes: 0, comments: 0, liked: false };
+
+async function boardRpc(name, body) {
+  const res = await fetch(`${BOARD_DB.url}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: boardHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${name} ${res.status}`);
+  return res.json();
+}
+
+// 게시판의 작은 엽서 위에 ♥ 수 · 댓글 수
+function paintBoardCard(btn) {
+  const post = boardPosts[Number(btn.dataset.index)];
+  const badge = btn.querySelector('.board-card-react');
+  const { likes, comments } = reactOf(post);
+  badge.textContent = [likes ? `♥ ${likes}` : '', comments ? `댓글 ${comments}` : ''].filter(Boolean).join(' · ');
+  badge.hidden = !likes && !comments;
+  const base = `${post.from || '누군가'} 님이 ${post.to || '누군가'} 님에게 쓴 엽서 크게 보기`;
+  btn.setAttribute('aria-label', `${base}${likes ? `, 좋아요 ${likes}개` : ''}${comments ? `, 댓글 ${comments}개` : ''}`);
+}
+
+function paintBoardCards() {
+  document.querySelectorAll('.board-card').forEach(paintBoardCard);
+}
+
+async function loadBoardReactions() {
+  if (!BOARD_ONLINE) return;
+  try {
+    const rows = await boardRpc('board_reactions', { p_liker: likerId });
+    boardReact.clear();
+    rows.forEach((r) => boardReact.set(r.post_id, { likes: r.likes, comments: r.comments, liked: r.liked }));
+    reactionsOn = true;
+    paintBoardCards();
+    if (boardView.open) showZoomReact();
+  } catch (e) {
+    reactionsOn = false;
+  }
+}
+
+function paintZoomLike(post) {
+  const r = reactOf(post);
+  boardLikeBtn.setAttribute('aria-pressed', String(r.liked));
+  boardLikeCount.textContent = r.likes;
+  boardCommentCount.textContent = r.comments;
+}
+
+// 크게 본 엽서의 좋아요 · 댓글 칸
+function showZoomReact() {
+  const post = boardPosts[zoomIndex];
+  const on = reactionsOn && post && post.id != null;
+  boardLikeBtn.hidden = !on;
+  boardTalk.hidden = !on;
+  boardTalkStatus.textContent = '';
+  if (!on) return;
+  paintZoomLike(post);
+  boardTalkList.textContent = '';
+  boardTalkEmpty.textContent = '댓글을 불러오는 중이에요.';
+  boardTalkEmpty.hidden = false;
+  loadComments(post);
+}
+
+function addCommentRow(c) {
+  const li = document.createElement('li');
+  const head = document.createElement('div');
+  head.className = 'board-talk-head';
+  const name = document.createElement('strong');
+  name.textContent = c.name || '익명';   // 글은 textContent로 넣어서 HTML로 해석되지 않게 함
+  const when = document.createElement('span');
+  when.textContent = new Date(c.created_at).toLocaleDateString('ko-KR');
+  head.append(name, when);
+  const body = document.createElement('p');
+  body.textContent = c.body;
+  li.append(head, body);
+  boardTalkList.appendChild(li);
+}
+
+async function loadComments(post) {
+  try {
+    const res = await fetch(
+      `${BOARD_DB.url}/rest/v1/board_comments?post_id=eq.${post.id}&select=id,name,body,created_at&order=created_at.asc&limit=200`,
+      { headers: boardHeaders() },
+    );
+    if (!res.ok) throw new Error(`댓글 ${res.status}`);
+    const rows = await res.json();
+    if (boardPosts[zoomIndex] !== post) return;   // 그사이 다음 엽서로 넘어갔으면 버림
+    boardTalkList.textContent = '';
+    rows.forEach(addCommentRow);
+    boardTalkEmpty.textContent = '첫 댓글을 남겨 보세요.';
+    boardTalkEmpty.hidden = rows.length > 0;
+  } catch (e) {
+    console.warn(e);
+    if (boardPosts[zoomIndex] === post) boardTalkEmpty.textContent = '댓글을 불러오지 못했어요.';
+  }
+}
+
+boardLikeBtn.addEventListener('click', async () => {
+  const post = boardPosts[zoomIndex];
+  const before = { ...reactOf(post) };
+  const next = { ...before, liked: !before.liked, likes: Math.max(0, before.likes + (before.liked ? -1 : 1)) };
+  boardReact.set(post.id, next);   // 누르면 바로 바뀌고, 서버 값으로 맞춤
+  paintZoomLike(post);
+  boardLikeBtn.disabled = true;
+  try {
+    const [row] = await boardRpc('toggle_board_like', { p_post: post.id, p_liker: likerId });
+    boardReact.set(post.id, { ...next, likes: row.likes, liked: row.liked });
+    hy('pc_board_like', { liked: row.liked ? 'yes' : 'no' });
+  } catch (e) {
+    console.warn(e);
+    boardReact.set(post.id, before);
+    if (boardPosts[zoomIndex] === post) boardTalkStatus.textContent = '좋아요를 누르지 못했어요. 잠시 뒤에 다시 해 주세요.';
+  }
+  boardLikeBtn.disabled = false;
+  if (boardPosts[zoomIndex] === post) paintZoomLike(post);
+  paintBoardCards();
+});
+
+boardTalkForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const post = boardPosts[zoomIndex];
+  const body = boardTalkBody.value.trim();
+  const name = boardTalkName.value.trim();
+  if (!body) return;
+  if (badWordIn(body, name)) {
+    boardTalkStatus.textContent = '고운 말로 써 주세요. 욕설이나 야한 말, 남을 깎아내리는 말이 들어간 댓글은 올릴 수 없어요.';
+    return;
+  }
+  boardTalkSend.disabled = true;
+  boardTalkStatus.textContent = '';
+  try {
+    const res = await fetch(`${BOARD_DB.url}/rest/v1/board_comments?select=id,name,body,created_at`, {
+      method: 'POST',
+      headers: boardHeaders({ 'Content-Type': 'application/json', Prefer: 'return=representation' }),
+      body: JSON.stringify({ post_id: post.id, name, body }),
+    });
+    if (!res.ok) {
+      let reason = '';
+      try { reason = (await res.json()).message || ''; } catch (err) { /* 내용 없음 */ }
+      if (reason.includes('고운 말')) throw new Error('고운 말로 써 주세요. 욕설이나 야한 말, 남을 깎아내리는 말이 들어간 댓글은 올릴 수 없어요.');
+      throw new Error(reason.includes('잠시 뒤') ? '지금 댓글을 쓰는 사람이 많아요. 잠시 뒤에 다시 올려 주세요.' : '댓글을 올리지 못했어요. 잠시 뒤에 다시 해 주세요.');
+    }
+    const [row] = await res.json();
+    const r = reactOf(post);
+    boardReact.set(post.id, { ...r, comments: r.comments + 1 });
+    paintBoardCards();
+    boardTalkBody.value = '';
+    try { localStorage.setItem(TALK_NAME_KEY, name); } catch (err) { /* 이름만 기억하지 못함 */ }
+    hy('pc_board_comment', {});
+    if (boardPosts[zoomIndex] === post) {
+      addCommentRow(row);
+      boardTalkEmpty.hidden = true;
+      paintZoomLike(post);
+      boardTalkList.lastElementChild.scrollIntoView({ block: 'nearest' });
+    }
+  } catch (err) {
+    boardTalkStatus.textContent = err.message;
+  }
+  boardTalkSend.disabled = false;
+});
+
+// 휴대폰 게시판 제목 아래 'N명이 썼어요' — 엽서 한 장을 한 사람으로 셈
+function paintBoardCount() {
+  const n = boardTotal ?? boardPosts.length;
+  ['boardCountNum', 'boardAllCountNum'].forEach((id) => { document.getElementById(id).textContent = `${n}명`; });
+  ['boardCount', 'boardAllCount'].forEach((id) => { document.getElementById(id).hidden = !n; });
+}
+
+// 처음에는 최근 엽서만 불러오므로, 모든 엽서 화면을 열면 남은 엽서를 마저 불러옴
+let boardLoadingAll = false;
+async function loadAllBoardPosts() {
+  if (!BOARD_ONLINE || boardLoadingAll) return;
+  boardLoadingAll = true;
+  try {
+    let added = false;
+    while (boardTotal !== null && boardPosts.length < boardTotal) {
+      const seen = new Set(boardPosts.map((p) => p.id));
+      const more = await fetchBoardPosts(boardPosts.length);
+      const fresh = more.filter((p) => !seen.has(p.id));
+      if (!fresh.length) break;
+      boardPosts.push(...fresh);
+      added = true;
+    }
+    if (added) renderBoard();
+  } catch (e) {
+    console.warn(e);
+  }
+  boardLoadingAll = false;
+}
 
 function showBoardPosts(posts) {
-  // 최신이 맨 앞에 오도록 오래된 것부터 앞에 붙임
-  [...posts].reverse().forEach((post) => addBoardCard(post, { prepend: true }));
-  if (posts.length >= 3) boardGrid.querySelectorAll('[data-example]').forEach((el) => el.remove());
+  boardPosts = [...posts];
+  paintBoardCount();
+  boardEmpty.hidden = boardPosts.length > 0;
+  boardEmpty.textContent = '아직 붙은 엽서가 없어요. 첫 엽서를 붙여 보세요.';
+  renderBoard();
 }
 
 if (BOARD_ONLINE) {
-  fetchBoardPosts().then(showBoardPosts).catch((e) => console.warn(e));
+  fetchBoardPosts().then(showBoardPosts).then(loadBoardReactions).catch((e) => {
+    console.warn(e);
+    boardEmpty.hidden = false;
+    boardEmpty.textContent = '게시판을 불러오지 못했어요. 잠시 뒤에 다시 와 주세요.';
+  });
 } else {
   showBoardPosts(loadMyPosts().reverse());
 }
-
-// 크게 보기 바깥(어두운 곳)을 누르면 닫힘
-boardView.addEventListener('click', (e) => { if (e.target === boardView) boardView.close(); });
 
 // ---------- 게시판에 붙이기 ----------
 // 공유와는 별개. 붙이기 전에 미리보기를 보여 주고, 이름은 기본으로 가림
@@ -2408,7 +2866,11 @@ boardPostConfirm.addEventListener('click', async () => {
   }
 
   boardPost.close();
-  addBoardCard(post, { prepend: true, fresh: true });
+  boardPosts.unshift(post);
+  if (boardTotal !== null) boardTotal += 1;
+  paintBoardCount();
+  boardEmpty.hidden = true;
+  renderBoard(true);
   finishSend(message, 'board');
   sendDone.hidden = false;   // 게시판에 붙였을 때만 '게시판에서 보기' 글자 단추를 보여 줌
   viewBoardBtn.hidden = false;
@@ -2628,13 +3090,14 @@ document.getElementById('helpBtn').addEventListener('click', openIntro);
 
 // ---------- 장면 사이 버튼 ----------
 
-// 이야기를 건너뛰고 엽서 고르기 · 마음 쓰기 종이로 바로
-function openWritePage() {
-  if (view !== 'flow') renderView('flow');
-  window.scrollTo(0, scene2.getBoundingClientRect().top + window.scrollY);
+// 엽서 고르기 · 마음 쓰기 종이로
+function openWritePage(behavior = 'auto') {
+  if (view === 'all') goView('flow');   // 뒤로 가면 다시 모든 엽서 화면
+  else if (view !== 'flow') renderView('flow');
+  window.scrollTo({ top: writeTop(), behavior });
 }
 
-// 게시판 관리자 입구 (숨은 단추): '모두의 엽서 게시판' 제목을 2초 안에 3번 누르면 관리자 페이지로.
+// 게시판 관리자 입구 (숨은 단추): '모두의 게시판' 제목을 2초 안에 3번 누르면 관리자 페이지로.
 // 들어가도 관리자 계정으로 로그인해야 숨기기 · 삭제가 됨 (supabase/board_admin.sql)
 let titleTaps = [];
 document.getElementById('boardTitle').addEventListener('click', () => {
@@ -2647,15 +3110,12 @@ document.getElementById('boardTitle').addEventListener('click', () => {
 });
 
 document.getElementById('boardNavBtn').addEventListener('click', goBoard);
-document.getElementById('boardBack').addEventListener('click', leaveBoard);
 
-// '바로 편지 쓰기': 이야기를 건너뛰고 SCENE 03으로
-['jumpBtn', 'floatCta'].forEach((id) => {
-  document.getElementById(id).addEventListener('click', (e) => {
-    e.preventDefault();
-    openWritePage();
-    document.getElementById('pickTitle').focus({ preventScroll: true });
-  });
+// 위 막대의 봉투: 쓰는 곳으로
+document.getElementById('jumpBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  openWritePage(smoothScroll());
+  document.getElementById('pickTitle').focus({ preventScroll: true });
 });
 document.querySelector('.skip-link').addEventListener('click', (e) => {
   e.preventDefault();
@@ -2664,13 +3124,12 @@ document.querySelector('.skip-link').addEventListener('click', (e) => {
 });
 
 // ---------- 뒤로가기 (위 막대) ----------
-// 쓰기 페이지 → 엽서 고르기 · 게시판 → 보던 곳 · 이야기 중간이나 엽서 고르기 → 첫 페이지 ·
-// 첫 페이지 → 들어오기 전 페이지(웹진). 들어오기 전 페이지가 없으면(새 탭으로 열었을 때) 첫 페이지에서는 숨김
+// 보내기 → 쓰는 곳 · 쓰는 곳을 내려 보던 중 → 맨 위 · 맨 위 → 들어오기 전 페이지(웹진).
+// 들어오기 전 페이지가 없으면(새 탭으로 열었을 때) 맨 위에서는 숨김
 const backBtn = document.getElementById('backBtn');
 const cameFromPage = history.length > 1 && !!document.referrer;
 
 function backTarget() {
-  if (view === 'board') return 'board';
   if (BACK_OF[view]) return view;
   if (window.scrollY > window.innerHeight * 0.3) return 'top';
   return cameFromPage ? 'leave' : null;
@@ -2680,7 +3139,7 @@ function updateBackBtn() {
   const target = backTarget();
   backBtn.hidden = !target;
   backBtn.setAttribute('aria-label', {
-    board: '게시판 닫기', send: '편지 쓰기로 돌아가기', end: '보내기로 돌아가기', top: '첫 페이지로', leave: '들어오기 전 페이지로',
+    all: '편지 쓰는 곳으로 돌아가기', send: '편지 쓰기로 돌아가기', end: '보내기로 돌아가기', top: '첫 페이지로', leave: '들어오기 전 페이지로',
   }[target] || '뒤로');
 }
 
@@ -2710,7 +3169,7 @@ if (fromWebzine) {
   taleLogo.setAttribute('aria-label', '웹진 하영 고라보게로 돌아가기');
 }
 
-// 위 막대 로고: 어느 페이지에서든 첫 페이지로 (주소 뒤 #story로 건너뛰지 않고 페이지 기록을 따라감)
+// 위 막대 로고: 어느 페이지에서든 첫 페이지로 (페이지 기록을 따라감)
 taleLogo.addEventListener('click', (e) => {
   if (fromWebzine) return;   // v7.18: 링크 그대로 웹진으로
   e.preventDefault();
@@ -2725,20 +3184,12 @@ taleLogo.addEventListener('click', (e) => {
 
 backBtn.addEventListener('click', () => {
   const target = backTarget();
-  if (target === 'board') leaveBoard();
-  else if (BACK_OF[target]) {
+  if (BACK_OF[target]) {
     if (target === 'send') scrollMemory.flow = 'write';
     backView(BACK_OF[target]);
   } else if (target === 'top') window.scrollTo({ top: 0, behavior: smoothScroll() });
   else if (target === 'leave') history.back();
 });
-
-// 이야기 중에만 아래에 '바로 편지 쓰기'를 띄움 (첫 화면을 지나고, SCENE 02 종이가 올라오기 전까지)
-function updateFloatCta() {
-  updateBackBtn();
-  const reached = scene2.getBoundingClientRect().top < window.innerHeight * 0.5;   // 종이가 올라오면 그 안의 버튼이 대신함
-  floatCta.hidden = view !== 'flow' || window.scrollY < window.innerHeight * 0.6 || reached;
-}
 
 // 장면 제목: 한 글자씩 잉크가 번지듯 써짐 (화면에 들어올 때)
 function splitChars(el) {
@@ -2772,7 +3223,7 @@ function splitChars(el) {
   });
 }
 
-document.querySelectorAll('[data-chars], .prologue-main').forEach(splitChars);
+document.querySelectorAll('[data-chars]').forEach(splitChars);
 
 if ('IntersectionObserver' in window) {
   const inkWatch = new IntersectionObserver((entries) => {
@@ -2787,169 +3238,15 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('[data-chars]').forEach((el) => el.classList.add('is-in'));
 }
 
-// ---------- 동화 장면 (SCENE 01 → 02 앞부분) ----------
-// .story는 화면보다 몇 배 길고, 안의 .stage는 화면에 멈춰 있음(sticky). 스크롤한 만큼(p)으로 카메라가 움직임.
-// 그림(색연필 일러스트): 돌담 옆 책상 — 편지가 책상 위에 놓여 있고 뒤로 바다와 들판. 첫 화면에 '지금, 생각나는 사람이 있나요?'.
-// 카메라가 편지에 다가가면 엽서가 봉투에서 빠져나옴. 마지막 화면 높이만큼은 SCENE 02 종이가 위로 밀려 올라와 덮음.
-// v7.16: 첫 화면부터 책상 그림(예전 첫 장면 '제주 풍경'은 뺐다), 스크롤하지 않아도 저절로 내려감(아래 '저절로 내려가기')
-const story = document.getElementById('story');
-const stage = document.getElementById('stage');
-const world = document.getElementById('world');
-const artDesk = document.getElementById('artDesk');
-const letterEl = document.getElementById('letter');
-const letterCardEl = document.getElementById('letterCard');
-const storyCopy = document.getElementById('storyCopy');
-const scrollHint = document.getElementById('scrollHint');
-
-const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
-const seg = (v, a, b) => clamp((v - a) / (b - a));
-const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
-const lerp = (a, b, t) => a + (b - a) * t;
-
-// 그림 원본 크기와, 책상 그림 속 편지 자리 (원본 픽셀 · 각도)
-const ART = { w: 1122, h: 1402 };
-const LETTER_REST = { x: 572, y: 872, angle: -3 };       // 책상 위에 놓인 편지 자리
-const LETTER_SCALE = 0.3565;                            // 편지 폭 = 그림 폭 × 이 값 (그려진 봉투와 같은 크기)
-
-const geo = { vw: 0, vh: 0, lw: 0, lh: 0, narrow: false, desk: null };
-
-// object-fit: cover처럼 그림을 화면에 꽉 채우는 상자 (overscan: 카메라가 움직일 여유)
-function coverBox(vw, vh, overscan, posY) {
-  const k = Math.max(vw / ART.w, vh / ART.h) * overscan;
-  const w = ART.w * k;
-  const h = ART.h * k;
-  return { k, w, h, x: (vw - w) / 2, y: (vh - h) * posY };
-}
-
-function placeBox(el, box) {
-  el.style.left = `${box.x.toFixed(1)}px`;
-  el.style.top = `${box.y.toFixed(1)}px`;
-  el.style.width = `${box.w.toFixed(1)}px`;
-  el.style.height = `${box.h.toFixed(1)}px`;
-}
-
-function measureStory() {
-  geo.vw = stage.clientWidth;
-  geo.vh = stage.clientHeight;
-  geo.narrow = geo.vw < 720;
-  geo.desk = coverBox(geo.vw, geo.vh, 1.04, geo.narrow ? 0.7 : 0.74);
-  placeBox(artDesk, geo.desk);
-  geo.lw = geo.desk.w * LETTER_SCALE;
-  geo.lh = geo.lw / 1.5;
-  letterEl.style.width = `${geo.lw.toFixed(1)}px`;
-  letterEl.style.height = `${geo.lh.toFixed(1)}px`;
-}
-
-// 책상 그림 속 한 점 → 화면 위치
-function onDesk(pt) {
-  return { x: geo.desk.x + pt.x * geo.desk.k, y: geo.desk.y + pt.y * geo.desk.k };
-}
-
-function renderStory() {
-  storyQueued = false;
-  if (view !== 'flow' || !geo.desk) return;
-  const { vw, vh } = geo;
-  const r = story.getBoundingClientRect();
-  if (r.bottom < 0 || r.top > vh) return;            // 화면 밖이면 그리지 않음
-  const total = story.offsetHeight - vh;               // 멈춰 있는 동안 스크롤하는 길이
-  const p = clamp(-r.top / total);
-  const storyEnd = Math.max(0.5, (total - vh) / total); // 이 뒤로는 SCENE 02 종이가 덮어 옴
-  const t = clamp(p / storyEnd);
-  const q = seg(p, storyEnd, 1);
-
-  // 첫 화면 글: 처음엔 또렷하게, 내려가면 위로 흩어짐
-  const out = seg(t, 0.04, 0.22);
-  storyCopy.style.opacity = (1 - out).toFixed(3);
-  storyCopy.style.translate = `0 ${(-out * vh * 0.12).toFixed(1)}px`;
-  storyCopy.style.visibility = out > 0.99 ? 'hidden' : 'visible';
-  scrollHint.style.opacity = (1 - seg(t, 0, 0.06)).toFixed(3);
-
-  // 편지: 처음부터 책상 위에 놓여 있음
-  const rest = onDesk(LETTER_REST);
-  letterEl.style.transform = `translate3d(${(rest.x - geo.lw / 2).toFixed(1)}px, ${(rest.y - geo.lh / 2).toFixed(1)}px, 0) rotate(${LETTER_REST.angle}deg)`;
-
-  // 편지에 다가감: 카메라를 편지 쪽으로 옮기며 확대 → SCENE 02 종이가 올라올 때 조금 더
-  const z = ease(seg(t, 0.14, 0.6));
-  const target = Math.min(vw * (geo.narrow ? 0.92 : 0.62), 760) / geo.lw;
-  const zoom = 1 + z * (Math.max(1.15, target) - 1) + q * 0.25;
-  const dx = (vw / 2 - rest.x) * z;
-  const dy = (vh * 0.5 - rest.y) * z;
-  world.style.transformOrigin = `${rest.x.toFixed(1)}px ${rest.y.toFixed(1)}px`;
-  world.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${zoom.toFixed(4)})`;
-
-  // 편지가 펼쳐짐: 엽서가 봉투에서 위로 빠져나옴
-  const open = ease(seg(t, 0.5, 1));
-  letterCardEl.style.transform = `translateY(${(-46 * open - 4 * q).toFixed(1)}%) rotate(${(0.6 - 0.6 * open).toFixed(2)}deg)`;
-
-  // 종이가 덮어 오는 동안 뒤 장면은 살짝 어두워짐
-  stage.style.setProperty('--dim', (q * 0.35).toFixed(3));
-}
-
-let storyQueued = false;
-function requestStory() {
-  if (storyQueued) return;
-  storyQueued = true;
-  requestAnimationFrame(renderStory);
-}
-
-window.addEventListener('scroll', () => {
-  requestStory();
-  updateFloatCta();
-}, { passive: true });
-window.addEventListener('resize', () => {
-  measureStory();
-  requestStory();
-});
-
-// 동작 줄이기: 카메라 움직임 없이 첫 장면만 한 화면으로
-function setupStory() {
-  story.classList.toggle('is-calm', calmMotion.matches);
-  measureStory();
-  renderStory();
-}
-calmMotion.addEventListener?.('change', setupStory);
+window.addEventListener('scroll', updateBackBtn, { passive: true });
 
 // 장마다 보던 자리는 사이트가 기억해 돌려놓음 (브라우저가 뒤로 가기 때 스크롤을 따로 옮기지 않게)
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 history.replaceState({ view: 'flow', depth: 0 }, '', location.href);
 renderView('flow');
-setupStory();
 syncPreview();
-// 그림 층이 다 들어온 뒤 책상 자리를 다시 잼
-window.addEventListener('load', () => { measureStory(); requestStory(); });
 
-// ---------- 저절로 내려가기 (v7.16) ----------
-// 첫 화면(책상 위 편지 + '지금, 생각나는 사람이 있나요?')을 AUTO_SLIDE_HOLD 동안 보여 준 뒤, 스크롤하거나 누르지 않아도
-// 편지 쓰는 화면(SCENE 02)까지 저절로 내려간다(AUTO_SLIDE_MS 동안 — 그사이 카메라가 편지에 다가가고 엽서가 빠져나옴).
-// 손으로 스크롤 · 터치 · 키를 누르면 그 자리에서 멈추고 손에 맡긴다. '동작 줄이기'는 움직임 없이 바로.
-// 웹진에서 '제주어 엽서 써보기'로 온 사람(주소에 ?start=write)은 처음부터 편지 쓰기 화면, 받은 엽서 링크는 그 엽서가 먼저
-// v7.17: 사용자 — '엽서 페이지 인트로도 너무 길다, 2.3초로' → 첫 화면 1초 + 내려가기 1.3초
-const AUTO_SLIDE_HOLD = 1000;   // 첫 화면 글은 1초 안에 다 나타난다(style.css v7.17)
-const AUTO_SLIDE_MS = 1300;
-const STOP_SLIDE = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
-let slideTimer = 0;
-let slideFrame = 0;
-function stopAutoSlide() {
-  clearTimeout(slideTimer);
-  cancelAnimationFrame(slideFrame);
-  slideTimer = 0;
-  slideFrame = 0;
-  STOP_SLIDE.forEach((type) => window.removeEventListener(type, stopAutoSlide));
-}
-function runAutoSlide() {
-  slideTimer = 0;
-  if (view !== 'flow' || window.scrollY > 4 || document.querySelector('dialog[open]')) { stopAutoSlide(); return; }
-  const to = scene2.getBoundingClientRect().top + window.scrollY;
-  if (calmMotion.matches) { stopAutoSlide(); window.scrollTo(0, to); return; }
-  const t0 = performance.now();
-  const step = (now) => {
-    const k = Math.min(1, (now - t0) / AUTO_SLIDE_MS);
-    window.scrollTo(0, to * ease(k));
-    if (k < 1) slideFrame = requestAnimationFrame(step);
-    else stopAutoSlide();
-  };
-  slideFrame = requestAnimationFrame(step);
-}
+// 웹진에서 '제주어 엽서 써보기'로 온 사람(주소에 ?start=write)은 처음부터 편지 쓰는 자리, 받은 엽서 링크는 그 엽서가 먼저
 const startParams = new URLSearchParams(location.search);
 if (startParams.get('start') === 'write') {
   // 주소에서 start 는 지움(이 주소를 그대로 공유해도 받는 사람은 처음부터 보게)
@@ -2957,7 +3254,4 @@ if (startParams.get('start') === 'write') {
   const qs = startParams.toString();
   history.replaceState(history.state, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
   if (!arrivedByLink) requestAnimationFrame(() => openWritePage());
-} else if (!arrivedByLink) {
-  STOP_SLIDE.forEach((type) => window.addEventListener(type, stopAutoSlide, { passive: true }));
-  slideTimer = setTimeout(runAutoSlide, AUTO_SLIDE_HOLD);
 }
