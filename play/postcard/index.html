@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=261">
+<link rel="stylesheet" href="style.css?v=268">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -30,12 +30,16 @@
   <header class="tale-bar">
     <div class="tale-bar-start">
       <a class="tale-logo" href="./"><img src="images/logo-goraboge.png" alt="하영 고라보게 · 제주어로 엽서 적기" width="398" height="259"></a>
+    </div>
+    <!-- 휴대폰: 아래 항목들을 ☰ 하나로 묶고, 누르면 세로로 펼침 (PC에서는 이 단추가 없고 항목이 그대로 막대에 놓임) -->
+    <button type="button" class="bar-menu-btn" id="menuBtn" aria-expanded="false" aria-controls="barMenu" aria-label="메뉴 열기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="bar-menu" id="barMenu" aria-label="메뉴">
       <a class="bar-icon bar-letter" href="#scene2" id="jumpBtn">
         <span class="bar-icon-art" aria-hidden="true"><img src="images/tale/letter-full.webp" alt="" width="900" height="600"></span>
         <span class="bar-icon-label">편지 쓰기</span>
       </a>
-    </div>
-    <div class="tale-bar-actions">
       <!-- v7.16: '기사 보러가기' → '영상 보러 가기' — 웹진의 '왜 제주어로 써야 할까요?' 영상(#why)으로(track.js 가 data-webzine-hash 를 붙인다) -->
       <a class="bar-btn bar-home" href="../../#why" data-webzine-link="bar" data-webzine-hash="why" aria-label="웹진 하영 고라보게의 '왜 제주어로 써야 할까요?' 영상 보러 가기">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.2 9.2v5.6l4.6-2.8z" fill="currentColor"/></svg>
@@ -45,8 +49,8 @@
         <span class="bar-icon-art" aria-hidden="true"><img src="images/card-05.webp?v=4" alt="" width="1920" height="1280"><img src="images/card-09.webp?v=4" alt="" width="1920" height="1280"><img src="images/card-01.webp?v=4" alt="" width="1920" height="1280"></span>
         <span class="bar-icon-label">게시판</span>
       </button>
-      <button type="button" class="bar-btn bar-round" id="helpBtn" aria-label="사용 방법">?</button>
-    </div>
+      <button type="button" class="bar-btn bar-round" id="helpBtn" aria-label="사용 방법"><span aria-hidden="true">?</span><span class="bar-menu-text" aria-hidden="true">사용 방법</span></button>
+    </nav>
   </header>
 
   <main id="main">
@@ -54,7 +58,7 @@
     <div class="tale" id="writePanel">
 
       <div class="story-page" id="storyPage">
-      <!-- 엽서 게시판: 있는 엽서만 한 쪽에 9장씩(휴대폰은 3장씩), 넘으면 옆으로 넘김. 누르면 그 자리에서 커지고, 옆으로 밀면 다음 엽서 (Supabase에 저장된 모두의 엽서) -->
+      <!-- 엽서 게시판: 있는 엽서만 한 장씩(왼쪽 엽서 · 오른쪽 글), 저절로 옆으로 넘어감. 화면 높이의 1/3. 누르면 그 자리에서 커지고, 옆으로 밀면 다음 엽서 (Supabase에 저장된 모두의 엽서) -->
       <section class="board" id="boardSection" aria-labelledby="boardTitle">
         <div class="board-head">
           <!-- 숨은 관리자 입구: 이 제목을 2초 안에 3번 누르면 admin.html (app.js '게시판 관리자 입구') -->
@@ -68,8 +72,15 @@
         <p class="board-empty" id="boardEmpty" hidden></p>
         <div class="board-pager" id="boardPager" role="group" aria-label="게시판 쪽 넘기기" hidden>
           <button type="button" class="board-pager-arrow" id="boardPagePrev" aria-label="이전 쪽"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 4.5 6.5 12 17 19.5z"/></svg></button>
-          <span class="board-pager-dots" id="boardPageDots"></span>
-          <span class="board-pager-num" id="boardPageNum" hidden></span>
+          <span class="board-pager-mid">
+            <span class="board-pager-dots" id="boardPageDots"></span>
+            <span class="board-pager-num" id="boardPageNum" hidden></span>
+            <!-- 저절로 넘김 멈추기 · 다시 시작 -->
+            <button type="button" class="board-auto-btn" id="boardAutoBtn" aria-pressed="false" aria-label="자동으로 넘기기 멈추기">
+              <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13M16 5.5v13"/></svg>
+              <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+            </button>
+          </span>
           <button type="button" class="board-pager-arrow" id="boardPageNext" aria-label="다음 쪽"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 17.5 12 7 19.5z"/></svg></button>
         </div>
       </section>
@@ -486,7 +497,7 @@
   <script src="jeju-dict.js?v=1"></script>
   <script src="translate.js?v=5"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=269"></script>
+  <script src="app.js?v=273"></script>
 </body>
 
 </html>

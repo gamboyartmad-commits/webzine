@@ -891,6 +891,7 @@ function renderView(next) {
   window.scrollTo(0, y);
   updateBackBtn();
   if (next === 'flow') scrollToSlot(centerSlot, 'instant');   // 숨어 있던 띠를 지금 그림에 맞춰 다시 놓음
+  scheduleBoardAuto();   // 휴대폰 게시판: 쓰는 화면을 볼 때만 저절로 넘김
 }
 
 // 다음 페이지로 (기록을 하나 쌓음). fresh면 그 페이지 맨 위부터
@@ -2121,7 +2122,7 @@ mailForm.addEventListener('submit', async (e) => {
 });
 
 // ---------- 엽서 게시판 ----------
-// 쓰는 곳 위쪽. 사람들이 붙인 엽서를 살짝씩 기울여 한 쪽에 9장씩(휴대폰은 3장씩) 보여 주고, 넘으면 옆으로 넘김. 누르면 크게 볼 수 있음.
+// 쓰는 곳 위쪽. 사람들이 붙인 엽서를 한 장씩(왼쪽 엽서 · 오른쪽 글, 화면 높이의 1/3) 보여 주고, 넘으면 옆으로 넘김. 누르면 크게 볼 수 있음.
 // config.js에 Supabase 주소·키가 있으면 모두가 같은 게시판을 봄 (supabase/board.sql).
 // 없으면 예전처럼 이 브라우저에만 저장됨
 
@@ -2167,7 +2168,7 @@ const boardZoomHint = document.getElementById('boardZoomHint');
 let boardPosts = [];
 let boardPage = 0;
 const boardPhone = window.matchMedia('(max-width: 719px)');   // style.css 의 휴대폰 게시판과 같은 기준
-const boardPerPage = () => (boardPhone.matches ? 3 : 9);
+const boardPerPage = () => 1;   // v7.31: PC · 휴대폰 모두 한 장씩
 const boardAllGrid = document.getElementById('boardAllGrid');
 const BOARD_TILTS = [-2.4, 1.6, -0.9, 2.2, -1.7, 0.8, 2.8, -1.2, 1.1, -2.9, 1.9, -0.6, 2.5];
 const ZOOM_TILTS = [-1.6, 1.2, -0.7, 1.8, -1.1, 0.6];
@@ -2189,7 +2190,21 @@ function makeBoardCard(index, fresh) {
   const badge = document.createElement('span');
   badge.className = 'board-card-react';
   badge.setAttribute('aria-hidden', 'true');
-  btn.appendChild(badge);
+  mini.appendChild(badge);
+  // 엽서 옆에 읽을 수 있는 크기로 한 번 더 쓰는 글 (게시판의 엽서는 작아서). 글은 textContent로
+  const cap = document.createElement('span');
+  cap.className = 'board-card-caption';
+  cap.setAttribute('aria-hidden', 'true');
+  const capTo = document.createElement('strong');
+  capTo.textContent = post.to ? `To. ${post.to}` : '';
+  const capMsg = document.createElement('span');
+  capMsg.className = 'board-card-msg';
+  capMsg.textContent = post.message.trim();
+  const capFrom = document.createElement('span');
+  capFrom.className = 'board-card-from';
+  capFrom.textContent = post.from ? `From. ${post.from}` : '';
+  cap.append(capTo, capMsg, capFrom);
+  btn.appendChild(cap);
   paintBoardCard(btn);
   return btn;
 }
@@ -2222,6 +2237,7 @@ function renderBoard(fresh = false) {
   boardPage = 0;
   boardPages.scrollLeft = 0;
   syncBoardPager();
+  scheduleBoardAuto();
 }
 
 function syncBoardPager() {
@@ -2234,15 +2250,64 @@ function syncBoardPager() {
   boardPageNext.disabled = boardPage >= boardPageDots.children.length - 1;
 }
 
-function turnBoardPage(p, smooth = true) {
+let boardScrollTarget = null;   // 단추로 넘기는 중인 쪽 (도착할 때까지 지나치는 쪽은 무시)
+function turnBoardPage(p, smooth = true, auto = false) {
+  boardScrollTarget = smooth && !calmMotion.matches ? p : null;
   boardPages.scrollTo({ left: p * boardPages.clientWidth, behavior: smooth ? smoothScroll() : 'auto' });
-  if (p !== boardPage) hy('pc_board_page', { page: p + 1 });
+  if (p !== boardPage && !auto) hy('pc_board_page', { page: p + 1 });
   boardPage = p;
   syncBoardPager();
 }
 
-boardPagePrev.addEventListener('click', () => turnBoardPage(boardPage - 1));
-boardPageNext.addEventListener('click', () => turnBoardPage(boardPage + 1));
+boardPagePrev.addEventListener('click', () => { stopBoardAuto(); turnBoardPage(boardPage - 1); });
+boardPageNext.addEventListener('click', () => { stopBoardAuto(); turnBoardPage(boardPage + 1); });
+
+// ---------- 게시판: 한 장씩 저절로 넘어감 (PC · 휴대폰) ----------
+// 4.5초마다 다음 엽서(끝에서는 처음으로). 손으로 밀거나 · 세모 · 엽서를 누르면 멈추고, ⏸ 단추로 멈추기 · 다시 시작.
+// 게시판이 화면 밖이거나, 다른 화면 · 다른 탭을 보는 동안은 넘기지 않음. '동작 줄이기'는 처음부터 멈춤
+const BOARD_AUTO_MS = 4500;
+const boardAutoBtn = document.getElementById('boardAutoBtn');
+let boardAutoOn = !calmMotion.matches;
+let boardAutoTimer = 0;
+let boardInView = true;
+
+function paintBoardAuto() {
+  boardAutoBtn.setAttribute('aria-pressed', String(!boardAutoOn));
+  boardAutoBtn.setAttribute('aria-label', boardAutoOn ? '자동으로 넘기기 멈추기' : '자동으로 넘기기 다시 시작');
+}
+
+function scheduleBoardAuto() {
+  clearTimeout(boardAutoTimer);
+  const pages = boardPageDots.children.length;
+  if (!boardAutoOn || view !== 'flow' || document.hidden || boardView.open || !boardInView || pages < 2) return;
+  boardAutoTimer = setTimeout(() => {
+    turnBoardPage((boardPage + 1) % boardPageDots.children.length, true, true);
+    scheduleBoardAuto();
+  }, BOARD_AUTO_MS);
+}
+
+function stopBoardAuto() {
+  if (!boardAutoOn) return;
+  boardAutoOn = false;
+  clearTimeout(boardAutoTimer);
+  paintBoardAuto();
+  hy('pc_board_auto', { action: 'stop' });
+}
+
+boardAutoBtn.addEventListener('click', () => {
+  if (boardAutoOn) { stopBoardAuto(); return; }
+  boardAutoOn = true;
+  paintBoardAuto();
+  hy('pc_board_auto', { action: 'play' });
+  scheduleBoardAuto();
+});
+['pointerdown', 'wheel'].forEach((type) => boardPages.addEventListener(type, () => { boardScrollTarget = null; stopBoardAuto(); }, { passive: true }));
+document.addEventListener('visibilitychange', scheduleBoardAuto);
+boardPhone.addEventListener?.('change', scheduleBoardAuto);
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(([en]) => { boardInView = en.isIntersecting; scheduleBoardAuto(); }, { threshold: 0.5 }).observe(boardPages);
+}
+paintBoardAuto();
 
 // 손으로 밀어 넘겼을 때
 // (넘어가는 중에 지나치는 쪽을 현재 쪽으로 착각하지 않게 스크롤이 멈춘 뒤에 잼)
@@ -2251,6 +2316,10 @@ boardPages.addEventListener('scroll', () => {
   clearTimeout(boardScrollTimer);
   boardScrollTimer = setTimeout(() => {
     const p = Math.round(boardPages.scrollLeft / (boardPages.clientWidth || 1));
+    if (boardScrollTarget !== null) {
+      if (p === boardScrollTarget) boardScrollTarget = null;
+      return;
+    }
     if (p === boardPage) return;
     boardPage = p;
     hy('pc_board_page', { page: p + 1 });
@@ -2261,7 +2330,7 @@ boardPages.addEventListener('scroll', () => {
 window.addEventListener('resize', () => { boardPages.scrollLeft = boardPage * boardPages.clientWidth; });
 boardPhone.addEventListener?.('change', () => renderBoard());   // 화면을 돌려 PC 칸 수로 바뀔 때 등
 
-[boardPages, boardAllGrid].forEach((grid) => grid.addEventListener('click', (e) => {
+[boardPages, boardAllGrid].forEach((grid) => grid.addEventListener('click', (e) => {   // 엽서를 누르면(pointerdown) 저절로 넘김도 멈춤
   const btn = e.target instanceof Element ? e.target.closest('.board-card') : null;
   if (btn) openBoardZoom(Number(btn.dataset.index), btn);
 }));
@@ -2368,6 +2437,7 @@ async function closeBoardZoom() {
   const y = window.scrollY;
   const left = boardPages.scrollLeft;
   boardView.close();
+  scheduleBoardAuto();
   window.scrollTo(0, y);
   boardPages.scrollLeft = left;
   if (home) home.focus({ preventScroll: true });
@@ -3110,6 +3180,25 @@ document.getElementById('boardTitle').addEventListener('click', () => {
 });
 
 document.getElementById('boardNavBtn').addEventListener('click', goBoard);
+
+// ---------- 휴대폰 위 막대: ☰ 메뉴 ----------
+// 편지 쓰기 · 영상 보러 가기 · 게시판 · 사용 방법을 ☰ 하나로 묶고, 누르면 아래로 세로로 펼침. 항목을 누르거나 바깥 · Esc 로 닫힘
+const menuBtn = document.getElementById('menuBtn');
+const barMenu = document.getElementById('barMenu');
+function setMenu(open) {
+  menuBtn.setAttribute('aria-expanded', String(open));
+  menuBtn.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  barMenu.classList.toggle('is-open', open);
+}
+menuBtn.addEventListener('click', () => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'));
+barMenu.addEventListener('click', (e) => { if (e.target instanceof Element && e.target.closest('a, button')) setMenu(false); });
+document.addEventListener('click', (e) => { if (!(e.target instanceof Element && e.target.closest('.tale-bar'))) setMenu(false); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || menuBtn.getAttribute('aria-expanded') !== 'true') return;
+  setMenu(false);
+  menuBtn.focus();
+});
+boardPhone.addEventListener?.('change', () => setMenu(false));
 
 // 위 막대의 봉투: 쓰는 곳으로
 document.getElementById('jumpBtn').addEventListener('click', (e) => {
