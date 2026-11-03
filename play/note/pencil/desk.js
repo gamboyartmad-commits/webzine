@@ -62,13 +62,13 @@
     memoCount: $('memoCount'), memoWarn: $('memoWarn'), memoJeju: $('memoJeju'), memoStd: $('memoStd'),
     memoPairs: $('memoPairs'), memoEdit: $('memoEdit'),
     desk: $('desk'), cardWindow: $('cardWindow'), viewSwitch: $('viewSwitch'),
-    card: $('card'), face: $('face'), guide: $('guide'), ink: $('ink'),
+    card: $('card'), face: $('face'), guide: $('guide'), tip: $('cardTip'), ink: $('ink'),
     spot: $('spot'), hint: $('hint'), layer: $('pencilLayer'), pencil: $('pencil'), shadow: $('pencilShadow'),
     pencilText: $('pencilText'), leadSet: $('leadSet'), sizeSet: $('sizeSet'),
     holdBtn: $('holdBtn'), eraserBtn: $('eraserBtn'), undoBtn: $('undoBtn'), clearBtn: $('clearBtn'),
     guideBtn: $('guideBtn'), photoBtn: $('photoBtn'), ownBtn: $('ownBtn'), ownInput: $('ownInput'), blankBtn: $('blankBtn'),
-    doneBtn: $('doneBtn'), toast: $('toast'),
-    finish: $('finish'), stats: $('stats'), score: $('score'), scoreLine: $('scoreLine'), scoreNum: $('scoreNum'), scoreRank: $('scoreRank'), scoreWhy: $('scoreWhy'), saveBtn: $('saveBtn'), shareBtn: $('shareBtn'), replayBtn: $('replayBtn'),
+    doneBtn: $('doneBtn'), tools: $('tools'), toast: $('toast'),
+    finish: $('finish'), stats: $('stats'), score: $('score'), scoreNone: $('scoreNone'), scoreLine: $('scoreLine'), scoreNum: $('scoreNum'), scoreRank: $('scoreRank'), scoreWhy: $('scoreWhy'), saveBtn: $('saveBtn'), shareBtn: $('shareBtn'), replayBtn: $('replayBtn'),
     rewriteBtn: $('rewriteBtn'), restartBtn: $('restartBtn'), toPostcard: $('toPostcard'),
     soundBtn: $('soundBtn'), logoLink: $('logoLink'),
   };
@@ -412,7 +412,8 @@
     const g = els.guide;
     g.textContent = S.jeju;
     g.classList.toggle('is-off', !S.guide || S.done);
-    if (!S.jeju || !W) return;
+    tipRoom = false;
+    if (!S.jeju || !W) { layoutTip(); return; }
     const gap = L.gap * H;
     g.style.left = `${L.x0 * W + gap * 0.1}px`;
     g.style.width = `${(L.x1 - L.x0) * W - gap * 0.1}px`;
@@ -436,6 +437,27 @@
     // 글자 밑동이 점선 바로 위에 오게
     const lineY = (L.line0 + first * L.gap) * H;
     g.style.top = `${lineY - gap * 0.1 - (gap * step) / 2 - size * 0.42}px`;
+    // 본 글씨가 맨 아래 점선(11번째)까지 내려오지 않을 때만 그 줄에 안내를 둠
+    const rows = Math.max(1, Math.round(g.scrollHeight / (gap * step)));
+    tipRoom = first + (rows - 1) * step < L.lines - 1;
+    layoutTip();
+  }
+
+  // 빨간 펜 안내 '다 쓰면 점수가 보여요' — 점수는 본 글씨가 있을 때만 매기므로 그때만.
+  // 연필로 한 획이라도 쓰면(되돌리기로 다 지우면 다시 보임) · 끝 화면에서는 숨김
+  let tipRoom = false;
+  function layoutTip() {
+    const tip = els.tip;
+    const show = Boolean(S.jeju) && tipRoom && !S.done && !visibleStrokes().some((st) => st.tool === 'p');
+    tip.classList.toggle('is-off', !show);
+    if (!W) return;
+    const gap = L.gap * H;
+    const size = gap * 0.58;
+    const lineY = (L.line0 + (L.lines - 1) * L.gap) * H;   // 맨 아래 점선
+    tip.style.fontSize = `${size}px`;
+    tip.style.lineHeight = `${size}px`;
+    tip.style.right = `${W - L.x1 * W + gap * 0.1}px`;
+    tip.style.top = `${lineY - gap * 0.12 - size}px`;
   }
 
   /* ── 연필 소리 (종이를 긁는 소리를 잡음으로 만듦) ── */
@@ -660,6 +682,7 @@
     schedule();
     save();
     renderTools();
+    scoreTip();
   }
 
   els.ink.addEventListener('pointerdown', (e) => {
@@ -748,7 +771,8 @@
     layoutGuide();
     renderTools();
     track('pc_desk_convert', {});
-    if (window.innerWidth < 860) els.cardWindow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 좁은 화면: 도구(메모지와 엽서 사이)부터 엽서까지 보이게
+    if (window.innerWidth < 860) els.tools.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   els.memoEdit.addEventListener('click', () => {
@@ -766,25 +790,62 @@
   /* ── 도구 ─────────────────────────────── */
 
   let toastTimer = 0;
-  function toast(text) {
+  function toast(text, ms = 2200) {
     els.toast.textContent = text;
     els.toast.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => els.toast.classList.remove('is-on'), 2200);
+    toastTimer = setTimeout(() => els.toast.classList.remove('is-on'), ms);
+  }
+
+  // 본 글씨를 따라 쓰기 시작하면 한 번만: '내 점수 보기'를 누르면 점수가 나온다고 알려 줌 (이 방문에서 한 번)
+  let scoreTipShown = false;
+  function scoreTip() {
+    if (scoreTipShown || !S.jeju) return;
+    if (visibleStrokes().filter((st) => st.tool === 'p').length < 3) return;
+    scoreTipShown = true;
+    toast('다 쓰고 ‘내 점수 보기’를 누르면 따라 쓰기 점수가 나와요', 4200);
+  }
+
+  // 도구 단추 아이콘 (24×24 선 그림, 글자색을 따름)
+  const ICON_PATHS = {
+    pencil: '<path d="M4 20l1.2-4.4L15.8 5a2.1 2.1 0 0 1 3 3L8.4 18.8z"/><path d="M13.8 7l3 3"/>',
+    eraser: '<path d="M8.5 19.5h11"/><path d="M4.6 14.8 13.9 5.5a2 2 0 0 1 2.8 0l2.4 2.4a2 2 0 0 1 0 2.8l-8.2 8.3H8.5z"/><path d="M9.6 9.8l5.2 5.2"/>',
+    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    trash: '<path d="M4 7h16"/><path d="M9.5 7V4.5h5V7"/><path d="M6 7l1 12.2A2 2 0 0 0 9 21h6a2 2 0 0 0 2-1.8L18 7"/><path d="M10 11v6M14 11v6"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/>',
+    image: '<rect x="3" y="4.5" width="18" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M3.5 17l5-5 4 4 2.5-2.5 5.5 5.5"/>',
+    swap: '<rect x="3" y="6.5" width="14" height="12" rx="1.8"/><path d="M7 3.5h12a2 2 0 0 1 2 2v10"/><path d="M3.5 16l4-4 3 3 2-2 4.5 4.5"/>',
+    camera: '<path d="M4 8h3.2l1.8-2.6h6l1.8 2.6H20a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.3" r="3.4"/>',
+    noImage: '<rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3.5 17l5-5 4 4 2.5-2.5 5.5 5.5"/><path d="M3 3l18 18"/>',
+  };
+  const iconSvg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name]}</svg>`;
+  function setTool(btn, label, icon, key) {
+    btn.setAttribute('aria-label', label);
+    btn.title = key ? `${label} (${key})` : label;
+    if (btn.dataset.icon === icon) return;
+    btn.dataset.icon = icon;
+    btn.innerHTML = iconSvg(icon);
   }
 
   function renderTools() {
     const vis = visibleStrokes();
-    els.holdBtn.textContent = held ? '연필 내려놓기' : '연필 집기';
+    setTool(els.holdBtn, held ? '연필 내려놓기' : '연필 집기', 'pencil');
+    els.holdBtn.setAttribute('aria-pressed', String(held));
     els.eraserBtn.setAttribute('aria-pressed', String(held && eraser));
-    els.eraserBtn.textContent = held && eraser ? '연필로 돌리기' : '지우개';
+    setTool(els.eraserBtn, held && eraser ? '연필로 돌리기' : '지우개', 'eraser', 'E');
+    setTool(els.undoBtn, '되돌리기', 'undo', 'Ctrl+Z');
     els.undoBtn.disabled = !S.strokes.length;
+    setTool(els.clearBtn, '다 지우기', 'trash');
     els.clearBtn.disabled = !vis.length;
     els.guideBtn.hidden = !S.jeju;
     els.guideBtn.setAttribute('aria-pressed', String(S.guide));
-    els.guideBtn.textContent = S.guide ? '본 글씨 숨기기' : '본 글씨 보기';
-    els.photoBtn.textContent = S.blank ? '그림 넣기' : '그림 바꾸기';
+    setTool(els.guideBtn, S.guide ? '본 글씨 숨기기' : '본 글씨 보기', S.guide ? 'eye' : 'eyeOff');
+    setTool(els.photoBtn, S.blank ? '그림 넣기' : '그림 바꾸기', S.blank ? 'image' : 'swap');
+    setTool(els.ownBtn, '내 사진 넣기', 'camera');
+    setTool(els.blankBtn, '사진 빼기', 'noImage');
     els.blankBtn.disabled = S.blank;
+    layoutTip();
   }
 
   // 필통: 색은 작은 연필이 꽂힌 모양, 굵기는 그 색으로 그은 줄 모양
@@ -1073,8 +1134,10 @@
   if (/[?&]score-debug\b/.test(location.search)) window.__scoreHand = (list) => scoreHand(list || visibleStrokes());
 
   let countRaf = 0;
+  // '내 점수 보기'를 눌러 끝냄. 점수는 본 글씨(제주어)를 따라 썼을 때만 — 없으면 점수 받는 법을 알려 줌
   function renderScore(res) {
     els.score.hidden = !res;
+    els.scoreNone.hidden = Boolean(res);
     cancelAnimationFrame(countRaf);
     if (!res) return;
     els.scoreRank.textContent = res.rank;

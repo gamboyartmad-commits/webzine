@@ -228,6 +228,19 @@ body.is-held textarea { cursor: text; }
   transition: opacity 0.35s;
 }
 .card-guide.is-off { opacity: 0; }
+/* 빨간 펜 안내 '다 쓰면 점수가 보여요': 맨 아래 점선 위, 글씨 칸 오른쪽 끝. 자리 · 크기는 desk.js layoutTip() */
+.card-tip {
+  position: absolute;
+  margin: 0;
+  font-family: var(--hand);
+  color: #c8372d;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: rotate(-2deg);
+  transform-origin: right bottom;
+  transition: opacity 0.35s;
+}
+.card-tip.is-off { opacity: 0; }
 
 /* 엽서 보기 단추: 휴대폰에서만 보임 (아래 600px 칸) */
 .view-switch {
@@ -342,6 +355,9 @@ body.is-held .pencil, body.is-replay .pencil { pointer-events: none; }
 .tool[aria-pressed='true'] { background: var(--tangerine); color: #fff; }
 #guideBtn[aria-pressed='true'] { background: rgb(255 253 248 / 0.95); color: inherit; }
 .tool.is-primary { background: var(--ink); color: #fff; }
+/* 아이콘 단추: 동그란 40px. 이름은 aria-label · title */
+.tool.is-icon { width: 40px; padding: 0; display: inline-grid; place-items: center; }
+.tool.is-icon svg { width: 21px; height: 21px; display: block; }
 
 /* 필통: 도구 줄 위에 따로 한 줄. 색연필은 필통에 꽂힌 듯 아랫부분이 가려지고, 고른 연필이 쑥 올라옴 */
 .tray { flex: 1 0 100%; display: flex; justify-content: center; }
@@ -462,6 +478,8 @@ body.is-held .pencil, body.is-replay .pencil { pointer-events: none; }
 }
 .score-rank { font-size: 15px; color: var(--ink); }
 .score-why { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: var(--soft); }
+.score-none { margin: 0 0 14px; padding: 10px 12px; border: 1px dashed rgb(200 55 45 / 0.5); border-radius: 8px; font-size: 13px; line-height: 1.55; color: var(--soft); }
+.score-none[hidden] { display: none; }
 .finish-stats { margin: 12px 0 18px; font-size: 13px; line-height: 1.65; color: var(--soft); }
 .finish-stats b { color: var(--ink); font-weight: 400; font-variant-numeric: tabular-nums; }
 .finish-actions { display: grid; gap: 8px; }
@@ -476,7 +494,7 @@ body.is-done .card { transform: translateY(-6px); box-shadow: 0 1px 1px rgb(0 0 
 body.is-replay .finish button, body.is-replay .finish a { pointer-events: none; opacity: 0.45; }
 body.is-replay #replayBtn { pointer-events: auto; opacity: 1; }
 
-/* ── 좁은 화면: 메모지 → 엽서 → 연필 → 도구 차례로 쌓음 ── */
+/* ── 좁은 화면: 메모지 → 연필 → 도구 → 엽서 차례로 쌓음 (연필과 도구는 메모지와 엽서 사이) ── */
 @media (max-width: 1080px) {
   :root { --side: 232px; --spot: 84px; --gapx: 26px; }
 }
@@ -485,7 +503,7 @@ body.is-replay #replayBtn { pointer-events: auto; opacity: 1; }
   :root { --cw: min(calc(100vw - 32px), 760px, calc((100svh - 40px) * 1.5)); }
   .desk {
     grid-template-columns: var(--cw);
-    grid-template-areas: 'side' 'card' 'spot' 'tools' 'after';
+    grid-template-areas: 'side' 'spot' 'tools' 'card' 'after';
     align-content: start;
     row-gap: 14px;
     padding: 76px 16px 40px;
@@ -496,7 +514,10 @@ body.is-replay #replayBtn { pointer-events: auto; opacity: 1; }
   .pencil-hint { top: 50%; left: auto; right: 0; max-width: 112px; padding: 6px 10px; font-size: 12px; transform: translate(0, -50%); }
   .pencil-hint::after { left: -4px; top: 50%; bottom: auto; margin: -5px 0 0; }
   .tool { padding: 0 12px; font-size: 13px; }
+  .tool.is-icon { padding: 0; }
   .dk-logo img { height: 28px; }
+
+  .tools { margin-top: 4px; }
 
   /* 제주어로 바꾼 메모지는 화면 높이의 1/3까지만. 넘치면 메모지 안에서 밀어 봄 */
   .memo { padding: 18px 16px 14px; }

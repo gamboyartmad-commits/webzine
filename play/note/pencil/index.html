@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#a8743f">
 <title>연필로 쓰는 엽서 · 하영 고라보게</title>
-<meta name="description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필을 쥐고 직접 따라 써 보세요.">
+<meta name="description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필로 따라 쓰고 '내 점수 보기'를 누르면 따라 쓰기 점수가 나와요.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="연필로 쓰는 엽서 · 하영 고라보게">
-<meta property="og:description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필을 쥐고 직접 따라 써 보세요.">
+<meta property="og:description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필로 따라 쓰고 '내 점수 보기'를 누르면 따라 쓰기 점수가 나와요.">
 <!-- 지금은 엽서 사이트의 공유 그림. 이 화면용 그림이 생기면 전체 주소로 바꿀 것 -->
 <meta property="og:image" content="https://lxwebzine.hankyung.com/2026-1/team1/play/postcard/images/og-start.jpg">
 <link rel="preload" href="../fonts/HayeongHand-Regular.woff2?v=1" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="desk.css?v=9">
+<link rel="stylesheet" href="desk.css?v=13">
 </head>
 <body data-view="desk">
 
@@ -28,8 +28,8 @@
   <!-- 메모지: 표준어로 적는 곳 -->
   <section class="memo paper" id="memo" aria-labelledby="memoTitle">
     <div id="memoAsk">
-      <h1 class="memo-title" id="memoTitle">엽서에 하고 싶은 말</h1>
-      <p class="memo-sub">표준어로 적으면 제주어로 바꿔서 엽서에 연하게 깔아 드려요</p>
+      <h1 class="memo-title" id="memoTitle">하고 싶은 말을 쓰면 점수가 나와요</h1>
+      <p class="memo-sub">표준어로 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 그 위를 연필로 똑같이 따라 쓸수록 점수가 높아요</p>
       <form id="memoForm" autocomplete="off">
         <textarea id="memoInput" class="memo-ta" maxlength="60" rows="4" spellcheck="false" aria-labelledby="memoTitle" placeholder="예) 바다를 보니까 네 생각이 났어"></textarea>
         <div class="memo-row">
@@ -44,7 +44,7 @@
       <p class="memo-jeju" id="memoJeju"></p>
       <p class="memo-std" id="memoStd"></p>
       <ul class="memo-pairs" id="memoPairs"></ul>
-      <p class="memo-next">엽서에 연하게 깔아 뒀어요.<br>연필을 집어 그 위를 따라 써 보세요.</p>
+      <p class="memo-next">엽서에 연하게 깔아 뒀어요.<br>연필을 집어 그 위를 따라 써 보세요.<br>다 쓰고 <b>내 점수 보기</b>를 누르면 점수가 나와요.</p>
       <button type="button" class="dk-link" id="memoEdit">다시 적기</button>
       <p class="memo-note">사전과 규칙으로 바꾼 참고용 번역이라 어색한 말이 있을 수 있어요.</p>
     </div>
@@ -59,6 +59,8 @@
       <div class="card" id="card">
         <canvas class="card-face" id="face" aria-hidden="true"></canvas>
         <p class="card-guide" id="guide" aria-hidden="true"></p>
+        <!-- 엽서 맨 아래 빈 줄의 빨간 펜 안내. 본 글씨가 있고 아직 안 썼을 때만 보이고, 연필로 쓰기 시작하면 사라짐 (저장 그림에는 안 들어감) -->
+        <p class="card-tip is-off" id="cardTip" aria-hidden="true">다 쓰면 점수가 보여요</p>
         <canvas class="card-ink" id="ink" role="img" aria-label="엽서 손글씨 칸. 연필을 집고 눌러서 쓰세요"></canvas>
       </div>
       <div class="view-switch" id="viewSwitch" role="group" aria-label="엽서 보기">
@@ -76,7 +78,8 @@
 
   <!-- 도구 -->
   <div class="tools" id="tools" role="toolbar" aria-label="연필 도구">
-    <!-- 필통: 색과 굵기 단추는 desk.js의 LEADS · SIZES로 채움 -->
+    <!-- 필통: 색과 굵기 단추는 desk.js의 LEADS · SIZES로 채움
+         그 아래 도구 단추는 아이콘(desk.js ICONS). 이름은 aria-label · 마우스를 올리면 뜨는 title -->
     <div class="tray">
       <div class="tray-box">
         <div class="tray-leads" id="leadSet" role="group" aria-label="연필 색"></div>
@@ -84,16 +87,16 @@
         <div class="tray-sizes" id="sizeSet" role="group" aria-label="연필 굵기"></div>
       </div>
     </div>
-    <button type="button" class="tool" id="holdBtn">연필 집기</button>
-    <button type="button" class="tool" id="eraserBtn" aria-pressed="false" title="지우개 (E)">지우개</button>
-    <button type="button" class="tool" id="undoBtn" title="되돌리기 (Ctrl+Z)" disabled>되돌리기</button>
-    <button type="button" class="tool" id="clearBtn" disabled>다 지우기</button>
-    <button type="button" class="tool" id="guideBtn" aria-pressed="true" hidden>본 글씨 숨기기</button>
-    <button type="button" class="tool" id="photoBtn">그림 바꾸기</button>
-    <button type="button" class="tool" id="ownBtn">내 사진 넣기</button>
+    <button type="button" class="tool is-icon" id="holdBtn" aria-pressed="false">연필 집기</button>
+    <button type="button" class="tool is-icon" id="eraserBtn" aria-pressed="false" title="지우개 (E)">지우개</button>
+    <button type="button" class="tool is-icon" id="undoBtn" title="되돌리기 (Ctrl+Z)" disabled>되돌리기</button>
+    <button type="button" class="tool is-icon" id="clearBtn" disabled>다 지우기</button>
+    <button type="button" class="tool is-icon" id="guideBtn" aria-pressed="true" hidden>본 글씨 숨기기</button>
+    <button type="button" class="tool is-icon" id="photoBtn">그림 바꾸기</button>
+    <button type="button" class="tool is-icon" id="ownBtn">내 사진 넣기</button>
     <input type="file" id="ownInput" accept="image/*" hidden>
-    <button type="button" class="tool" id="blankBtn">사진 빼기</button>
-    <button type="button" class="tool is-primary" id="doneBtn">다 썼어요</button>
+    <button type="button" class="tool is-icon" id="blankBtn">사진 빼기</button>
+    <button type="button" class="tool is-primary" id="doneBtn">내 점수 보기</button>
   </div>
   <p class="toast" id="toast" role="status"></p>
 
@@ -107,6 +110,8 @@
       <p class="score-line" id="scoreLine" role="img"><span class="score-num" aria-hidden="true"><b id="scoreNum">0</b>점</span> <span class="score-rank" id="scoreRank" aria-hidden="true"></span></p>
       <p class="score-why" id="scoreWhy"></p>
     </div>
+    <!-- 본 글씨 없이 쓴 엽서: 점수 대신 점수 받는 법 -->
+    <p class="score-none" id="scoreNone" hidden>점수는 메모지에 하고 싶은 말을 적어 제주어로 바꾼 뒤, 엽서에 연하게 깔린 글씨를 따라 쓰면 나와요. ‘더 고쳐 쓰기’를 눌러 해 보세요.</p>
     <p class="finish-stats" id="stats"></p>
     <div class="finish-actions">
       <div class="finish-pair">
@@ -155,6 +160,6 @@
 <script src="../translate.js?v=5"></script>
 <script src="../badwords.js?v=1"></script>
 <script src="../jeju-extra.js?v=1"></script>
-<script src="desk.js?v=18"></script>
+<script src="desk.js?v=23"></script>
 </body>
 </html>
