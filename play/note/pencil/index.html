@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#a8743f">
+<title>연필로 쓰는 엽서 · 하영 고라보게</title>
+<meta name="description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필을 쥐고 직접 따라 써 보세요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="연필로 쓰는 엽서 · 하영 고라보게">
+<meta property="og:description" content="하고 싶은 말을 적으면 제주어로 바꿔 엽서에 연하게 깔아 드려요. 연필을 쥐고 직접 따라 써 보세요.">
+<!-- 지금은 엽서 사이트의 공유 그림. 이 화면용 그림이 생기면 전체 주소로 바꿀 것 -->
+<meta property="og:image" content="https://lxwebzine.hankyung.com/2026-1/team1/play/postcard/images/og-start.jpg">
+<link rel="preload" href="../fonts/HayeongHand-Regular.woff2?v=1" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="desk.css?v=9">
+</head>
+<body data-view="desk">
+
+<header class="dk-hd">
+  <a class="dk-logo" id="logoLink" href="#" aria-label="제주어로 엽서 적기로 가기"><img src="../images/logo-goraboge.png" alt="하영 고라보게"></a>
+  <button type="button" class="dk-sound" id="soundBtn" aria-pressed="true">연필 소리 켬</button>
+</header>
+
+<main class="desk" id="desk">
+
+  <!-- 메모지: 표준어로 적는 곳 -->
+  <section class="memo paper" id="memo" aria-labelledby="memoTitle">
+    <div id="memoAsk">
+      <h1 class="memo-title" id="memoTitle">엽서에 하고 싶은 말</h1>
+      <p class="memo-sub">표준어로 적으면 제주어로 바꿔서 엽서에 연하게 깔아 드려요</p>
+      <form id="memoForm" autocomplete="off">
+        <textarea id="memoInput" class="memo-ta" maxlength="60" rows="4" spellcheck="false" aria-labelledby="memoTitle" placeholder="예) 바다를 보니까 네 생각이 났어"></textarea>
+        <div class="memo-row">
+          <span class="memo-count" id="memoCount">0 / 60</span>
+          <button type="submit" class="dk-btn is-primary">제주어로 바꾸기</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="memoDone" hidden>
+      <p class="memo-kicker">제주어로 바꿨어요</p>
+      <p class="memo-jeju" id="memoJeju"></p>
+      <p class="memo-std" id="memoStd"></p>
+      <ul class="memo-pairs" id="memoPairs"></ul>
+      <p class="memo-next">엽서에 연하게 깔아 뒀어요.<br>연필을 집어 그 위를 따라 써 보세요.</p>
+      <button type="button" class="dk-link" id="memoEdit">다시 적기</button>
+      <p class="memo-note">사전과 규칙으로 바꾼 참고용 번역이라 어색한 말이 있을 수 있어요.</p>
+    </div>
+
+    <p class="memo-warn" id="memoWarn" role="alert" hidden></p>
+  </section>
+
+  <!-- 엽서 -->
+  <div class="card-area">
+    <!-- 휴대폰에서는 엽서를 크게 키우고 이 창으로 글씨 쪽 · 사진 쪽만 보여 줌 -->
+    <div class="card-window" id="cardWindow">
+      <div class="card" id="card">
+        <canvas class="card-face" id="face" aria-hidden="true"></canvas>
+        <p class="card-guide" id="guide" aria-hidden="true"></p>
+        <canvas class="card-ink" id="ink" role="img" aria-label="엽서 손글씨 칸. 연필을 집고 눌러서 쓰세요"></canvas>
+      </div>
+      <div class="view-switch" id="viewSwitch" role="group" aria-label="엽서 보기">
+        <button type="button" data-view="write" data-track="side_write" aria-pressed="true">글씨 쪽</button>
+        <button type="button" data-view="photo" data-track="side_photo" aria-pressed="false">사진 쪽</button>
+        <button type="button" data-view="all" data-track="side_all" aria-pressed="false">전체</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 연필이 놓이는 자리 -->
+  <button type="button" class="pencil-spot" id="spot" aria-label="연필 집기">
+    <span class="pencil-hint" id="hint">연필을 집어 보세요</span>
+  </button>
+
+  <!-- 도구 -->
+  <div class="tools" id="tools" role="toolbar" aria-label="연필 도구">
+    <!-- 필통: 색과 굵기 단추는 desk.js의 LEADS · SIZES로 채움 -->
+    <div class="tray">
+      <div class="tray-box">
+        <div class="tray-leads" id="leadSet" role="group" aria-label="연필 색"></div>
+        <span class="tray-sep" aria-hidden="true"></span>
+        <div class="tray-sizes" id="sizeSet" role="group" aria-label="연필 굵기"></div>
+      </div>
+    </div>
+    <button type="button" class="tool" id="holdBtn">연필 집기</button>
+    <button type="button" class="tool" id="eraserBtn" aria-pressed="false" title="지우개 (E)">지우개</button>
+    <button type="button" class="tool" id="undoBtn" title="되돌리기 (Ctrl+Z)" disabled>되돌리기</button>
+    <button type="button" class="tool" id="clearBtn" disabled>다 지우기</button>
+    <button type="button" class="tool" id="guideBtn" aria-pressed="true" hidden>본 글씨 숨기기</button>
+    <button type="button" class="tool" id="photoBtn">그림 바꾸기</button>
+    <button type="button" class="tool" id="ownBtn">내 사진 넣기</button>
+    <input type="file" id="ownInput" accept="image/*" hidden>
+    <button type="button" class="tool" id="blankBtn">사진 빼기</button>
+    <button type="button" class="tool is-primary" id="doneBtn">다 썼어요</button>
+  </div>
+  <p class="toast" id="toast" role="status"></p>
+
+  <!-- 끝 -->
+  <section class="finish paper" id="finish" hidden>
+    <p class="memo-kicker">다 썼어요</p>
+    <h2 class="finish-title">삐뚤빼뚤해도<br>세상에 하나뿐인 손글씨</h2>
+    <!-- 따라 쓰기 점수: 본 글씨가 있을 때만 -->
+    <div class="score" id="score" hidden>
+      <p class="score-label">따라 쓰기 점수</p>
+      <p class="score-line" id="scoreLine" role="img"><span class="score-num" aria-hidden="true"><b id="scoreNum">0</b>점</span> <span class="score-rank" id="scoreRank" aria-hidden="true"></span></p>
+      <p class="score-why" id="scoreWhy"></p>
+    </div>
+    <p class="finish-stats" id="stats"></p>
+    <div class="finish-actions">
+      <div class="finish-pair">
+        <button type="button" class="dk-btn is-primary" id="saveBtn">이미지 저장</button>
+        <button type="button" class="dk-btn is-share" id="shareBtn">공유하기</button>
+      </div>
+      <button type="button" class="dk-btn" id="replayBtn">쓰는 모습 다시 보기</button>
+    </div>
+    <div class="finish-more">
+      <button type="button" class="dk-link" id="rewriteBtn">더 고쳐 쓰기</button>
+      <button type="button" class="dk-link" id="restartBtn">새 엽서에 쓰기</button>
+    </div>
+    <a class="dk-btn is-wide" id="toPostcard" href="#">제주어 엽서 보내러 가기 →</a>
+  </section>
+</main>
+
+<!-- 연필 (그림자 + 몸통). 끝을 왼쪽에 둔 가로 그림을 돌려서 씀 -->
+<div class="pencil-layer" id="pencilLayer" aria-hidden="true">
+  <svg class="pencil-shadow" id="pencilShadow" width="300" height="22" viewBox="0 0 300 22"><path d="M0 11 L40 1 H294 Q299 1 299 6 V16 Q299 21 294 21 H40 Z"/></svg>
+  <svg class="pencil" id="pencil" width="300" height="22" viewBox="0 0 300 22">
+    <defs>
+      <linearGradient id="pcWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6dfbd"/><stop offset=".55" stop-color="#e5c08f"/><stop offset="1" stop-color="#c79a63"/></linearGradient>
+      <!-- 몸통 세 면의 색은 고른 연필에 따라 desk.js가 바꿈 -->
+      <linearGradient id="pcBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" style="stop-color: var(--pb-hi, #f5a766)"/><stop offset=".33" style="stop-color: var(--pb-hi, #f5a766)"/>
+        <stop offset=".33" style="stop-color: var(--pb-mid, #e2813c)"/><stop offset=".67" style="stop-color: var(--pb-mid, #e2813c)"/>
+        <stop offset=".67" style="stop-color: var(--pb-lo, #bc6227)"/><stop offset="1" style="stop-color: var(--pb-lo, #bc6227)"/>
+      </linearGradient>
+      <linearGradient id="pcMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2ee"/><stop offset=".45" stop-color="#b9b8b1"/><stop offset=".6" stop-color="#d9d8d2"/><stop offset="1" stop-color="#8d8c86"/></linearGradient>
+      <linearGradient id="pcRub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6b3a8"/><stop offset=".6" stop-color="#e48f84"/><stop offset="1" stop-color="#c9756b"/></linearGradient>
+    </defs>
+    <path d="M9 8.3 L40 1 V21 L9 13.7 Z" fill="url(#pcWood)"/>
+    <path d="M0 11 L9 8.3 L9 13.7 Z" style="fill: var(--tip, #2c2c34)"/>
+    <path d="M43 1 C37.5 2.6 37.5 6 41 7.7 C37.5 9.4 37.5 12.6 41 14.3 C37.5 16 37.5 19.4 43 21 H252 V1 Z" fill="url(#pcBody)"/>
+    <path d="M41 7.7 H252 M41 14.3 H252" stroke="#000" stroke-opacity=".14" stroke-width=".6"/>
+    <text id="pencilText" x="118" y="13.3" font-size="6" style="fill: var(--pb-text, #5b2f0d)" fill-opacity=".72" font-family="Gowun Dodum, sans-serif" letter-spacing=".4">하영 고라보게 · HB</text>
+    <rect x="252" y="0.6" width="20" height="20.8" fill="url(#pcMetal)"/>
+    <path d="M256 1 V21 M259 1 V21 M265 1 V21 M268 1 V21" stroke="#6f6e68" stroke-opacity=".45" stroke-width=".7"/>
+    <path d="M272 1 H293 Q299 1 299 7 V15 Q299 21 293 21 H272 Z" fill="url(#pcRub)"/>
+  </svg>
+</div>
+
+<script src="../config.js?v=2"></script>
+<script src="../track.js?v=5"></script>
+<script src="../jeju-dict.js?v=1"></script>
+<script src="../translate.js?v=5"></script>
+<script src="../badwords.js?v=1"></script>
+<script src="../jeju-extra.js?v=1"></script>
+<script src="desk.js?v=18"></script>
+</body>
+</html>
