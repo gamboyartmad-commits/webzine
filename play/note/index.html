@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fbfaf7">
+<title>ᄆᆞ음 고라보게 · 하영 고라보게</title>
+<meta name="description" content="다섯 가지 질문에 표준어로 답하면 제주어로 바꿔 한 장에 담아 드려요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ᄆᆞ음 고라보게 · 하영 고라보게">
+<meta property="og:description" content="다섯 가지 질문에 표준어로 답하면 제주어로 바꿔 한 장에 담아 드려요.">
+<!-- 지금은 엽서 사이트의 공유 그림. 테스트용 그림이 생기면 전체 주소로 바꿀 것 -->
+<meta property="og:image" content="https://lxwebzine.hankyung.com/2026-1/team1/play/postcard/images/og-start.jpg">
+<link rel="preload" href="fonts/HayeongHand-Regular.woff2?v=1" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/BookkMyungjo-Bold.woff2?v=228" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body data-view="note_write">
+
+<!-- 질문 화면 -->
+<div class="nt" id="write">
+  <header class="nt-hd nt-dim">
+    <a class="nt-logo" id="logoLink" href="#" aria-label="제주어로 엽서 적기로 가기"><img src="images/logo-goraboge.png" alt="하영 고라보게"></a>
+    <div class="nt-bar" id="bar" role="group" aria-label="질문 고르기"></div>
+  </header>
+
+  <main class="nt-main" id="main">
+    <button type="button" class="nt-prev" id="prevSide" aria-label="이전 질문"></button>
+    <div class="nt-nextw">
+      <button type="button" class="nt-next" id="nextSide"><span class="t"></span><span class="ar"></span></button>
+      <span class="nt-enter">ENTER ↵</span>
+    </div>
+
+    <section class="nt-wrap">
+      <div class="nt-top">
+        <span class="nt-title nt-dim">ᄆᆞ음 고라보게</span>
+        <div class="nt-tabs nt-dim" role="tablist">
+          <button type="button" role="tab" class="nt-tab" data-tab="m">나의 답</button>
+          <button type="button" role="tab" class="nt-tab" data-tab="o">다른 사람들</button>
+        </div>
+      </div>
+
+      <div class="nt-card" id="card">
+        <svg class="nt-box" aria-hidden="true" preserveAspectRatio="none"><path/></svg>
+        <div class="nt-qrow">
+          <span class="nt-qn" id="qn"></span>
+          <span class="nt-howto">표준어로 쓰면 제주어로 바꿔 드려요</span>
+        </div>
+        <h1 class="nt-q" id="q"></h1>
+
+        <div class="nt-mine" id="mine">
+          <svg class="nt-lines" aria-hidden="true" preserveAspectRatio="none"><path/></svg>
+          <textarea class="nt-ta" id="ta" rows="4" spellcheck="false" autocorrect="off" aria-labelledby="q"></textarea>
+          <div class="nt-result" id="result" hidden></div>
+          <span class="nt-cnt" id="cnt"></span>
+        </div>
+
+        <div class="nt-after" id="after" hidden>
+          <div class="nt-after-row">
+            <button type="button" class="nt-link" id="toggleStd">표준어로 보기</button>
+            <button type="button" class="nt-link" id="editBtn">고치기</button>
+          </div>
+          <div class="nt-chips" id="chips"></div>
+        </div>
+        <p class="nt-warn" id="warn" role="alert" hidden></p>
+        <div class="nt-slot" id="slot"></div>
+      </div>
+
+      <div class="nt-mnav">
+        <button type="button" class="nt-mprev" id="prevBottom" aria-label="이전 질문"></button>
+        <button type="button" class="nt-mgo" id="nextBottom"></button>
+      </div>
+    </section>
+  </main>
+
+  <button type="button" class="nt-peek" id="peek">
+    <span class="nt-grip"></span>
+    <span class="nt-peekrow"><span id="peekText"><b></b><small></small></span><em>답 보기</em></span>
+  </button>
+  <div class="nt-sheetdim" id="sheetDim"></div>
+  <div class="nt-sheet" id="sheet" role="dialog" aria-label="다른 사람들의 답">
+    <div class="nt-sheethd" id="sheetHd"><span class="nt-grip"></span><b id="sheetQ"></b></div>
+    <div class="nt-sheetbody" id="sheetBody"></div>
+    <button type="button" class="nt-sheetnext" id="sheetNext"></button>
+  </div>
+</div>
+
+<!-- 끝 화면: 한 장 -->
+<section class="nf" id="finale" hidden>
+  <header class="nf-hd">
+    <button type="button" class="nf-back" id="finBack">← 답 고치기</button>
+    <a class="nt-logo" href="#" data-postcard-link aria-label="제주어로 엽서 적기로 가기"><img src="images/logo-goraboge.png" alt="하영 고라보게"></a>
+  </header>
+  <h1 class="nf-title">다섯 마디를 한 장에 담았어요</h1>
+  <p class="nf-lede" id="finLede"></p>
+
+  <div class="nf-designs" id="designPick" role="group" aria-label="디자인 고르기"></div>
+
+  <figure class="nf-card">
+    <img id="finImg" alt="">
+  </figure>
+  <p class="nf-tip" id="finTip">이미지를 길게 누르면 바로 저장할 수도 있어요</p>
+
+  <div class="nf-pick" id="artPick" role="group" aria-label="그림 고르기"></div>
+
+  <div class="nf-options">
+    <label class="nf-name">
+      <span>이름 (넣지 않아도 돼요)</span>
+      <input id="nameInput" type="text" maxlength="12" autocomplete="off" placeholder="한라에서 온 사람">
+    </label>
+    <button type="button" class="nt-link" id="finToggle">표준어로 보기</button>
+  </div>
+
+  <div class="nf-actions">
+    <button type="button" class="tale-btn is-primary" id="saveBtn">이미지 저장</button>
+    <button type="button" class="tale-btn" id="shareBtn">공유하기</button>
+    <button type="button" class="tale-btn" id="postBtn">게시판에 붙이기</button>
+  </div>
+  <p class="nf-status" id="finStatus" role="status"></p>
+
+  <div class="nf-words" id="wordsBox" hidden>
+    <h2>오늘 만난 제주어</h2>
+    <div class="nt-chips" id="words"></div>
+    <p class="nf-note">사전과 규칙으로 바꾼 참고용 번역이에요. 어색한 말이 있을 수 있어요.</p>
+  </div>
+
+  <div class="nf-next">
+    <a class="tale-btn" href="#" data-postcard-link id="toPostcard">이 마음을 엽서로 보내기 →</a>
+    <button type="button" class="nt-link" id="wallBtn">다른 사람들의 한 장 보기</button>
+    <button type="button" class="nt-link" id="restartBtn">처음부터 다시 하기</button>
+  </div>
+</section>
+
+<!-- 게시판 -->
+<section class="nw" id="wall" hidden>
+  <header class="nf-hd">
+    <button type="button" class="nf-back" id="wallBack">← 내 한 장으로</button>
+    <a class="nt-logo" href="#" data-postcard-link aria-label="제주어로 엽서 적기로 가기"><img src="images/logo-goraboge.png" alt="하영 고라보게"></a>
+  </header>
+  <h1 class="nf-title">모두의 한 장</h1>
+  <p class="nf-lede" id="wallLede"></p>
+  <div class="nw-list" id="wallList"></div>
+</section>
+
+<!-- 게시 확인 -->
+<dialog class="nd" id="postDialog">
+  <h2>게시판에 붙일까요?</h2>
+  <p>게시판에 붙인 글은 이 사이트를 찾은 모든 사람이 볼 수 있어요. 붙인 뒤에는 직접 지울 수 없으니 주소·전화번호 같은 개인정보가 있다면 먼저 고쳐 주세요.</p>
+  <div class="nd-actions">
+    <button type="button" class="tale-btn" id="postCancel">아니요</button>
+    <button type="button" class="tale-btn is-primary" id="postOk">붙일게요</button>
+  </div>
+</dialog>
+
+<script src="config.js?v=2"></script>
+<script src="track.js?v=5"></script>
+<script src="jeju-dict.js?v=1"></script>
+<script src="translate.js?v=5"></script>
+<script src="badwords.js?v=1"></script>
+<script src="jeju-extra.js?v=1"></script>
+<script src="questions.js?v=2"></script>
+<script src="card-designs.js?v=2"></script>
+<script src="app.js?v=3"></script>
+</body>
+</html>
