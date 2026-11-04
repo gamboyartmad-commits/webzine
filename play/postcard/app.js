@@ -3150,7 +3150,7 @@ document.getElementById('introStart').addEventListener('click', () => {
   box.addEventListener('dragstart', (e) => e.preventDefault());
 })();
 introPop.addEventListener('click', (e) => { if (e.target === introPop) introPop.close(); });   // 바깥(어두운 곳)을 눌러도 닫힘
-document.getElementById('helpBtn').addEventListener('click', openIntro);
+document.getElementById('helpBtn')?.addEventListener('click', openIntro);   // v7.34: 위 막대의 '?'는 뺌 (사용 방법 창은 남겨 둠)
 
 // ---------- 장면 사이 버튼 ----------
 
@@ -3161,7 +3161,7 @@ function openWritePage(behavior = 'auto') {
   window.scrollTo({ top: writeTop(), behavior });
 }
 
-// 게시판 관리자 입구 (숨은 단추): '모두의 게시판' 제목을 2초 안에 3번 누르면 관리자 페이지로.
+// 게시판 관리자 입구 (숨은 단추): '제주 대나무숲' 제목을 2초 안에 3번 누르면 관리자 페이지로.
 // 들어가도 관리자 계정으로 로그인해야 숨기기 · 삭제가 됨 (supabase/board_admin.sql)
 let titleTaps = [];
 document.getElementById('boardTitle').addEventListener('click', () => {
@@ -3210,25 +3210,6 @@ function hideBoardNudge(action) {
 }));
 document.getElementById('boardNudgeClose').addEventListener('click', () => hideBoardNudge('close'));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) hideBoardNudge('close'); });
-
-// ---------- 휴대폰 위 막대: ☰ 메뉴 ----------
-// 편지 쓰기 · 영상 보러 가기 · 게시판 · 사용 방법을 ☰ 하나로 묶고, 누르면 아래로 세로로 펼침. 항목을 누르거나 바깥 · Esc 로 닫힘
-const menuBtn = document.getElementById('menuBtn');
-const barMenu = document.getElementById('barMenu');
-function setMenu(open) {
-  menuBtn.setAttribute('aria-expanded', String(open));
-  menuBtn.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
-  barMenu.classList.toggle('is-open', open);
-}
-menuBtn.addEventListener('click', () => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'));
-barMenu.addEventListener('click', (e) => { if (e.target instanceof Element && e.target.closest('a, button')) setMenu(false); });
-document.addEventListener('click', (e) => { if (!(e.target instanceof Element && e.target.closest('.tale-bar'))) setMenu(false); });
-document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape' || menuBtn.getAttribute('aria-expanded') !== 'true') return;
-  setMenu(false);
-  menuBtn.focus();
-});
-boardPhone.addEventListener?.('change', () => setMenu(false));
 
 // 위 막대의 봉투: 쓰는 곳으로
 document.getElementById('jumpBtn').addEventListener('click', (e) => {

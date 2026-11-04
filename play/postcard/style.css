@@ -3766,93 +3766,11 @@ html.is-typing-letter .back-fab { display: none; }
    v7.31 휴대폰 — 위 막대를 ☰ 메뉴로, 게시판 엽서는 한 장씩(아래에 글) 저절로 넘어감. PC는 그대로
    ===================================================================== */
 
-/* PC: 메뉴 묶음이 없는 것처럼 항목이 막대에 그대로 (봉투는 로고 옆, 영상 · 게시판 · ? 는 오른쪽) */
-.bar-menu-btn { display: none; }
+/* v7.34: 위 막대는 PC · 휴대폰 모두 봉투(편지 쓰기, 로고 옆) · 게시판 보러가기(오른쪽 끝) 둘만 — ☰ 메뉴는 뺌 */
 .bar-menu { display: contents; }
 .bar-menu > * { pointer-events: auto; }
 .bar-menu > .bar-letter { margin-left: 2px; }
-.bar-menu > .bar-home { margin-left: auto; }
-.bar-menu-text { display: none; }
-
-@media (max-width: 719px) {
-  .bar-menu-btn {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-left: auto;
-    padding: 0;
-    border: 1px solid rgb(62 56 50 / 0.18);
-    border-radius: 50%;
-    background: rgb(255 250 240 / 0.92);
-    color: var(--tale-ink);
-    cursor: pointer;
-  }
-
-  .bar-menu-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
-  .bar-menu-btn[aria-expanded='true'] { background: var(--tale-dark); color: #fbf3e4; }
-  .bar-menu-btn:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
-
-  .bar-menu { display: none; }
-
-  .bar-menu.is-open {
-    position: absolute;
-    top: calc(100% - 4px);
-    right: clamp(14px, 3vw, 32px);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 210px;
-    padding: 8px;
-    border: 1px solid rgb(62 56 50 / 0.14);
-    border-radius: 16px;
-    background: #fffaf0;
-    box-shadow: 0 14px 30px rgb(50 40 28 / 0.18);
-    animation: soft-rise 0.18s ease both;
-  }
-
-  .bar-menu.is-open > * {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-height: 50px;
-    margin: 0;
-    padding: 6px 12px;
-    border: 0;
-    border-radius: 10px;
-    background: none;
-    box-shadow: none;
-    font: inherit;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.3;
-    text-align: left;
-    white-space: nowrap;
-    color: var(--tale-ink);
-    text-decoration: none;
-  }
-
-  .bar-menu.is-open > *:hover,
-  .bar-menu.is-open > *:focus-visible { background: var(--tale-paper); }
-  .bar-menu.is-open .bar-icon-art { flex: none; width: 34px; height: 24px; transform: none; }
-  .bar-menu.is-open .bar-icon-label { font-size: 16px; text-shadow: none; }
-  .bar-menu.is-open .bar-home svg { flex: none; width: 24px; height: 24px; margin: 0 5px; }
-  .bar-menu.is-open .bar-round > span:first-child {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 26px;
-    height: 26px;
-    margin: 0 4px;
-    border: 1.5px solid currentColor;
-    border-radius: 50%;
-    font-family: var(--story-font);
-    font-size: 14px;
-    font-weight: 700;
-  }
-  .bar-menu.is-open .bar-menu-text { display: inline; }
-}
+.bar-menu > .bar-stack { margin-left: auto; }
 
 /* 게시판 엽서 아래 글: 휴대폰에서 한 장씩 볼 때만 */
 .board-card-caption { display: none; }
