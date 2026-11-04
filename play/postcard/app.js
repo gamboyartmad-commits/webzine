@@ -2827,6 +2827,7 @@ function showBoardPosts(posts) {
   boardEmpty.hidden = boardPosts.length > 0;
   boardEmpty.textContent = '아직 붙은 엽서가 없어요. 첫 엽서를 붙여 보세요.';
   renderBoard();
+  if (view === 'all') loadAllBoardPosts();   // 엽서를 받기 전에 모든 엽서 화면이 열렸으면(?start=board) 60장 넘는 나머지도
 }
 
 if (BOARD_ONLINE) {
@@ -3354,4 +3355,16 @@ if (startParams.get('start') === 'write') {
   const qs = startParams.toString();
   history.replaceState(history.state, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
   if (!arrivedByLink) requestAnimationFrame(() => openWritePage());
+}
+
+// v7.35: 광고 · 링크로 게시판에 바로 온 사람(주소에 ?start=board)은 처음부터 모든 엽서 화면. 뒤로 가면 첫 화면(게시판 + 편지 쓰는 곳).
+// start 는 주소에서 지움(이 주소를 그대로 공유해도 받는 사람은 첫 화면부터). utm_… 은 그대로 둠(GA4 가 들어온 경로로 읽음)
+if (startParams.get('start') === 'board') {
+  startParams.delete('start');
+  const qs = startParams.toString();
+  history.replaceState(history.state, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
+  if (!arrivedByLink) {
+    goBoard();
+    hy('pc_board_direct', {});
+  }
 }
