@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <link rel="preload" as="font" type="font/woff2" href="fonts/BookkMyungjo-Bold.woff2?v=228" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="fonts/Griun-NeatHandwriting.woff2?v=228" crossorigin>
-<link rel="stylesheet" href="style.css?v=268">
+<link rel="stylesheet" href="style.css?v=272">
 </head>
 <body>
   <a class="skip-link" href="#scene2">바로 편지 쓰기로 건너뛰기</a>
@@ -315,6 +315,16 @@
                 </div>
               </dialog>
 
+        <!-- 다른 사람들이 쓴 편지 보러 가기: 누르면 모든 엽서 화면(위 막대 '게시판'과 같음). 웹진 홍보 띠와 같은 모양 -->
+        <button type="button" class="webzine-promo board-promo" id="boardPromoBtn">
+          <span class="board-promo-art" aria-hidden="true"><img src="images/card-11.webp?v=4" alt="" width="1920" height="1280" loading="lazy"><img src="images/card-06.webp?v=4" alt="" width="1920" height="1280" loading="lazy"><img src="images/card-03.webp?v=4" alt="" width="1920" height="1280" loading="lazy"></span>
+          <span class="promo-text">
+            <b>다른 사람들이 쓴 <span class="nowrap">편지 훔쳐보기</span></b>
+            <span class="promo-sub">X에게, 엄마에게, 전여친에게</span>
+          </span>
+          <span class="promo-go" aria-hidden="true">→</span>
+        </button>
+
         <!-- 맨 끝: 웹진 하영 고라보게 홍보 띠 (간단하게 한 줄). 누르면 웹진이 새 탭으로.
              그림은 웹진 인터뷰 그림 (_tools/build_promo_assets.py → images/promo/) -->
         <a class="webzine-promo" href="https://claude.ai/artifact/3EHktt3KU8zWRdGv1MFnvC" target="_blank" rel="noopener" data-webzine-link="promo">
@@ -330,7 +340,7 @@
 
       </div>
 
-      <!-- 휴대폰: 위 막대 '게시판'을 누르면 나오는 모든 엽서 화면 -->
+      <!-- 위 막대 '게시판'을 누르면 나오는 모든 엽서 화면 (PC · 휴대폰) -->
       <div id="pageAll" hidden>
         <section class="board board-all" aria-labelledby="boardAllTitle">
           <div class="board-head">
@@ -401,6 +411,25 @@
       </section>
     </div>
   </dialog>
+
+  <!-- 보내기 화면: '제주어로 변환 완료' 뒤에 뜨는 알림 — 다른 사람이 쓴 편지 보러 가기 (app.js showBoardNudge) -->
+  <div class="board-nudge" id="boardNudge" role="dialog" aria-labelledby="boardNudgeTitle" hidden>
+    <button type="button" class="board-nudge-x" id="boardNudgeClose" aria-label="알림 닫기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <h2 class="board-nudge-title" id="boardNudgeTitle">다른 사람이 쓴 편지 보러가기</h2>
+    <p class="board-nudge-sub"><span class="nowrap">X에게, 친구에게, 엄마에게…</span><br><span class="nowrap"><strong id="boardNudgeCount"></strong>이 제주어로 마음을 남겼어요.</span></p>
+    <button type="button" class="board-nudge-peek" id="boardNudgePeek" aria-label="다른 사람이 쓴 편지 한 장 보러 가기">
+      <span class="board-nudge-card mini-card" id="boardNudgeCard" aria-hidden="true"></span>
+      <span class="board-nudge-quote">
+        <span class="board-nudge-to" id="boardNudgeTo"></span>
+        <span class="board-nudge-msg" id="boardNudgeMsg"></span>
+      </span>
+    </button>
+    <div class="board-nudge-actions">
+      <button type="button" class="tale-btn is-primary" id="boardNudgeGo">게시판으로 가기</button>
+    </div>
+  </div>
 
   <!-- 게시판에 붙이기 전 미리보기 -->
   <dialog class="sheet board-post" id="boardPost" aria-labelledby="boardPostTitle">
@@ -495,9 +524,9 @@
   <script src="config.js?v=5"></script>
   <script src="track.js?v=5"></script>
   <script src="jeju-dict.js?v=1"></script>
-  <script src="translate.js?v=5"></script>
+  <script src="translate.js?v=6"></script>
   <script src="badwords.js?v=1"></script>
-  <script src="app.js?v=273"></script>
+  <script src="app.js?v=279"></script>
 </body>
 
 </html>

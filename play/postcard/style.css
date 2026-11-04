@@ -4052,3 +4052,163 @@ html.is-typing-letter .back-fab { display: none; }
 #boardSection .board-auto-btn[aria-pressed='true'] .icon-pause { display: none; }
 #boardSection .board-auto-btn[aria-pressed='true'] .icon-play { display: block; }
 #boardSection .board-auto-btn:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 2px; }
+
+/* 모든 엽서 화면: 넓은 화면은 한 줄에 더 많이, 붙인 사람 수는 PC에서도 */
+@media (min-width: 720px) { .board-all { --cols: 4; } .board-all .board-desc-count { display: block; } .board-all .board-desc-count[hidden] { display: none; } }
+@media (min-width: 1080px) { .board-all { --cols: 5; } }
+
+/* 보내기 화면: '다른 사람들이 쓴 편지 훔쳐보기' — 웹진 홍보 띠와 같은 모양, 그림 자리에는 엽서 세 장 */
+.board-promo { width: 100%; font: inherit; cursor: pointer; }
+.board-promo + .webzine-promo { margin-top: 12px; }
+
+.board-promo-art {
+  position: relative;
+  flex: none;
+  width: 150px;
+  height: 112px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--tale-paper);
+}
+
+.board-promo-art img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 66%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  border-radius: 2px;
+  box-shadow: 0 3px 8px rgb(50 40 28 / 0.28);
+}
+
+.board-promo-art img:nth-child(1) { transform: translate(-78%, -70%) rotate(-10deg); }
+.board-promo-art img:nth-child(2) { transform: translate(-22%, -38%) rotate(8deg); }
+.board-promo-art img:nth-child(3) { transform: translate(-50%, -20%) rotate(-2deg); }
+
+@media (max-width: 440px) { .board-promo-art { width: 104px; height: 92px; border-radius: 12px; } }
+
+/* =====================================================================
+   v7.32 보내기 화면 — 휴대폰도 아이콘 6개를 작게 한 줄로 · '제주어로 변환 완료' 뒤 게시판 알림
+   ===================================================================== */
+
+@media (max-width: 599px) {
+  .scene-send .send-row { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; row-gap: 0; }
+  .scene-send .send-option { gap: 5px; padding: 2px 0; }
+  .scene-send .send-option svg { width: 42px; height: 42px; padding: 11px; }
+  .scene-send .send-option b { font-size: 11px; letter-spacing: -0.02em; line-height: 1.25; }
+}
+
+@media (max-width: 380px) {
+  .scene-send .send-option svg { width: 40px; height: 40px; padding: 10px; }
+  .scene-send .send-option b { font-size: 10.5px; }
+}
+
+/* 알림: 종이 한 장이 아래에서 올라옴 (휴대폰은 아래 가득, PC는 오른쪽 아래) */
+.board-nudge {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 45;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 20px 20px 18px;
+  border-radius: 22px;
+  background: #fffdf9;   /* 사용자: 좀 더 하얗게 */
+  color: var(--tale-ink);
+  text-align: left;
+  box-shadow: 0 26px 50px -14px rgb(40 30 20 / 0.5), 0 0 0 1px rgb(62 56 50 / 0.08);
+  animation: board-nudge-up 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.board-nudge[hidden] { display: none; }
+
+@media (min-width: 720px) {
+  .board-nudge { left: auto; right: 28px; bottom: 28px; width: 390px; }
+}
+
+@keyframes board-nudge-up {
+  from { opacity: 0; transform: translateY(28px) rotate(1deg); }
+}
+
+.board-nudge-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--tale-soft);
+  cursor: pointer;
+}
+
+.board-nudge-x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.board-nudge-x:hover { background: rgb(62 56 50 / 0.06); color: var(--tale-ink); }
+.board-nudge-x:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 1px; }
+
+
+.board-nudge-title {
+  margin: 2px 40px 6px 0;
+  font-family: var(--story-font);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.board-nudge-sub { margin: 0 0 12px; font-size: 14px; line-height: 1.55; color: var(--tale-soft); }
+.board-nudge-sub strong { font-size: 1.08em; font-weight: 800; color: #c2571a; }
+.board-nudge-sub .nowrap { white-space: nowrap; }
+
+/* 맛보기 편지 한 장: 살짝 기울어진 흰 종이 */
+.board-nudge-peek {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 10px 12px 10px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  box-shadow: 0 6px 16px rgb(50 40 28 / 0.14), 0 0 0 1px rgb(62 56 50 / 0.06);
+  transform: rotate(-1.2deg);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.board-nudge-peek:hover { transform: rotate(0deg) translateY(-2px); }
+.board-nudge-peek:focus-visible { outline: 3px solid var(--tale-tangerine); outline-offset: 3px; }
+
+.board-nudge-card { flex: none; width: 96px; box-shadow: 0 1px 4px rgb(50 40 28 / 0.2); }
+
+.board-nudge-quote { display: grid; gap: 2px; min-width: 0; font-family: var(--letter-font); }
+.board-nudge-to { font-size: 14px; font-weight: 700; }
+
+.board-nudge-msg {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.board-nudge-actions { display: grid; justify-items: center; gap: 4px; }
+.board-nudge-actions .tale-btn { width: 100%; min-height: 50px; }
+.board-nudge-actions .text-btn { min-height: 40px; padding: 0 12px; border: 0; background: none; font: inherit; font-size: 14px; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-nudge { animation: none; }
+  .board-nudge-peek { transition: none; }
+}

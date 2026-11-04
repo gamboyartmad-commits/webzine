@@ -892,6 +892,7 @@ function renderView(next) {
   updateBackBtn();
   if (next === 'flow') scrollToSlot(centerSlot, 'instant');   // 숨어 있던 띠를 지금 그림에 맞춰 다시 놓음
   scheduleBoardAuto();   // 휴대폰 게시판: 쓰는 화면을 볼 때만 저절로 넘김
+  if (next !== 'send') hideBoardNudge();
 }
 
 // 다음 페이지로 (기록을 하나 쌓음). fresh면 그 페이지 맨 위부터
@@ -924,20 +925,11 @@ function writeTop() {
   return scene2.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0);
 }
 
-// 위 막대 '게시판': 휴대폰은 모든 엽서 화면으로, PC는 게시판(쓰는 곳 위쪽)으로
+// 위 막대 '게시판': 모든 엽서를 한 번에 보는 화면으로 (PC · 휴대폰)
 function goBoard() {
-  if (boardPhone.matches) {
-    if (view === 'all') window.scrollTo({ top: 0, behavior: smoothScroll() });
-    else goView('all', true);
-    loadAllBoardPosts();
-    return;
-  }
-  if (view === 'flow') {
-    window.scrollTo({ top: 0, behavior: smoothScroll() });
-    return;
-  }
-  scrollMemory.flow = 0;
-  goView('flow');
+  if (view === 'all') window.scrollTo({ top: 0, behavior: smoothScroll() });
+  else goView('all', true);
+  loadAllBoardPosts();
 }
 
 window.addEventListener('popstate', (e) => {
@@ -1269,6 +1261,8 @@ async function showFinalCard() {
 // 완성 엽서에 소인을 찍음. v7.29: 제주어로 막 바뀐 엽서면 먼저 바람이 스치고 '제주어로 변환 완료'(동작 줄이기 설정이면 문구만)
 function stampFinalCard() {
   finalCard.classList.add(calmMotion.matches ? 'is-stamped' : 'is-stamping');
+  // 다른 사람이 쓴 편지 보러 가기 알림: '제주어로 변환 완료'가 뜨자마자(제주어로 안 바뀐 글도 같은 때에)
+  setTimeout(showBoardNudge, 900);
   if (finalCard.dataset.windy !== '1') return;
   finalCard.dataset.windy = '';
   finalToast.textContent = '';
@@ -2230,7 +2224,7 @@ function renderBoard(fresh = false) {
     boardPageDots.appendChild(dot);
   }
   boardAllGrid.textContent = '';
-  if (boardPhone.matches) boardPosts.forEach((_, i) => boardAllGrid.appendChild(makeBoardCard(i, fresh && i === 0)));
+  boardPosts.forEach((_, i) => boardAllGrid.appendChild(makeBoardCard(i, fresh && i === 0)));   // 모든 엽서 화면
   boardPager.hidden = pages < 1;
   boardPageDots.hidden = pages < 2 || pages > 7;
   document.getElementById('boardPageNum').hidden = pages <= 7;   // 쪽이 많으면 점 대신 숫자
@@ -3180,6 +3174,42 @@ document.getElementById('boardTitle').addEventListener('click', () => {
 });
 
 document.getElementById('boardNavBtn').addEventListener('click', goBoard);
+document.getElementById('boardPromoBtn').addEventListener('click', goBoard);   // 보내기 화면의 '다른 사람들이 쓴 편지 훔쳐보기'
+
+// ---------- 보내기 화면: '제주어로 변환 완료' 뒤에 뜨는 알림 ----------
+// 다른 사람이 쓴 편지 한 장을 살짝 보여 주고 게시판으로 이끔. 한 번 방문에 한 번만, 아래쪽에 떠서 보내기는 그대로 할 수 있음
+const boardNudge = document.getElementById('boardNudge');
+const NUDGE_KEY = 'hy-board-nudge';
+
+function showBoardNudge() {
+  if (view !== 'send' || !boardNudge.hidden || !boardPosts.length) return;
+  try {
+    if (sessionStorage.getItem(NUDGE_KEY)) return;
+    sessionStorage.setItem(NUDGE_KEY, '1');
+  } catch (e) { /* 저장 공간이 막혀 있으면 이번에만 */ }
+  // 최근 엽서 가운데 글이 있는 한 장을 골라 맛보기로
+  const pool = boardPosts.slice(0, 12).filter((p) => (p.message || '').trim().length > 8);
+  const post = pool[Math.floor(Math.random() * pool.length)] || boardPosts[0];
+  fillMiniCard(document.getElementById('boardNudgeCard'), post);
+  document.getElementById('boardNudgeTo').textContent = post.to ? `To. ${post.to}` : '누군가에게';
+  document.getElementById('boardNudgeMsg').textContent = (post.message || '').trim();
+  document.getElementById('boardNudgeCount').textContent = `${boardTotal ?? boardPosts.length}명`;
+  boardNudge.hidden = false;
+  hy('pc_board_nudge', { action: 'show' });
+}
+
+function hideBoardNudge(action) {
+  if (boardNudge.hidden) return;
+  boardNudge.hidden = true;
+  if (action) hy('pc_board_nudge', { action });
+}
+
+['boardNudgeGo', 'boardNudgePeek'].forEach((id) => document.getElementById(id).addEventListener('click', () => {
+  hideBoardNudge('go');
+  goBoard();
+}));
+document.getElementById('boardNudgeClose').addEventListener('click', () => hideBoardNudge('close'));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) hideBoardNudge('close'); });
 
 // ---------- 휴대폰 위 막대: ☰ 메뉴 ----------
 // 편지 쓰기 · 영상 보러 가기 · 게시판 · 사용 방법을 ☰ 하나로 묶고, 누르면 아래로 세로로 펼침. 항목을 누르거나 바깥 · Esc 로 닫힘

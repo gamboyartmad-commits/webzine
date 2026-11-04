@@ -76,6 +76,11 @@
 
   const DICT = window.JEJU_DICT || { N: {}, V: {} };
   const N = DICT.N;
+  // 사전에는 체언으로 있지만 편지 글에서는 거의 늘 다른 말로 쓰여 잘못 바뀌는 낱말 — 바꾸지 않음 (v7.32)
+  // 가(ᄀᆞᆺ: 가장자리 ↔ '어디 가?') · 새(생이: 새 ↔ '새 옷') · 막(막집 ↔ '막 웃었어') · 데(티 ↔ '갈 데') · 바(배 ↔ '할 바') ·
+  // 리(웨 ↔ '그럴 리가') · 정(징 ↔ '정 보고 싶으면') · 바라(바랑 ↔ '바라.') · 그럼에도(게에도). '남(놈)'은 아래 translateNoun 에서 '남은 · 남을'만 뺌
+  for (const w of ['가', '새', '막', '데', '바', '리', '정', '바라']) delete N[w];
+  N['그럼에도'] = '';
 
   // 사전에 형용사로 올라 있지 않아도 형용사로 다룰 말 (말끝이 동사와 달라서 필요)
   const ADJ = new Set('좋 싫 많 적 같 있 없 예쁘 아프 바쁘 기쁘 슬프 춥 덥 멀 가깝 그립 고맙 반갑 즐겁 크 작 길 짧 높 낮 맑 밝 곱 싶 괜찮'.split(' '));
@@ -102,6 +107,7 @@
     const forms = [[s, '', null]];
     const last = s.slice(-1);
     const base = s.slice(0, -1);
+    if (last === 'ㅏ' || last === 'ㅓ') forms.push([s, 'ㅇ' + last, null]);     // 타 → 타(타 + 아): '타 봤어요'를 '트다'로 풀지 않게
     if (s.endsWith('ㅎㅏ')) forms.push([base + 'ㅐ', 'ㅇㅕ', null]);          // 하 → 해
     if (last === 'ㅣ') forms.push([base + 'ㅕ', 'ㅇㅓ', null]);                // 기다리 → 기다려
     if (last === 'ㅗ') forms.push([base + 'ㅘ', 'ㅇㅏ', null]);                // 오 → 와
@@ -260,6 +266,7 @@
         if (flag === 'l' && !'ㄴㅂㅅ'.includes(rest[0])) continue;
         const rem = implied + rest;
         if (!implied && !boundaryOk(prefix.slice(-1), rem)) continue;
+        if (prefix.endsWith('ㄹ') && flag !== 'd' && rem.startsWith('ㅇㅡ')) continue;   // 말을 · 날을 → 동사 아님
         for (const rule of RULES) {
           const m = rule.re.exec(rem);
           if (!m) continue;
@@ -358,12 +365,28 @@
   for (const w of ['해', '수고']) { PRONOUNS.add(w); N[w] = ''; }
   for (const p of PRONOUNS) if (!(p in N)) N[p] = '';
 
+  // 받침이 있어야 붙는 조사 / 없어야 붙는 조사 (뒤에 '는 · 도 · 만'이 붙은 꼴도 앞부분으로 봄)
+  const NEEDS_BATCHIM = { 이: true, 가: false, 은: true, 는: false, 을: true, 를: false, 과: true, 와: false, 으로: true, 로: false, 이나: true, 나: false, 이랑: true, 랑: false, 이에요: true, 예요: false };
+  function particleFits(noun, p) {
+    let base = p;
+    if (!(base in NEEDS_BATCHIM) && /[는도만]$/.test(base) && base.slice(0, -1) in NEEDS_BATCHIM) base = base.slice(0, -1);
+    if (!(base in NEEDS_BATCHIM)) return true;
+    const b = batchim(noun);
+    if (base === '로') return !b.has || b.rieul;
+    if (base === '으로') return b.has && !b.rieul;
+    return b.has === NEEDS_BATCHIM[base];
+  }
+
   function translateNoun(word, ctx) {
     if (word in N) return N[word] || word;
     for (let i = word.length - 1; i >= 1; i--) {
       const particle = PARTICLES.get(word.slice(i));
       if (!particle) continue;
       const noun = word.slice(0, i);
+      if (!particleFits(noun, word.slice(i))) continue;
+      if (noun === '남' && /^[은을]$/.test(word.slice(i))) continue;   // '남은 추억' · '남을 거야'는 '남다'
+      // 문장 끝의 '나와' · '나와요'처럼 대명사 + '와'로 보이는 동사는 체언으로 풀지 않음
+      if (ctx.end && (word.slice(i) === '와' || word.slice(i) === '과')) continue;
       if (!(noun in N) && !particle.strong) continue;
       const jeju = N[noun] || noun;
       return jeju + particle.pick(batchim(jeju), ctx.q);
@@ -407,7 +430,16 @@
 
       const after = parts[i + 1] || '';
       const next = /^\s+$/.test(after) ? (words[i + 2] || '') : '';
-      const ctx = { q: /^\s*\?/.test(after), next: next[0] || '' };
+      const prev = /^\s+$/.test(parts[i - 1] || '') ? (words[i - 2] || '') : '';
+      const ctx = { q: /^\s*\?/.test(after), next: next[0] || '', end: !next };
+
+      if (part.startsWith('싶')) {
+        if (!prev.endsWith('고')) return part;                        // '-지 싶어'처럼 '-고' 뒤가 아니면 그대로
+        if (/^싶어(?:하|해|했)/.test(part)) {                          // 오고 싶어했던 → 오고정 ᄒᆞ엿던
+          const v = translateVerb(part, ctx);
+          if (v && v.startsWith('싶어')) return v.slice(2);
+        }
+      }
 
       const noun = translateNoun(part, ctx);
       if (noun && noun !== part) return noun;
